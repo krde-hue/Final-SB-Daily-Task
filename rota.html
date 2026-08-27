@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Team Monthly Rota Schedule Manager</title>
 
-    <!-- Chart.js CDN for Pie Chart Visualization -->
+    <!-- Chart.js Library for Pie Chart Rendering -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -138,6 +138,7 @@
         }
         .shift-select:focus { outline: 2px solid #00bcff; }
 
+        /* Exact Shift Color Coding */
         .shift-select[data-shift="7:00 - 16:00"] { background-color: #86efac !important; color: #064e3b !important; }
         .shift-select[data-shift="10:00 - 19:00"] { background-color: #fed7aa !important; color: #7c2d12 !important; }
         .shift-select[data-shift="12:00 - 21:00"] { background-color: #bae6fd !important; color: #0c4a6e !important; }
@@ -164,7 +165,7 @@
             font-size: 15px;
             font-weight: bold;
             color: #ef4444;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -176,16 +177,16 @@
             border-radius: 8px;
             border: 1px solid var(--border-color);
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            max-width: 100%;
+            width: 100%;
         }
 
-        .chart-container-inner {
+        .chart-wrapper {
             position: relative;
             width: 100%;
-            max-width: 320px;
-            height: 320px;
+            max-width: 300px;
+            height: 280px;
         }
 
         .leave-table {
@@ -260,6 +261,7 @@
     </div>
 
     <div class="main-layout">
+        <!-- Monthly Schedule Grid -->
         <div class="table-container">
             <table>
                 <thead>
@@ -351,12 +353,12 @@
             </table>
         </div>
 
+        <!-- Sidebar: Pie Chart & Leave Entry Table -->
         <div class="leave-section">
-            <!-- Replacing old text table with Pie Chart -->
             <div>
-                <div class="leave-section-title">📊 Team VL Usage by Month</div>
+                <div class="leave-section-title">📊 Team Monthly VL Breakdown</div>
                 <div class="chart-box">
-                    <div class="chart-container-inner">
+                    <div class="chart-wrapper">
                         <canvas id="vlPieChart"></canvas>
                     </div>
                 </div>
@@ -426,7 +428,7 @@
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             document.body.setAttribute('data-theme', newTheme);
             localStorage.setItem('rota_theme', newTheme);
-            renderVLPieChart(); // Refresh chart styling
+            renderVLPieChart();
         }
 
         function changeMonth(offset) {
@@ -633,7 +635,6 @@
             }
         }
 
-        // Render Combined Team VL Usage Pie Chart by Month
         function renderVLPieChart() {
             let monthVLCounts = Array(12).fill(0);
 
