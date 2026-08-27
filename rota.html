@@ -134,13 +134,13 @@
         }
         .shift-select:focus { outline: 2px solid #00bcff; }
 
-        /* Exact Shift Color Coding */
-        .shift-select[data-shift="7:00 - 16:00"] { background-color: #86efac !important; color: #064e3b !important; } /* Light green */
-        .shift-select[data-shift="10:00 - 19:00"] { background-color: #fed7aa !important; color: #7c2d12 !important; } /* Light orange */
-        .shift-select[data-shift="12:00 - 21:00"] { background-color: #bae6fd !important; color: #0c4a6e !important; } /* Light blue */
-        .shift-select[data-shift="16:00 - 1:00"] { background-color: #fca5a5 !important; color: #7f1d1d !important; } /* Light Red */
-        .shift-select[data-shift="7:00 - 10:00 (WFH)"] { background-color: #fbcfe8 !important; color: #831843 !important; } /* PINK */
-        .shift-select[data-shift="7:00 - 16:00 (WFH)"] { background-color: #f472b6 !important; color: #831843 !important; } /* Darker PINK */
+        /* Exact Shift Color Coding across all months/years */
+        .shift-select[data-shift="7:00 - 16:00"] { background-color: #86efac !important; color: #064e3b !important; }
+        .shift-select[data-shift="10:00 - 19:00"] { background-color: #fed7aa !important; color: #7c2d12 !important; }
+        .shift-select[data-shift="12:00 - 21:00"] { background-color: #bae6fd !important; color: #0c4a6e !important; }
+        .shift-select[data-shift="16:00 - 1:00"] { background-color: #fca5a5 !important; color: #7f1d1d !important; }
+        .shift-select[data-shift="7:00 - 10:00 (WFH)"] { background-color: #fbcfe8 !important; color: #831843 !important; }
+        .shift-select[data-shift="7:00 - 16:00 (WFH)"] { background-color: #f472b6 !important; color: #831843 !important; }
         .shift-select[data-shift="RD"] { background-color: #9ca3af !important; color: #111827 !important; }
         .shift-select[data-shift="VL"] { background-color: #fde047 !important; color: #713f12 !important; }
         .shift-select[data-shift="SL"] { background-color: #c084fc !important; color: #3b0764 !important; }
@@ -191,12 +191,18 @@
 
         .date-input-cell {
             width: 100%;
-            padding: 3px;
+            padding: 4px;
             font-size: 12px;
             text-align: center;
             border: 1px solid var(--border-color);
             background: var(--bg-color);
             color: var(--text-color);
+            outline: none;
+            border-radius: 3px;
+        }
+        .date-input-cell:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 4px rgba(56, 189, 248, 0.5);
         }
     </style>
 </head>
@@ -467,8 +473,6 @@
 
                 tbody.appendChild(tr);
             }
-
-            renderLeaveSystem();
         }
 
         function bulkSetShift(memberIdx, shiftValue) {
@@ -491,20 +495,15 @@
             renderCalendar();
         }
 
-        function renderLeaveSystem() {
+        // Build static Leave Entry DOM structure ONCE to allow continuous typing
+        function buildLeaveTables() {
             leaveDatesBody.innerHTML = '';
-            trackerSummaryBody.innerHTML = '';
-
+            
             let leaveMatrix = {};
             try {
                 leaveMatrix = JSON.parse(localStorage.getItem(getLeaveDatesStorageKey())) || {};
             } catch(e) { leaveMatrix = {}; }
 
-            // Count usage automatically per member
-            let counts = {};
-            team.forEach(m => counts[m] = { vl: 0, sl: 0 });
-
-            // Render Lower Manual Entry Table (10 VL rows + 5 SL rows)
             for (let rowIdx = 0; rowIdx < 15; rowIdx++) {
                 let tr = document.createElement('tr');
                 let isVL = rowIdx < 10;
@@ -519,15 +518,11 @@
                     let input = document.createElement('input');
                     input.type = 'text';
                     input.className = 'date-input-cell';
-                    input.placeholder = isVL ? 'e.g. 25-Oct' : 'e.g. 12-Nov';
 
                     let val = (leaveMatrix[member] && leaveMatrix[member][leaveType] && leaveMatrix[member][leaveType][rowIdx]) ? leaveMatrix[member][leaveType][rowIdx] : '';
                     input.value = val;
 
-                    if (val.trim() !== '') {
-                        counts[member][leaveType]++;
-                    }
-
+                    // Update storage and recalculate summary on keypress without re-creating DOM
                     input.addEventListener('input', () => {
                         let currentMatrix = {};
                         try {
@@ -540,7 +535,7 @@
                         currentMatrix[member][leaveType][rowIdx] = input.value;
                         localStorage.setItem(getLeaveDatesStorageKey(), JSON.stringify(currentMatrix));
 
-                        renderLeaveSystem(); // Dynamic update
+                        recalculateTrackerSummary();
                     });
 
                     tdDate.appendChild(input);
@@ -550,7 +545,32 @@
                 leaveDatesBody.appendChild(tr);
             }
 
-            // Render Upper Tracker Auto Summary
+            recalculateTrackerSummary();
+        }
+
+        // Recalculates upper summary table dynamically without disturbing active typing focus
+        function recalculateTrackerSummary() {
+            trackerSummaryBody.innerHTML = '';
+
+            let leaveMatrix = {};
+            try {
+                leaveMatrix = JSON.parse(localStorage.getItem(getLeaveDatesStorageKey())) || {};
+            } catch(e) { leaveMatrix = {}; }
+
+            let counts = {};
+            team.forEach(m => counts[m] = { vl: 0, sl: 0 });
+
+            team.forEach(member => {
+                if (leaveMatrix[member]) {
+                    if (leaveMatrix[member].vl) {
+                        counts[member].vl = leaveMatrix[member].vl.filter(val => val && val.trim() !== '').length;
+                    }
+                    if (leaveMatrix[member].sl) {
+                        counts[member].sl = leaveMatrix[member].sl.filter(val => val && val.trim() !== '').length;
+                    }
+                }
+            });
+
             team.forEach((member) => {
                 let vlCount = counts[member].vl;
                 let slCount = counts[member].sl;
@@ -577,6 +597,7 @@
                 document.body.setAttribute('data-theme', 'light');
             }
             renderCalendar();
+            buildLeaveTables();
         };
     </script>
 </body>
