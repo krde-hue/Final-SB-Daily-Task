@@ -91,7 +91,7 @@
         table {
             border-collapse: collapse;
             width: auto;
-            min-width: 750px;
+            min-width: 650px;
         }
 
         th, td {
@@ -134,43 +134,69 @@
         }
         .shift-select:focus { outline: 2px solid #00bcff; }
 
-        /* Color Coding for ROTA Shifts Across All Months */
-        .shift-select[data-shift="7:00 - 10:00"] { background-color: #86efac !important; color: #064e3b !important; }
-        .shift-select[data-shift="10:00 - 12:00"] { background-color: #fed7aa !important; color: #7c2d12 !important; }
-        .shift-select[data-shift="16:00 - 19:00"] { background-color: #bae6fd !important; color: #0c4a6e !important; }
-        .shift-select[data-shift="22:00 - 1:00"] { background-color: #fca5a5 !important; color: #7f1d1d !important; }
-        .shift-select[data-shift="7:00 - 10:00 (WFH)"] { background-color: #fbcfe8 !important; color: #831843 !important; }
-        .shift-select[data-shift="22:00 - 1:00 (WFH)"] { background-color: #f472b6 !important; color: #831843 !important; }
+        /* Exact Shift Color Coding */
+        .shift-select[data-shift="7:00 - 16:00"] { background-color: #86efac !important; color: #064e3b !important; } /* Light green */
+        .shift-select[data-shift="10:00 - 19:00"] { background-color: #fed7aa !important; color: #7c2d12 !important; } /* Light orange */
+        .shift-select[data-shift="12:00 - 21:00"] { background-color: #bae6fd !important; color: #0c4a6e !important; } /* Light blue */
+        .shift-select[data-shift="16:00 - 1:00"] { background-color: #fca5a5 !important; color: #7f1d1d !important; } /* Light Red */
+        .shift-select[data-shift="7:00 - 10:00 (WFH)"] { background-color: #fbcfe8 !important; color: #831843 !important; } /* PINK */
+        .shift-select[data-shift="7:00 - 16:00 (WFH)"] { background-color: #f472b6 !important; color: #831843 !important; } /* Darker PINK */
         .shift-select[data-shift="RD"] { background-color: #9ca3af !important; color: #111827 !important; }
         .shift-select[data-shift="VL"] { background-color: #fde047 !important; color: #713f12 !important; }
         .shift-select[data-shift="SL"] { background-color: #c084fc !important; color: #3b0764 !important; }
 
-        /* Leave Monitoring Dashboard Styling */
-        .leave-dashboard {
+        /* Leave Monitoring Section Styling */
+        .leave-section {
             background: var(--card-bg);
             padding: 15px;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            min-width: 320px;
+            min-width: 480px;
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
-        .leave-dashboard h3 {
-            margin-top: 0;
-            font-size: 16px;
-            margin-bottom: 12px;
-            color: var(--text-color);
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 6px;
+
+        .leave-section-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #ef4444;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
+
         .leave-table {
             width: 100%;
             min-width: 100%;
         }
-        .leave-table input {
-            width: 45px;
-            text-align: center;
-            padding: 2px;
+
+        .badge-vl {
+            background-color: #86efac;
+            color: #064e3b;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .badge-sl {
+            background-color: #ef4444;
+            color: #ffffff;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .date-input-cell {
+            width: 100%;
+            padding: 3px;
             font-size: 12px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            background: var(--bg-color);
+            color: var(--text-color);
         }
     </style>
 </head>
@@ -201,7 +227,7 @@
             <input type="number" id="year-input" value="2026" min="2020" max="2035" style="width: 80px;">
         </div>
         <div style="margin-left: auto; font-size: 12px; opacity: 0.9;">
-            💾 Schedule & Leaves auto-save instantly across all months!
+            💾 Schedule & Leaves auto-save instantly!
         </div>
     </div>
 
@@ -217,12 +243,12 @@
                             <div class="bulk-set-container">
                                 <select class="bulk-select" onchange="bulkSetShift(0, this.value)">
                                     <option value="">-- Set All Month --</option>
-                                    <option value="7:00 - 10:00">7:00 - 10:00</option>
-                                    <option value="10:00 - 12:00">10:00 - 12:00</option>
-                                    <option value="16:00 - 19:00">16:00 - 19:00</option>
-                                    <option value="22:00 - 1:00">22:00 - 1:00</option>
+                                    <option value="7:00 - 16:00">7:00 - 16:00</option>
+                                    <option value="10:00 - 19:00">10:00 - 19:00</option>
+                                    <option value="12:00 - 21:00">12:00 - 21:00</option>
+                                    <option value="16:00 - 1:00">16:00 - 1:00</option>
                                     <option value="7:00 - 10:00 (WFH)">7:00 - 10:00 (WFH)</option>
-                                    <option value="22:00 - 1:00 (WFH)">22:00 - 1:00 (WFH)</option>
+                                    <option value="7:00 - 16:00 (WFH)">7:00 - 16:00 (WFH)</option>
                                     <option value="RD">RD</option>
                                 </select>
                             </div>
@@ -232,12 +258,12 @@
                             <div class="bulk-set-container">
                                 <select class="bulk-select" onchange="bulkSetShift(1, this.value)">
                                     <option value="">-- Set All Month --</option>
-                                    <option value="7:00 - 10:00">7:00 - 10:00</option>
-                                    <option value="10:00 - 12:00">10:00 - 12:00</option>
-                                    <option value="16:00 - 19:00">16:00 - 19:00</option>
-                                    <option value="22:00 - 1:00">22:00 - 1:00</option>
+                                    <option value="7:00 - 16:00">7:00 - 16:00</option>
+                                    <option value="10:00 - 19:00">10:00 - 19:00</option>
+                                    <option value="12:00 - 21:00">12:00 - 21:00</option>
+                                    <option value="16:00 - 1:00">16:00 - 1:00</option>
                                     <option value="7:00 - 10:00 (WFH)">7:00 - 10:00 (WFH)</option>
-                                    <option value="22:00 - 1:00 (WFH)">22:00 - 1:00 (WFH)</option>
+                                    <option value="7:00 - 16:00 (WFH)">7:00 - 16:00 (WFH)</option>
                                     <option value="RD">RD</option>
                                 </select>
                             </div>
@@ -247,12 +273,12 @@
                             <div class="bulk-set-container">
                                 <select class="bulk-select" onchange="bulkSetShift(2, this.value)">
                                     <option value="">-- Set All Month --</option>
-                                    <option value="7:00 - 10:00">7:00 - 10:00</option>
-                                    <option value="10:00 - 12:00">10:00 - 12:00</option>
-                                    <option value="16:00 - 19:00">16:00 - 19:00</option>
-                                    <option value="22:00 - 1:00">22:00 - 1:00</option>
+                                    <option value="7:00 - 16:00">7:00 - 16:00</option>
+                                    <option value="10:00 - 19:00">10:00 - 19:00</option>
+                                    <option value="12:00 - 21:00">12:00 - 21:00</option>
+                                    <option value="16:00 - 1:00">16:00 - 1:00</option>
                                     <option value="7:00 - 10:00 (WFH)">7:00 - 10:00 (WFH)</option>
-                                    <option value="22:00 - 1:00 (WFH)">22:00 - 1:00 (WFH)</option>
+                                    <option value="7:00 - 16:00 (WFH)">7:00 - 16:00 (WFH)</option>
                                     <option value="RD">RD</option>
                                 </select>
                             </div>
@@ -262,12 +288,12 @@
                             <div class="bulk-set-container">
                                 <select class="bulk-select" onchange="bulkSetShift(3, this.value)">
                                     <option value="">-- Set All Month --</option>
-                                    <option value="7:00 - 10:00">7:00 - 10:00</option>
-                                    <option value="10:00 - 12:00">10:00 - 12:00</option>
-                                    <option value="16:00 - 19:00">16:00 - 19:00</option>
-                                    <option value="22:00 - 1:00">22:00 - 1:00</option>
+                                    <option value="7:00 - 16:00">7:00 - 16:00</option>
+                                    <option value="10:00 - 19:00">10:00 - 19:00</option>
+                                    <option value="12:00 - 21:00">12:00 - 21:00</option>
+                                    <option value="16:00 - 1:00">16:00 - 1:00</option>
                                     <option value="7:00 - 10:00 (WFH)">7:00 - 10:00 (WFH)</option>
-                                    <option value="22:00 - 1:00 (WFH)">22:00 - 1:00 (WFH)</option>
+                                    <option value="7:00 - 16:00 (WFH)">7:00 - 16:00 (WFH)</option>
                                     <option value="RD">RD</option>
                                 </select>
                             </div>
@@ -277,12 +303,12 @@
                             <div class="bulk-set-container">
                                 <select class="bulk-select" onchange="bulkSetShift(4, this.value)">
                                     <option value="">-- Set All Month --</option>
-                                    <option value="7:00 - 10:00">7:00 - 10:00</option>
-                                    <option value="10:00 - 12:00">10:00 - 12:00</option>
-                                    <option value="16:00 - 19:00">16:00 - 19:00</option>
-                                    <option value="22:00 - 1:00">22:00 - 1:00</option>
+                                    <option value="7:00 - 16:00">7:00 - 16:00</option>
+                                    <option value="10:00 - 19:00">10:00 - 19:00</option>
+                                    <option value="12:00 - 21:00">12:00 - 21:00</option>
+                                    <option value="16:00 - 1:00">16:00 - 1:00</option>
                                     <option value="7:00 - 10:00 (WFH)">7:00 - 10:00 (WFH)</option>
-                                    <option value="22:00 - 1:00 (WFH)">22:00 - 1:00 (WFH)</option>
+                                    <option value="7:00 - 16:00 (WFH)">7:00 - 16:00 (WFH)</option>
                                     <option value="RD">RD</option>
                                 </select>
                             </div>
@@ -293,21 +319,42 @@
             </table>
         </div>
 
-        <!-- Leave Balance & Usage Monitoring Dashboard -->
-        <div class="leave-dashboard">
-            <h3>🌴 Vacation & Sick Leave Tracker</h3>
-            <table class="leave-table">
-                <thead>
-                    <tr>
-                        <th>Member</th>
-                        <th>VL Used (Max 10)</th>
-                        <th>SL Used (Max 5)</th>
-                        <th>Total Taken</th>
-                        <th>Usage %</th>
-                    </tr>
-                </thead>
-                <tbody id="leave-body"></tbody>
-            </table>
+        <!-- Leave Balance & Manual Entry Tables -->
+        <div class="leave-section">
+            <!-- Upper Table: Auto Summary Tracker -->
+            <div>
+                <div class="leave-section-title">🎋 Tracker</div>
+                <table class="leave-table">
+                    <thead>
+                        <tr>
+                            <th>Member</th>
+                            <th>VL Used (Max 10)</th>
+                            <th>SL Used (Max 5)</th>
+                            <th>Total Taken</th>
+                            <th>Usage %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tracker-summary-body"></tbody>
+                </table>
+            </div>
+
+            <!-- Lower Table: Manual Leave Entry -->
+            <div>
+                <div class="leave-section-title">🎋 Vacation & Sick Leave Dates</div>
+                <table class="leave-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">Type</th>
+                            <th>Ann</th>
+                            <th>Dave</th>
+                            <th>Kenneth</th>
+                            <th>Kriztel</th>
+                            <th>Miguel</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leave-dates-body"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -315,12 +362,12 @@
         const team = ["Ann", "Dave", "Kenneth", "Kriztel", "Miguel"];
         const shifts = [
             "", 
-            "7:00 - 10:00", 
-            "10:00 - 12:00", 
-            "16:00 - 19:00", 
-            "22:00 - 1:00", 
+            "7:00 - 16:00", 
+            "10:00 - 19:00", 
+            "12:00 - 21:00", 
+            "16:00 - 1:00", 
             "7:00 - 10:00 (WFH)", 
-            "22:00 - 1:00 (WFH)", 
+            "7:00 - 16:00 (WFH)", 
             "RD", 
             "VL",
             "SL"
@@ -329,15 +376,16 @@
         const monthSelect = document.getElementById('month-select');
         const yearInput = document.getElementById('year-input');
         const tbody = document.getElementById('schedule-body');
-        const leaveBody = document.getElementById('leave-body');
+        const trackerSummaryBody = document.getElementById('tracker-summary-body');
+        const leaveDatesBody = document.getElementById('leave-dates-body');
         const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thurs", "Fri", "Sat"];
 
         function getStorageKey() {
             return `schedule_${yearInput.value}_${monthSelect.value}`;
         }
 
-        function getLeaveStorageKey() {
-            return `leaves_tracker_db`;
+        function getLeaveDatesStorageKey() {
+            return `leave_dates_matrix_db`;
         }
 
         function updateCellColor(selectElement) {
@@ -420,10 +468,9 @@
                 tbody.appendChild(tr);
             }
 
-            renderLeaveDashboard();
+            renderLeaveSystem();
         }
 
-        // Quick Bulk-Set Functionality across any selected month/year
         function bulkSetShift(memberIdx, shiftValue) {
             if (!shiftValue) return;
             const selectedMonth = parseInt(monthSelect.value);
@@ -444,46 +491,82 @@
             renderCalendar();
         }
 
-        function renderLeaveDashboard() {
-            leaveBody.innerHTML = '';
-            let leaveData = {};
+        function renderLeaveSystem() {
+            leaveDatesBody.innerHTML = '';
+            trackerSummaryBody.innerHTML = '';
+
+            let leaveMatrix = {};
             try {
-                leaveData = JSON.parse(localStorage.getItem(getLeaveStorageKey())) || {};
-            } catch(e) { leaveData = {}; }
+                leaveMatrix = JSON.parse(localStorage.getItem(getLeaveDatesStorageKey())) || {};
+            } catch(e) { leaveMatrix = {}; }
 
+            // Count usage automatically per member
+            let counts = {};
+            team.forEach(m => counts[m] = { vl: 0, sl: 0 });
+
+            // Render Lower Manual Entry Table (10 VL rows + 5 SL rows)
+            for (let rowIdx = 0; rowIdx < 15; rowIdx++) {
+                let tr = document.createElement('tr');
+                let isVL = rowIdx < 10;
+                let leaveType = isVL ? 'vl' : 'sl';
+
+                let tdType = document.createElement('td');
+                tdType.innerHTML = isVL ? '<span class="badge-vl">VL</span>' : '<span class="badge-sl">SL</span>';
+                tr.appendChild(tdType);
+
+                team.forEach((member) => {
+                    let tdDate = document.createElement('td');
+                    let input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'date-input-cell';
+                    input.placeholder = isVL ? 'e.g. 25-Oct' : 'e.g. 12-Nov';
+
+                    let val = (leaveMatrix[member] && leaveMatrix[member][leaveType] && leaveMatrix[member][leaveType][rowIdx]) ? leaveMatrix[member][leaveType][rowIdx] : '';
+                    input.value = val;
+
+                    if (val.trim() !== '') {
+                        counts[member][leaveType]++;
+                    }
+
+                    input.addEventListener('input', () => {
+                        let currentMatrix = {};
+                        try {
+                            currentMatrix = JSON.parse(localStorage.getItem(getLeaveDatesStorageKey())) || {};
+                        } catch(e) { currentMatrix = {}; }
+
+                        if (!currentMatrix[member]) currentMatrix[member] = { vl: Array(10).fill(''), sl: Array(5).fill('') };
+                        if (!currentMatrix[member][leaveType]) currentMatrix[member][leaveType] = isVL ? Array(10).fill('') : Array(5).fill('');
+
+                        currentMatrix[member][leaveType][rowIdx] = input.value;
+                        localStorage.setItem(getLeaveDatesStorageKey(), JSON.stringify(currentMatrix));
+
+                        renderLeaveSystem(); // Dynamic update
+                    });
+
+                    tdDate.appendChild(input);
+                    tr.appendChild(tdDate);
+                });
+
+                leaveDatesBody.appendChild(tr);
+            }
+
+            // Render Upper Tracker Auto Summary
             team.forEach((member) => {
-                let vlUsed = (leaveData[member] && leaveData[member].vl !== undefined) ? leaveData[member].vl : 0;
-                let slUsed = (leaveData[member] && leaveData[member].sl !== undefined) ? leaveData[member].sl : 0;
-
-                let totalTaken = parseInt(vlUsed) + parseInt(slUsed);
-                let maxTotalLeaves = 15;
-                let percentage = Math.round((totalTaken / maxTotalLeaves) * 100);
+                let vlCount = counts[member].vl;
+                let slCount = counts[member].sl;
+                let totalTaken = vlCount + slCount;
+                let percentage = Math.round((totalTaken / 15) * 100);
 
                 let tr = document.createElement('tr');
-
                 tr.innerHTML = `
                     <td style="font-weight: bold;">${member}</td>
-                    <td><input type="number" min="0" max="10" value="${vlUsed}" onchange="updateLeaveCount('${member}', 'vl', this.value)"></td>
-                    <td><input type="number" min="0" max="5" value="${slUsed}" onchange="updateLeaveCount('${member}', 'sl', this.value)"></td>
+                    <td>${vlCount}</td>
+                    <td>${slCount}</td>
                     <td style="font-weight: bold;">${totalTaken} / 15</td>
                     <td style="font-weight: bold; color: ${percentage > 70 ? '#ef4444' : '#22c55e'};">${percentage}%</td>
                 `;
-
-                leaveBody.appendChild(tr);
+                trackerSummaryBody.appendChild(tr);
             });
-        }
-
-        function updateLeaveCount(member, type, value) {
-            let leaveData = {};
-            try {
-                leaveData = JSON.parse(localStorage.getItem(getLeaveStorageKey())) || {};
-            } catch(e) { leaveData = {}; }
-
-            if (!leaveData[member]) leaveData[member] = { vl: 0, sl: 0 };
-            leaveData[member][type] = parseInt(value) || 0;
-
-            localStorage.setItem(getLeaveStorageKey(), JSON.stringify(leaveData));
-            renderLeaveDashboard();
         }
 
         monthSelect.addEventListener('change', renderCalendar);
