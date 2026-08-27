@@ -27,11 +27,12 @@
             --accent-btn-text: #ffffff;
         }
 
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            padding: 20px;
             transition: background-color 0.3s, color 0.3s;
         }
 
@@ -133,13 +134,13 @@
         }
         .shift-select:focus { outline: 2px solid #00bcff; }
 
-        /* Color Coding for ROTA Shifts */
-        .shift-select[data-shift="7:00 - 10:00"] { background-color: #86efac !important; color: #064e3b !important; } /* Light green */
-        .shift-select[data-shift="10:00 - 12:00"] { background-color: #fed7aa !important; color: #7c2d12 !important; } /* Light orange */
-        .shift-select[data-shift="16:00 - 19:00"] { background-color: #bae6fd !important; color: #0c4a6e !important; } /* Light blue */
-        .shift-select[data-shift="22:00 - 1:00"] { background-color: #fca5a5 !important; color: #7f1d1d !important; } /* Light Red */
-        .shift-select[data-shift="7:00 - 10:00 (WFH)"] { background-color: #fbcfe8 !important; color: #831843 !important; } /* PINK */
-        .shift-select[data-shift="22:00 - 1:00 (WFH)"] { background-color: #f472b6 !important; color: #831843 !important; } /* Darker PINK */
+        /* Color Coding for ROTA Shifts Across All Months */
+        .shift-select[data-shift="7:00 - 10:00"] { background-color: #86efac !important; color: #064e3b !important; }
+        .shift-select[data-shift="10:00 - 12:00"] { background-color: #fed7aa !important; color: #7c2d12 !important; }
+        .shift-select[data-shift="16:00 - 19:00"] { background-color: #bae6fd !important; color: #0c4a6e !important; }
+        .shift-select[data-shift="22:00 - 1:00"] { background-color: #fca5a5 !important; color: #7f1d1d !important; }
+        .shift-select[data-shift="7:00 - 10:00 (WFH)"] { background-color: #fbcfe8 !important; color: #831843 !important; }
+        .shift-select[data-shift="22:00 - 1:00 (WFH)"] { background-color: #f472b6 !important; color: #831843 !important; }
         .shift-select[data-shift="RD"] { background-color: #9ca3af !important; color: #111827 !important; }
         .shift-select[data-shift="VL"] { background-color: #fde047 !important; color: #713f12 !important; }
         .shift-select[data-shift="SL"] { background-color: #c084fc !important; color: #3b0764 !important; }
@@ -190,8 +191,8 @@
                 <option value="0">January</option><option value="1">February</option>
                 <option value="2">March</option><option value="3">April</option>
                 <option value="4">May</option><option value="5">June</option>
-                <option value="6" selected>July</option><option value="7">August</option>
-                <option value="8">September</option><option value="9">October</option>
+                <option value="6">July</option><option value="7">August</option>
+                <option value="8" selected>September</option><option value="9">October</option>
                 <option value="10">November</option><option value="11">December</option>
             </select>
         </div>
@@ -200,7 +201,7 @@
             <input type="number" id="year-input" value="2026" min="2020" max="2035" style="width: 80px;">
         </div>
         <div style="margin-left: auto; font-size: 12px; opacity: 0.9;">
-            💾 Schedule & Leaves auto-save instantly!
+            💾 Schedule & Leaves auto-save instantly across all months!
         </div>
     </div>
 
@@ -422,7 +423,7 @@
             renderLeaveDashboard();
         }
 
-        // Quick Bulk-Set Functionality for Whole Month
+        // Quick Bulk-Set Functionality across any selected month/year
         function bulkSetShift(memberIdx, shiftValue) {
             if (!shiftValue) return;
             const selectedMonth = parseInt(monthSelect.value);
@@ -450,12 +451,12 @@
                 leaveData = JSON.parse(localStorage.getItem(getLeaveStorageKey())) || {};
             } catch(e) { leaveData = {}; }
 
-            team.forEach((member, memberIdx) => {
+            team.forEach((member) => {
                 let vlUsed = (leaveData[member] && leaveData[member].vl !== undefined) ? leaveData[member].vl : 0;
                 let slUsed = (leaveData[member] && leaveData[member].sl !== undefined) ? leaveData[member].sl : 0;
 
                 let totalTaken = parseInt(vlUsed) + parseInt(slUsed);
-                let maxTotalLeaves = 15; // 10 VL + 5 SL
+                let maxTotalLeaves = 15;
                 let percentage = Math.round((totalTaken / maxTotalLeaves) * 100);
 
                 let tr = document.createElement('tr');
