@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Team Monthly Rota Schedule Manager</title>
+
+    <!-- Chart.js CDN for Pie Chart Visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         :root {
             --bg-color: #0b2240;
@@ -166,6 +170,24 @@
             gap: 6px;
         }
 
+        .chart-box {
+            background: var(--bg-color);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+        }
+
+        .chart-container-inner {
+            position: relative;
+            width: 100%;
+            max-width: 320px;
+            height: 320px;
+        }
+
         .leave-table {
             width: 100%;
             min-width: 100%;
@@ -248,6 +270,7 @@
                             <div class="bulk-set-container">
                                 <select class="bulk-select" onchange="bulkSetShift(0, this.value)">
                                     <option value="">-- Set All Month --</option>
+                                    <option value="CLEAR">-- Clear Month --</option>
                                     <option value="7:00 - 16:00">7:00 - 16:00</option>
                                     <option value="10:00 - 19:00">10:00 - 19:00</option>
                                     <option value="12:00 - 21:00">12:00 - 21:00</option>
@@ -263,6 +286,7 @@
                             <div class="bulk-set-container">
                                 <select class="bulk-select" onchange="bulkSetShift(1, this.value)">
                                     <option value="">-- Set All Month --</option>
+                                    <option value="CLEAR">-- Clear Month --</option>
                                     <option value="7:00 - 16:00">7:00 - 16:00</option>
                                     <option value="10:00 - 19:00">10:00 - 19:00</option>
                                     <option value="12:00 - 21:00">12:00 - 21:00</option>
@@ -278,6 +302,7 @@
                             <div class="bulk-set-container">
                                 <select class="bulk-select" onchange="bulkSetShift(2, this.value)">
                                     <option value="">-- Set All Month --</option>
+                                    <option value="CLEAR">-- Clear Month --</option>
                                     <option value="7:00 - 16:00">7:00 - 16:00</option>
                                     <option value="10:00 - 19:00">10:00 - 19:00</option>
                                     <option value="12:00 - 21:00">12:00 - 21:00</option>
@@ -293,6 +318,7 @@
                             <div class="bulk-set-container">
                                 <select class="bulk-select" onchange="bulkSetShift(3, this.value)">
                                     <option value="">-- Set All Month --</option>
+                                    <option value="CLEAR">-- Clear Month --</option>
                                     <option value="7:00 - 16:00">7:00 - 16:00</option>
                                     <option value="10:00 - 19:00">10:00 - 19:00</option>
                                     <option value="12:00 - 21:00">12:00 - 21:00</option>
@@ -308,6 +334,7 @@
                             <div class="bulk-set-container">
                                 <select class="bulk-select" onchange="bulkSetShift(4, this.value)">
                                     <option value="">-- Set All Month --</option>
+                                    <option value="CLEAR">-- Clear Month --</option>
                                     <option value="7:00 - 16:00">7:00 - 16:00</option>
                                     <option value="10:00 - 19:00">10:00 - 19:00</option>
                                     <option value="12:00 - 21:00">12:00 - 21:00</option>
@@ -325,20 +352,14 @@
         </div>
 
         <div class="leave-section">
+            <!-- Replacing old text table with Pie Chart -->
             <div>
-                <div class="leave-section-title">🎋 Tracker</div>
-                <table class="leave-table">
-                    <thead>
-                        <tr>
-                            <th>Member</th>
-                            <th>VL Used (Max 10)</th>
-                            <th>SL Used (Max 5)</th>
-                            <th>Total Taken</th>
-                            <th>Usage %</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tracker-summary-body"></tbody>
-                </table>
+                <div class="leave-section-title">📊 Team VL Usage by Month</div>
+                <div class="chart-box">
+                    <div class="chart-container-inner">
+                        <canvas id="vlPieChart"></canvas>
+                    </div>
+                </div>
             </div>
 
             <div>
@@ -375,12 +396,18 @@
             "SL"
         ];
 
+        const monthNames = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+
         const monthSelect = document.getElementById('month-select');
         const yearInput = document.getElementById('year-input');
         const tbody = document.getElementById('schedule-body');
-        const trackerSummaryBody = document.getElementById('tracker-summary-body');
         const leaveDatesBody = document.getElementById('leave-dates-body');
         const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thurs", "Fri", "Sat"];
+
+        let vlChartInstance = null;
 
         function getStorageKey() {
             return `schedule_${yearInput.value}_${monthSelect.value}`;
@@ -399,6 +426,7 @@
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             document.body.setAttribute('data-theme', newTheme);
             localStorage.setItem('rota_theme', newTheme);
+            renderVLPieChart(); // Refresh chart styling
         }
 
         function changeMonth(offset) {
@@ -480,7 +508,6 @@
 
                         localStorage.setItem(getStorageKey(), JSON.stringify(currentMonthData));
                         
-                        // Automatically aggregate all VL/SL selections into the leave matrix
                         syncLeavesFromSchedule();
                     });
 
@@ -505,26 +532,25 @@
                 currentMonthData = JSON.parse(localStorage.getItem(getStorageKey())) || {};
             } catch(e) { currentMonthData = {}; }
 
+            let applyValue = (shiftValue === 'CLEAR') ? '' : shiftValue;
+
             for (let d = 1; d <= totalDays; d++) {
                 if (!currentMonthData[d]) currentMonthData[d] = Array(team.length).fill("");
-                currentMonthData[d][memberIdx] = shiftValue;
+                currentMonthData[d][memberIdx] = applyValue;
             }
 
             localStorage.setItem(getStorageKey(), JSON.stringify(currentMonthData));
             renderCalendar();
         }
 
-        // Reads VL and SL from schedule data across ALL stored months and updates leave matrix
         function syncLeavesFromSchedule() {
             let leaveMatrix = {};
             team.forEach(m => leaveMatrix[m] = { vl: [], sl: [] });
 
-            // Scan all localStorage keys for schedule data
             for (let i = 0; i < localStorage.length; i++) {
                 let key = localStorage.key(i);
                 if (key.startsWith("schedule_")) {
                     let parts = key.split('_');
-                    let year = parts[1];
                     let monthIdx = parseInt(parts[2]);
                     let monthLabel = monthSelect.options[monthIdx] ? monthSelect.options[monthIdx].text.substring(0, 3) : '';
 
@@ -545,7 +571,6 @@
                 }
             }
 
-            // Pad arrays up to max limits
             team.forEach(m => {
                 while (leaveMatrix[m].vl.length < 10) leaveMatrix[m].vl.push('');
                 while (leaveMatrix[m].sl.length < 5) leaveMatrix[m].sl.push('');
@@ -555,6 +580,7 @@
 
             localStorage.setItem(getLeaveDatesStorageKey(), JSON.stringify(leaveMatrix));
             buildLeaveTables();
+            renderVLPieChart();
         }
 
         function buildLeaveTables() {
@@ -596,7 +622,7 @@
                         currentMatrix[member][leaveType][arrayIdx] = input.value;
                         localStorage.setItem(getLeaveDatesStorageKey(), JSON.stringify(currentMatrix));
 
-                        recalculateTrackerSummary();
+                        renderVLPieChart();
                     });
 
                     tdDate.appendChild(input);
@@ -605,47 +631,79 @@
 
                 leaveDatesBody.appendChild(tr);
             }
-
-            recalculateTrackerSummary();
         }
 
-        function recalculateTrackerSummary() {
-            trackerSummaryBody.innerHTML = '';
+        // Render Combined Team VL Usage Pie Chart by Month
+        function renderVLPieChart() {
+            let monthVLCounts = Array(12).fill(0);
 
-            let leaveMatrix = {};
-            try {
-                leaveMatrix = JSON.parse(localStorage.getItem(getLeaveDatesStorageKey())) || {};
-            } catch(e) { leaveMatrix = {}; }
+            for (let i = 0; i < localStorage.length; i++) {
+                let key = localStorage.key(i);
+                if (key.startsWith("schedule_")) {
+                    let parts = key.split('_');
+                    let monthIdx = parseInt(parts[2]);
 
-            let counts = {};
-            team.forEach(m => counts[m] = { vl: 0, sl: 0 });
+                    try {
+                        let monthData = JSON.parse(localStorage.getItem(key)) || {};
+                        Object.keys(monthData).forEach(day => {
+                            let row = monthData[day];
+                            team.forEach((member, memberIdx) => {
+                                if (row[memberIdx] === 'VL') {
+                                    monthVLCounts[monthIdx]++;
+                                }
+                            });
+                        });
+                    } catch(e){}
+                }
+            }
 
-            team.forEach(member => {
-                if (leaveMatrix[member]) {
-                    if (leaveMatrix[member].vl) {
-                        counts[member].vl = leaveMatrix[member].vl.filter(val => val && val.trim() !== '').length;
-                    }
-                    if (leaveMatrix[member].sl) {
-                        counts[member].sl = leaveMatrix[member].sl.filter(val => val && val.trim() !== '').length;
+            const ctx = document.getElementById('vlPieChart').getContext('2d');
+            const activeTheme = document.body.getAttribute('data-theme') || 'dark';
+            const fontColor = activeTheme === 'light' ? '#333333' : '#ffffff';
+
+            if (vlChartInstance) {
+                vlChartInstance.destroy();
+            }
+
+            vlChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: monthNames,
+                    datasets: [{
+                        label: 'Total Team VL Days',
+                        data: monthVLCounts,
+                        backgroundColor: [
+                            '#f87171', '#fb923c', '#fbbf24', '#facc15',
+                            '#a3e635', '#4ade80', '#34d399', '#2dd4bf',
+                            '#38bdf8', '#60a5fa', '#818cf8', '#c084fc'
+                        ],
+                        borderWidth: 1,
+                        borderColor: '#0b2240'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: fontColor,
+                                font: { size: 10, weight: 'bold' },
+                                boxWidth: 12
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    let value = context.parsed || 0;
+                                    return `${label}: ${value} VL Day(s)`;
+                                }
+                            }
+                        }
                     }
                 }
-            });
-
-            team.forEach((member) => {
-                let vlCount = counts[member].vl;
-                let slCount = counts[member].sl;
-                let totalTaken = vlCount + slCount;
-                let percentage = Math.round((totalTaken / 15) * 100);
-
-                let tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="font-weight: bold;">${member}</td>
-                    <td>${vlCount}</td>
-                    <td>${slCount}</td>
-                    <td style="font-weight: bold;">${totalTaken} / 15</td>
-                    <td style="font-weight: bold; color: ${percentage > 70 ? '#ef4444' : '#22c55e'};">${percentage}%</td>
-                `;
-                trackerSummaryBody.appendChild(tr);
             });
         }
 
@@ -657,6 +715,7 @@
                 document.body.setAttribute('data-theme', 'light');
             }
             renderCalendar();
+            renderVLPieChart();
         };
     </script>
 </body>
