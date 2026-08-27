@@ -41,7 +41,6 @@
         .title-group { display: flex; flex-direction: column; gap: 2px; }
         h1 { font-size: 20px; color: var(--header-text); }
         
-        /* Updated Credit Style: Smaller, subtle, clean text */
         .title-credit { 
             font-size: 10px; 
             font-weight: 500; 
@@ -145,6 +144,9 @@
             <span class="title-credit">kdv_2026 model</span>
         </div>
         <div class="btn-controls">
+            <span id="activeViewersBadge" class="btn btn-secondary" style="cursor: default; pointer-events: none;" title="Active Viewers">
+                👁️ <span id="activeViewersCount">1</span>
+            </span>
             <span id="saveStatus" class="autosave-badge">✓ Live Synced</span>
             <button class="btn btn-secondary" onclick="toggleDarkMode()">🌓 Mode</button>
             <a href="rota.html" class="btn btn-secondary">📅 ROTA</a>
@@ -256,6 +258,34 @@
                 defaultDb["day_1"].grid[m.id] = { shift: m.defaultShift, slots: {} };
             });
             return defaultDb;
+        }
+
+        // Live Real-Time Viewer Tracking System
+        function setupPresenceSystem() {
+            const presenceRef = db.ref('active_sessions');
+            const connectedRef = db.ref('.info/connected');
+
+            connectedRef.on('value', (snap) => {
+                if (snap.val() === true) {
+                    const userSessionRef = presenceRef.push();
+
+                    // Remove presence automatically on exit/tab close
+                    userSessionRef.onDisconnect().remove();
+
+                    userSessionRef.set({
+                        online: true,
+                        joinedAt: firebase.database.ServerValue.TIMESTAMP
+                    });
+                }
+            });
+
+            presenceRef.on('value', (snap) => {
+                const count = snap.numChildren();
+                const countElem = document.getElementById('activeViewersCount');
+                if (countElem) {
+                    countElem.innerText = count > 0 ? count : 1;
+                }
+            });
         }
 
         function listenToLiveDatabase() {
@@ -599,6 +629,7 @@
             }
             renderAllPages();
             listenToLiveDatabase();
+            setupPresenceSystem();
             
             window.addEventListener('click', function(e) {
                 if (!e.target.closest('.task-dropdown-container')) {
