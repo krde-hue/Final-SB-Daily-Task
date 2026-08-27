@@ -64,7 +64,7 @@
             padding: 15px;
             border-radius: 6px;
             display: flex;
-            gap: 15px;
+            gap: 12px;
             align-items: center;
             flex-wrap: wrap;
         }
@@ -134,7 +134,6 @@
         }
         .shift-select:focus { outline: 2px solid #00bcff; }
 
-        /* Exact Shift Color Coding across all months/years */
         .shift-select[data-shift="7:00 - 16:00"] { background-color: #86efac !important; color: #064e3b !important; }
         .shift-select[data-shift="10:00 - 19:00"] { background-color: #fed7aa !important; color: #7c2d12 !important; }
         .shift-select[data-shift="12:00 - 21:00"] { background-color: #bae6fd !important; color: #0c4a6e !important; }
@@ -145,7 +144,6 @@
         .shift-select[data-shift="VL"] { background-color: #fde047 !important; color: #713f12 !important; }
         .shift-select[data-shift="SL"] { background-color: #c084fc !important; color: #3b0764 !important; }
 
-        /* Leave Monitoring Section Styling */
         .leave-section {
             background: var(--card-bg);
             padding: 15px;
@@ -217,6 +215,7 @@
     </div>
     
     <div class="controls">
+        <button class="btn btn-secondary" onclick="changeMonth(-1)">◀ Prev Month</button>
         <div>
             <label for="month-select">Month: </label>
             <select id="month-select">
@@ -232,13 +231,13 @@
             <label for="year-input">Year: </label>
             <input type="number" id="year-input" value="2026" min="2020" max="2035" style="width: 80px;">
         </div>
+        <button class="btn btn-secondary" onclick="changeMonth(1)">Next Month ▶</button>
         <div style="margin-left: auto; font-size: 12px; opacity: 0.9;">
             💾 Schedule & Leaves auto-save instantly!
         </div>
     </div>
 
     <div class="main-layout">
-        <!-- Monthly Rota Schedule Table -->
         <div class="table-container">
             <table>
                 <thead>
@@ -325,9 +324,7 @@
             </table>
         </div>
 
-        <!-- Leave Balance & Manual Entry Tables -->
         <div class="leave-section">
-            <!-- Upper Table: Auto Summary Tracker -->
             <div>
                 <div class="leave-section-title">🎋 Tracker</div>
                 <table class="leave-table">
@@ -344,7 +341,6 @@
                 </table>
             </div>
 
-            <!-- Lower Table: Manual Leave Entry -->
             <div>
                 <div class="leave-section-title">🎋 Vacation & Sick Leave Dates</div>
                 <table class="leave-table">
@@ -403,6 +399,24 @@
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             document.body.setAttribute('data-theme', newTheme);
             localStorage.setItem('rota_theme', newTheme);
+        }
+
+        function changeMonth(offset) {
+            let currentMonth = parseInt(monthSelect.value);
+            let currentYear = parseInt(yearInput.value);
+
+            currentMonth += offset;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            } else if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+
+            monthSelect.value = currentMonth;
+            yearInput.value = currentYear;
+            renderCalendar();
         }
 
         function renderCalendar() {
@@ -465,6 +479,9 @@
                         currentMonthData[d][memberIdx] = select.value;
 
                         localStorage.setItem(getStorageKey(), JSON.stringify(currentMonthData));
+                        
+                        // Automatically aggregate all VL/SL selections into the leave matrix
+                        syncLeavesFromSchedule();
                     });
 
                     tdShift.appendChild(select);
@@ -473,6 +490,8 @@
 
                 tbody.appendChild(tr);
             }
+
+            syncLeavesFromSchedule();
         }
 
         function bulkSetShift(memberIdx, shiftValue) {
@@ -495,7 +514,49 @@
             renderCalendar();
         }
 
-        // Build static Leave Entry DOM structure ONCE to allow continuous typing
+        // Reads VL and SL from schedule data across ALL stored months and updates leave matrix
+        function syncLeavesFromSchedule() {
+            let leaveMatrix = {};
+            team.forEach(m => leaveMatrix[m] = { vl: [], sl: [] });
+
+            // Scan all localStorage keys for schedule data
+            for (let i = 0; i < localStorage.length; i++) {
+                let key = localStorage.key(i);
+                if (key.startsWith("schedule_")) {
+                    let parts = key.split('_');
+                    let year = parts[1];
+                    let monthIdx = parseInt(parts[2]);
+                    let monthLabel = monthSelect.options[monthIdx] ? monthSelect.options[monthIdx].text.substring(0, 3) : '';
+
+                    try {
+                        let monthData = JSON.parse(localStorage.getItem(key)) || {};
+                        Object.keys(monthData).forEach(day => {
+                            let row = monthData[day];
+                            team.forEach((member, memberIdx) => {
+                                let shiftVal = row[memberIdx];
+                                if (shiftVal === 'VL') {
+                                    leaveMatrix[member].vl.push(`${day}-${monthLabel}`);
+                                } else if (shiftVal === 'SL') {
+                                    leaveMatrix[member].sl.push(`${day}-${monthLabel}`);
+                                }
+                            });
+                        });
+                    } catch(e){}
+                }
+            }
+
+            // Pad arrays up to max limits
+            team.forEach(m => {
+                while (leaveMatrix[m].vl.length < 10) leaveMatrix[m].vl.push('');
+                while (leaveMatrix[m].sl.length < 5) leaveMatrix[m].sl.push('');
+                leaveMatrix[m].vl = leaveMatrix[m].vl.slice(0, 10);
+                leaveMatrix[m].sl = leaveMatrix[m].sl.slice(0, 5);
+            });
+
+            localStorage.setItem(getLeaveDatesStorageKey(), JSON.stringify(leaveMatrix));
+            buildLeaveTables();
+        }
+
         function buildLeaveTables() {
             leaveDatesBody.innerHTML = '';
             
@@ -508,6 +569,7 @@
                 let tr = document.createElement('tr');
                 let isVL = rowIdx < 10;
                 let leaveType = isVL ? 'vl' : 'sl';
+                let arrayIdx = isVL ? rowIdx : rowIdx - 10;
 
                 let tdType = document.createElement('td');
                 tdType.innerHTML = isVL ? '<span class="badge-vl">VL</span>' : '<span class="badge-sl">SL</span>';
@@ -519,10 +581,9 @@
                     input.type = 'text';
                     input.className = 'date-input-cell';
 
-                    let val = (leaveMatrix[member] && leaveMatrix[member][leaveType] && leaveMatrix[member][leaveType][rowIdx]) ? leaveMatrix[member][leaveType][rowIdx] : '';
+                    let val = (leaveMatrix[member] && leaveMatrix[member][leaveType] && leaveMatrix[member][leaveType][arrayIdx]) ? leaveMatrix[member][leaveType][arrayIdx] : '';
                     input.value = val;
 
-                    // Update storage and recalculate summary on keypress without re-creating DOM
                     input.addEventListener('input', () => {
                         let currentMatrix = {};
                         try {
@@ -532,7 +593,7 @@
                         if (!currentMatrix[member]) currentMatrix[member] = { vl: Array(10).fill(''), sl: Array(5).fill('') };
                         if (!currentMatrix[member][leaveType]) currentMatrix[member][leaveType] = isVL ? Array(10).fill('') : Array(5).fill('');
 
-                        currentMatrix[member][leaveType][rowIdx] = input.value;
+                        currentMatrix[member][leaveType][arrayIdx] = input.value;
                         localStorage.setItem(getLeaveDatesStorageKey(), JSON.stringify(currentMatrix));
 
                         recalculateTrackerSummary();
@@ -548,7 +609,6 @@
             recalculateTrackerSummary();
         }
 
-        // Recalculates upper summary table dynamically without disturbing active typing focus
         function recalculateTrackerSummary() {
             trackerSummaryBody.innerHTML = '';
 
@@ -597,7 +657,6 @@
                 document.body.setAttribute('data-theme', 'light');
             }
             renderCalendar();
-            buildLeaveTables();
         };
     </script>
 </body>
