@@ -260,7 +260,6 @@
             return defaultDb;
         }
 
-        // Live Real-Time Viewer Tracking System
         function setupPresenceSystem() {
             const presenceRef = db.ref('active_sessions');
             const connectedRef = db.ref('.info/connected');
@@ -268,8 +267,6 @@
             connectedRef.on('value', (snap) => {
                 if (snap.val() === true) {
                     const userSessionRef = presenceRef.push();
-
-                    // Remove presence automatically on exit/tab close
                     userSessionRef.onDisconnect().remove();
 
                     userSessionRef.set({
