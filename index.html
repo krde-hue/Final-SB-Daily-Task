@@ -15,6 +15,7 @@
             --card-bg: #ffffff;
             --text-color: #333333;
             --header-text: #0d233a;
+            --subtext-color: #64748b;
             --border-color: #cbd5e0;
             --table-border: #2d3748;
             --accent-btn: #edf2f7;
@@ -26,6 +27,7 @@
             --card-bg: #1f2937;
             --text-color: #f3f4f6;
             --header-text: #60a5fa;
+            --subtext-color: #94a3b8;
             --border-color: #374151;
             --table-border: #4b5563;
             --accent-btn: #374151;
@@ -36,7 +38,9 @@
         body { background-color: var(--bg-color); padding: 20px; color: var(--text-color); transition: background-color 0.3s; }
         
         .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: var(--card-bg); padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .title-group { display: flex; flex-direction: column; gap: 2px; }
         h1 { font-size: 20px; color: var(--header-text); }
+        .title-credit { font-size: 11px; font-weight: 600; color: var(--subtext-color); letter-spacing: 0.3px; }
         
         .btn-controls { display: flex; gap: 8px; align-items: center; }
         
@@ -128,7 +132,10 @@
 <body>
 
     <div class="header-container">
-        <h1>SB DUTIES — PER DAY ROSTER MASTER</h1>
+        <div class="title-group">
+            <h1>SB DUTIES — PER DAY ROSTER MASTER</h1>
+            <div class="title-credit">System created by kriztel_ProdTest-Duties_2026</div>
+        </div>
         <div class="btn-controls">
             <span id="saveStatus" class="autosave-badge">✓ Live Synced</span>
             <button class="btn btn-secondary" onclick="toggleDarkMode()">🌓 Mode</button>
@@ -227,7 +234,7 @@
         };
 
         let database = createDefaultDatabase();
-        let activeOpenDropdownId = null; // Track open dropdown so multi-selection is uninterrupted
+        let activeOpenDropdownId = null;
 
         function createDefaultDatabase() {
             let defaultDb = {
@@ -252,7 +259,6 @@
                     saveToDatabase();
                 }
                 
-                // Avoid destroying dropdown DOM if user is actively clicking checkboxes
                 if (!activeOpenDropdownId) {
                     renderAllPages();
                 } else {
@@ -475,7 +481,6 @@
                 dayGrid.slots[slotId] = dayGrid.slots[slotId].filter(t => t !== checkbox.value);
             }
 
-            // Update card text box live without closing dropdown
             let editor = document.getElementById(`editor-${dayKey}-${memberId}-${slotId}`);
             if (editor) {
                 editor.innerText = dayGrid.slots[slotId].join('\n');
@@ -586,7 +591,6 @@
             renderAllPages();
             listenToLiveDatabase();
             
-            // Close open dropdown when clicking outside task dropdown controls
             window.addEventListener('click', function(e) {
                 if (!e.target.closest('.task-dropdown-container')) {
                     document.querySelectorAll('.task-dropdown-content').forEach(el => el.classList.remove('show'));
