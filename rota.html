@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Team Monthly Rota Schedule Manager</title>
 
+    <!-- Firebase Realtime Database SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
     <!-- Chart.js Library for Pie Chart Rendering -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -138,7 +142,6 @@
         }
         .shift-select:focus { outline: 2px solid #00bcff; }
 
-        /* Exact Shift Color Coding */
         .shift-select[data-shift="7:00 - 16:00"] { background-color: #86efac !important; color: #064e3b !important; }
         .shift-select[data-shift="10:00 - 19:00"] { background-color: #fed7aa !important; color: #7c2d12 !important; }
         .shift-select[data-shift="12:00 - 21:00"] { background-color: #bae6fd !important; color: #0c4a6e !important; }
@@ -225,6 +228,18 @@
             border-color: #38bdf8;
             box-shadow: 0 0 4px rgba(56, 189, 248, 0.5);
         }
+
+        .autosave-badge {
+            font-size: 11px;
+            color: #2f855a;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s;
+            background: #c6f6d5;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
@@ -232,6 +247,7 @@
     <div class="header-top">
         <h2>Team Monthly Rota Schedule Manager</h2>
         <div>
+            <span id="saveStatus" class="autosave-badge">✓ Live Synced</span>
             <button class="btn btn-secondary" onclick="toggleDarkMode()">🌓 Mode</button>
             <a href="index.html" class="btn btn-back">🔙 Back to Daily Duties</a>
         </div>
@@ -256,12 +272,11 @@
         </div>
         <button class="btn btn-secondary" onclick="changeMonth(1)">Next Month ▶</button>
         <div style="margin-left: auto; font-size: 12px; opacity: 0.9;">
-            💾 Schedule & Leaves auto-save instantly!
+            ⚡ Firebase Live Synced Real-Time!
         </div>
     </div>
 
     <div class="main-layout">
-        <!-- Monthly Schedule Grid -->
         <div class="table-container">
             <table>
                 <thead>
@@ -353,7 +368,6 @@
             </table>
         </div>
 
-        <!-- Sidebar: Pie Chart & Leave Entry Table -->
         <div class="leave-section">
             <div>
                 <div class="leave-section-title">📊 Team Monthly VL Breakdown</div>
@@ -384,6 +398,20 @@
     </div>
 
     <script>
+        // Exact Firebase Config matching index.html
+        const firebaseConfig = {
+            apiKey: "AIzaSyCaEclzLI284lWCFk-vXbLSXa_bEZsXbOg",
+            authDomain: "test-daily-task--sb.firebaseapp.com",
+            databaseURL: "https://test-daily-task--sb-default-rtdb.firebaseio.com",
+            projectId: "test-daily-task--sb",
+            storageBucket: "test-daily-task--sb.firebasestorage.app",
+            messagingSenderId: "928476661919",
+            appId: "1:928476661919:web:c6d531190824c6ed7c7aaa"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
         const team = ["Ann", "Dave", "Kenneth", "Kriztel", "Miguel"];
         const shifts = [
             "", 
@@ -409,14 +437,33 @@
         const leaveDatesBody = document.getElementById('leave-dates-body');
         const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thurs", "Fri", "Sat"];
 
+        let rotaDatabase = {};
         let vlChartInstance = null;
 
         function getStorageKey() {
             return `schedule_${yearInput.value}_${monthSelect.value}`;
         }
 
-        function getLeaveDatesStorageKey() {
-            return `leave_dates_matrix_db`;
+        // Connect Firebase for Real-Time Synchronization across users
+        function listenToLiveRota() {
+            db.ref('rota_data').on('value', (snapshot) => {
+                const liveData = snapshot.val();
+                if (liveData && typeof liveData === 'object') {
+                    rotaDatabase = liveData;
+                } else {
+                    rotaDatabase = {};
+                }
+                renderCalendar();
+            });
+        }
+
+        function saveRotaToFirebase() {
+            db.ref('rota_data').set(rotaDatabase);
+            let statusBadge = document.getElementById('saveStatus');
+            if (statusBadge) {
+                statusBadge.style.opacity = '1';
+                setTimeout(() => { statusBadge.style.opacity = '0'; }, 1000);
+            }
         }
 
         function updateCellColor(selectElement) {
@@ -457,10 +504,8 @@
             const totalDays = new Date(selectedYear, selectedMonth + 1, 0).getDate();
             const monthLabel = monthSelect.options[selectedMonth].text.substring(0, 3);
 
-            let savedMonthData = {};
-            try {
-                savedMonthData = JSON.parse(localStorage.getItem(getStorageKey())) || {};
-            } catch(e) { savedMonthData = {}; }
+            let key = getStorageKey();
+            let savedMonthData = rotaDatabase[key] || {};
 
             for (let d = 1; d <= totalDays; d++) {
                 const dateObj = new Date(selectedYear, selectedMonth, d);
@@ -500,17 +545,11 @@
 
                     select.addEventListener('change', () => {
                         updateCellColor(select);
-                        let currentMonthData = {};
-                        try {
-                            currentMonthData = JSON.parse(localStorage.getItem(getStorageKey())) || {};
-                        } catch(e) { currentMonthData = {}; }
+                        if (!rotaDatabase[key]) rotaDatabase[key] = {};
+                        if (!rotaDatabase[key][d]) rotaDatabase[key][d] = Array(team.length).fill("");
 
-                        if (!currentMonthData[d]) currentMonthData[d] = Array(team.length).fill("");
-                        currentMonthData[d][memberIdx] = select.value;
-
-                        localStorage.setItem(getStorageKey(), JSON.stringify(currentMonthData));
-                        
-                        syncLeavesFromSchedule();
+                        rotaDatabase[key][d][memberIdx] = select.value;
+                        saveRotaToFirebase();
                     });
 
                     tdShift.appendChild(select);
@@ -528,50 +567,43 @@
             const selectedMonth = parseInt(monthSelect.value);
             const selectedYear = parseInt(yearInput.value);
             const totalDays = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+            let key = getStorageKey();
 
-            let currentMonthData = {};
-            try {
-                currentMonthData = JSON.parse(localStorage.getItem(getStorageKey())) || {};
-            } catch(e) { currentMonthData = {}; }
-
+            if (!rotaDatabase[key]) rotaDatabase[key] = {};
             let applyValue = (shiftValue === 'CLEAR') ? '' : shiftValue;
 
             for (let d = 1; d <= totalDays; d++) {
-                if (!currentMonthData[d]) currentMonthData[d] = Array(team.length).fill("");
-                currentMonthData[d][memberIdx] = applyValue;
+                if (!rotaDatabase[key][d]) rotaDatabase[key][d] = Array(team.length).fill("");
+                rotaDatabase[key][d][memberIdx] = applyValue;
             }
 
-            localStorage.setItem(getStorageKey(), JSON.stringify(currentMonthData));
-            renderCalendar();
+            saveRotaToFirebase();
         }
 
         function syncLeavesFromSchedule() {
             let leaveMatrix = {};
             team.forEach(m => leaveMatrix[m] = { vl: [], sl: [] });
 
-            for (let i = 0; i < localStorage.length; i++) {
-                let key = localStorage.key(i);
+            Object.keys(rotaDatabase).forEach(key => {
                 if (key.startsWith("schedule_")) {
                     let parts = key.split('_');
                     let monthIdx = parseInt(parts[2]);
                     let monthLabel = monthSelect.options[monthIdx] ? monthSelect.options[monthIdx].text.substring(0, 3) : '';
 
-                    try {
-                        let monthData = JSON.parse(localStorage.getItem(key)) || {};
-                        Object.keys(monthData).forEach(day => {
-                            let row = monthData[day];
-                            team.forEach((member, memberIdx) => {
-                                let shiftVal = row[memberIdx];
-                                if (shiftVal === 'VL') {
-                                    leaveMatrix[member].vl.push(`${day}-${monthLabel}`);
-                                } else if (shiftVal === 'SL') {
-                                    leaveMatrix[member].sl.push(`${day}-${monthLabel}`);
-                                }
-                            });
+                    let monthData = rotaDatabase[key] || {};
+                    Object.keys(monthData).forEach(day => {
+                        let row = monthData[day];
+                        team.forEach((member, memberIdx) => {
+                            let shiftVal = row[memberIdx];
+                            if (shiftVal === 'VL') {
+                                leaveMatrix[member].vl.push(`${day}-${monthLabel}`);
+                            } else if (shiftVal === 'SL') {
+                                leaveMatrix[member].sl.push(`${day}-${monthLabel}`);
+                            }
                         });
-                    } catch(e){}
+                    });
                 }
-            }
+            });
 
             team.forEach(m => {
                 while (leaveMatrix[m].vl.length < 10) leaveMatrix[m].vl.push('');
@@ -580,18 +612,12 @@
                 leaveMatrix[m].sl = leaveMatrix[m].sl.slice(0, 5);
             });
 
-            localStorage.setItem(getLeaveDatesStorageKey(), JSON.stringify(leaveMatrix));
-            buildLeaveTables();
+            buildLeaveTables(leaveMatrix);
             renderVLPieChart();
         }
 
-        function buildLeaveTables() {
+        function buildLeaveTables(leaveMatrix) {
             leaveDatesBody.innerHTML = '';
-            
-            let leaveMatrix = {};
-            try {
-                leaveMatrix = JSON.parse(localStorage.getItem(getLeaveDatesStorageKey())) || {};
-            } catch(e) { leaveMatrix = {}; }
 
             for (let rowIdx = 0; rowIdx < 15; rowIdx++) {
                 let tr = document.createElement('tr');
@@ -613,18 +639,11 @@
                     input.value = val;
 
                     input.addEventListener('input', () => {
-                        let currentMatrix = {};
-                        try {
-                            currentMatrix = JSON.parse(localStorage.getItem(getLeaveDatesStorageKey())) || {};
-                        } catch(e) { currentMatrix = {}; }
+                        if (!rotaDatabase["custom_leave_matrix"]) rotaDatabase["custom_leave_matrix"] = {};
+                        if (!rotaDatabase["custom_leave_matrix"][member]) rotaDatabase["custom_leave_matrix"][member] = { vl: Array(10).fill(''), sl: Array(5).fill('') };
 
-                        if (!currentMatrix[member]) currentMatrix[member] = { vl: Array(10).fill(''), sl: Array(5).fill('') };
-                        if (!currentMatrix[member][leaveType]) currentMatrix[member][leaveType] = isVL ? Array(10).fill('') : Array(5).fill('');
-
-                        currentMatrix[member][leaveType][arrayIdx] = input.value;
-                        localStorage.setItem(getLeaveDatesStorageKey(), JSON.stringify(currentMatrix));
-
-                        renderVLPieChart();
+                        rotaDatabase["custom_leave_matrix"][member][leaveType][arrayIdx] = input.value;
+                        saveRotaToFirebase();
                     });
 
                     tdDate.appendChild(input);
@@ -638,25 +657,22 @@
         function renderVLPieChart() {
             let monthVLCounts = Array(12).fill(0);
 
-            for (let i = 0; i < localStorage.length; i++) {
-                let key = localStorage.key(i);
+            Object.keys(rotaDatabase).forEach(key => {
                 if (key.startsWith("schedule_")) {
                     let parts = key.split('_');
                     let monthIdx = parseInt(parts[2]);
 
-                    try {
-                        let monthData = JSON.parse(localStorage.getItem(key)) || {};
-                        Object.keys(monthData).forEach(day => {
-                            let row = monthData[day];
-                            team.forEach((member, memberIdx) => {
-                                if (row[memberIdx] === 'VL') {
-                                    monthVLCounts[monthIdx]++;
-                                }
-                            });
+                    let monthData = rotaDatabase[key] || {};
+                    Object.keys(monthData).forEach(day => {
+                        let row = monthData[day];
+                        team.forEach((member, memberIdx) => {
+                            if (row[memberIdx] === 'VL') {
+                                monthVLCounts[monthIdx]++;
+                            }
                         });
-                    } catch(e){}
+                    });
                 }
-            }
+            });
 
             const ctx = document.getElementById('vlPieChart').getContext('2d');
             const activeTheme = document.body.getAttribute('data-theme') || 'dark';
@@ -715,8 +731,7 @@
             if (localStorage.getItem('rota_theme') === 'light') {
                 document.body.setAttribute('data-theme', 'light');
             }
-            renderCalendar();
-            renderVLPieChart();
+            listenToLiveRota();
         };
     </script>
 </body>
