@@ -142,12 +142,18 @@
         }
         .shift-select:focus { outline: 2px solid #00bcff; }
 
-        .shift-select[data-shift="7:00 - 16:00"] { background-color: #86efac !important; color: #064e3b !important; }
-        .shift-select[data-shift="10:00 - 19:00"] { background-color: #fed7aa !important; color: #7c2d12 !important; }
-        .shift-select[data-shift="12:00 - 21:00"] { background-color: #bae6fd !important; color: #0c4a6e !important; }
-        .shift-select[data-shift="16:00 - 1:00"] { background-color: #fca5a5 !important; color: #7f1d1d !important; }
-        .shift-select[data-shift="7:00 - 10:00 (WFH)"] { background-color: #fbcfe8 !important; color: #831843 !important; }
-        .shift-select[data-shift="7:00 - 16:00 (WFH)"] { background-color: #f472b6 !important; color: #831843 !important; }
+        /* Exact Shift Color Coding */
+        .shift-select[data-shift="9:00 - 18:00"] { background-color: #fef08a !important; color: #713f12 !important; } /* Light yellow */
+        .shift-select[data-shift="7:00 - 16:00"] { background-color: #86efac !important; color: #064e3b !important; } /* Light green */
+        .shift-select[data-shift="10:00 - 19:00"] { background-color: #fed7aa !important; color: #7c2d12 !important; } /* Light orange */
+        .shift-select[data-shift="12:00 - 21:00"] { background-color: #bae6fd !important; color: #0c4a6e !important; } /* Light blue */
+        .shift-select[data-shift="16:00 - 1:00"] { background-color: #fca5a5 !important; color: #7f1d1d !important; } /* Light Red */
+        
+        .shift-select[data-shift="9:00 - 18:00 (WFH)"] { background-color: #fbcfe8 !important; color: #831843 !important; } /* PINK */
+        .shift-select[data-shift="7:00 - 16:00 (WFH)"] { background-color: #fbcfe8 !important; color: #831843 !important; } /* PINK */
+        .shift-select[data-shift="12:00 - 21:00 (WFH)"] { background-color: #fbcfe8 !important; color: #831843 !important; } /* PINK */
+        .shift-select[data-shift="16:00 - 1:00 (WFH)"] { background-color: #f472b6 !important; color: #831843 !important; } /* Darker PINK */
+        
         .shift-select[data-shift="RD"] { background-color: #9ca3af !important; color: #111827 !important; }
         .shift-select[data-shift="VL"] { background-color: #fde047 !important; color: #713f12 !important; }
         .shift-select[data-shift="SL"] { background-color: #c084fc !important; color: #3b0764 !important; }
@@ -277,6 +283,7 @@
     </div>
 
     <div class="main-layout">
+        <!-- Monthly Schedule Grid -->
         <div class="table-container">
             <table>
                 <thead>
@@ -288,12 +295,15 @@
                                 <select class="bulk-select" onchange="bulkSetShift(0, this.value)">
                                     <option value="">-- Set All Month --</option>
                                     <option value="CLEAR">-- Clear Month --</option>
+                                    <option value="9:00 - 18:00">9:00 - 18:00</option>
                                     <option value="7:00 - 16:00">7:00 - 16:00</option>
                                     <option value="10:00 - 19:00">10:00 - 19:00</option>
                                     <option value="12:00 - 21:00">12:00 - 21:00</option>
                                     <option value="16:00 - 1:00">16:00 - 1:00</option>
-                                    <option value="7:00 - 10:00 (WFH)">7:00 - 10:00 (WFH)</option>
+                                    <option value="9:00 - 18:00 (WFH)">9:00 - 18:00 (WFH)</option>
                                     <option value="7:00 - 16:00 (WFH)">7:00 - 16:00 (WFH)</option>
+                                    <option value="12:00 - 21:00 (WFH)">12:00 - 21:00 (WFH)</option>
+                                    <option value="16:00 - 1:00 (WFH)">16:00 - 1:00 (WFH)</option>
                                     <option value="RD">RD</option>
                                 </select>
                             </div>
@@ -304,12 +314,15 @@
                                 <select class="bulk-select" onchange="bulkSetShift(1, this.value)">
                                     <option value="">-- Set All Month --</option>
                                     <option value="CLEAR">-- Clear Month --</option>
+                                    <option value="9:00 - 18:00">9:00 - 18:00</option>
                                     <option value="7:00 - 16:00">7:00 - 16:00</option>
                                     <option value="10:00 - 19:00">10:00 - 19:00</option>
                                     <option value="12:00 - 21:00">12:00 - 21:00</option>
                                     <option value="16:00 - 1:00">16:00 - 1:00</option>
-                                    <option value="7:00 - 10:00 (WFH)">7:00 - 10:00 (WFH)</option>
+                                    <option value="9:00 - 18:00 (WFH)">9:00 - 18:00 (WFH)</option>
                                     <option value="7:00 - 16:00 (WFH)">7:00 - 16:00 (WFH)</option>
+                                    <option value="12:00 - 21:00 (WFH)">12:00 - 21:00 (WFH)</option>
+                                    <option value="16:00 - 1:00 (WFH)">16:00 - 1:00 (WFH)</option>
                                     <option value="RD">RD</option>
                                 </select>
                             </div>
@@ -320,12 +333,15 @@
                                 <select class="bulk-select" onchange="bulkSetShift(2, this.value)">
                                     <option value="">-- Set All Month --</option>
                                     <option value="CLEAR">-- Clear Month --</option>
+                                    <option value="9:00 - 18:00">9:00 - 18:00</option>
                                     <option value="7:00 - 16:00">7:00 - 16:00</option>
                                     <option value="10:00 - 19:00">10:00 - 19:00</option>
                                     <option value="12:00 - 21:00">12:00 - 21:00</option>
                                     <option value="16:00 - 1:00">16:00 - 1:00</option>
-                                    <option value="7:00 - 10:00 (WFH)">7:00 - 10:00 (WFH)</option>
+                                    <option value="9:00 - 18:00 (WFH)">9:00 - 18:00 (WFH)</option>
                                     <option value="7:00 - 16:00 (WFH)">7:00 - 16:00 (WFH)</option>
+                                    <option value="12:00 - 21:00 (WFH)">12:00 - 21:00 (WFH)</option>
+                                    <option value="16:00 - 1:00 (WFH)">16:00 - 1:00 (WFH)</option>
                                     <option value="RD">RD</option>
                                 </select>
                             </div>
@@ -336,12 +352,15 @@
                                 <select class="bulk-select" onchange="bulkSetShift(3, this.value)">
                                     <option value="">-- Set All Month --</option>
                                     <option value="CLEAR">-- Clear Month --</option>
+                                    <option value="9:00 - 18:00">9:00 - 18:00</option>
                                     <option value="7:00 - 16:00">7:00 - 16:00</option>
                                     <option value="10:00 - 19:00">10:00 - 19:00</option>
                                     <option value="12:00 - 21:00">12:00 - 21:00</option>
                                     <option value="16:00 - 1:00">16:00 - 1:00</option>
-                                    <option value="7:00 - 10:00 (WFH)">7:00 - 10:00 (WFH)</option>
+                                    <option value="9:00 - 18:00 (WFH)">9:00 - 18:00 (WFH)</option>
                                     <option value="7:00 - 16:00 (WFH)">7:00 - 16:00 (WFH)</option>
+                                    <option value="12:00 - 21:00 (WFH)">12:00 - 21:00 (WFH)</option>
+                                    <option value="16:00 - 1:00 (WFH)">16:00 - 1:00 (WFH)</option>
                                     <option value="RD">RD</option>
                                 </select>
                             </div>
@@ -352,12 +371,15 @@
                                 <select class="bulk-select" onchange="bulkSetShift(4, this.value)">
                                     <option value="">-- Set All Month --</option>
                                     <option value="CLEAR">-- Clear Month --</option>
+                                    <option value="9:00 - 18:00">9:00 - 18:00</option>
                                     <option value="7:00 - 16:00">7:00 - 16:00</option>
                                     <option value="10:00 - 19:00">10:00 - 19:00</option>
                                     <option value="12:00 - 21:00">12:00 - 21:00</option>
                                     <option value="16:00 - 1:00">16:00 - 1:00</option>
-                                    <option value="7:00 - 10:00 (WFH)">7:00 - 10:00 (WFH)</option>
+                                    <option value="9:00 - 18:00 (WFH)">9:00 - 18:00 (WFH)</option>
                                     <option value="7:00 - 16:00 (WFH)">7:00 - 16:00 (WFH)</option>
+                                    <option value="12:00 - 21:00 (WFH)">12:00 - 21:00 (WFH)</option>
+                                    <option value="16:00 - 1:00 (WFH)">16:00 - 1:00 (WFH)</option>
                                     <option value="RD">RD</option>
                                 </select>
                             </div>
@@ -368,6 +390,7 @@
             </table>
         </div>
 
+        <!-- Sidebar: Pie Chart & Leave Entry Table -->
         <div class="leave-section">
             <div>
                 <div class="leave-section-title">📊 Team Monthly VL Breakdown</div>
@@ -398,7 +421,6 @@
     </div>
 
     <script>
-        // Exact Firebase Config matching index.html
         const firebaseConfig = {
             apiKey: "AIzaSyCaEclzLI284lWCFk-vXbLSXa_bEZsXbOg",
             authDomain: "test-daily-task--sb.firebaseapp.com",
@@ -415,12 +437,15 @@
         const team = ["Ann", "Dave", "Kenneth", "Kriztel", "Miguel"];
         const shifts = [
             "", 
+            "9:00 - 18:00",
             "7:00 - 16:00", 
             "10:00 - 19:00", 
             "12:00 - 21:00", 
             "16:00 - 1:00", 
-            "7:00 - 10:00 (WFH)", 
+            "9:00 - 18:00 (WFH)",
             "7:00 - 16:00 (WFH)", 
+            "12:00 - 21:00 (WFH)",
+            "16:00 - 1:00 (WFH)",
             "RD", 
             "VL",
             "SL"
@@ -444,7 +469,10 @@
             return `schedule_${yearInput.value}_${monthSelect.value}`;
         }
 
-        // Connect Firebase for Real-Time Synchronization across users
+        function getLeaveDatesStorageKey() {
+            return `leave_dates_matrix_db`;
+        }
+
         function listenToLiveRota() {
             db.ref('rota_data').on('value', (snapshot) => {
                 const liveData = snapshot.val();
