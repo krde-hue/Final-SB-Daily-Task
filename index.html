@@ -20,6 +20,7 @@
             --table-border: #2d3748;
             --accent-btn: #edf2f7;
             --accent-btn-text: #4a5568;
+            --reminder-color: #0d233a;
         }
 
         [data-theme="dark"] {
@@ -32,6 +33,7 @@
             --table-border: #4b5563;
             --accent-btn: #374151;
             --accent-btn-text: #f3f4f6;
+            --reminder-color: #facc15;
         }
 
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
@@ -107,6 +109,24 @@
         .date-picker-wrapper { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
         .date-picker-input { border: none; font-size: 18px; font-weight: bold; color: var(--header-text); width: 160px; outline: none; border-bottom: 1px dashed var(--border-color); background: transparent; cursor: pointer; }
 
+        /* Meeting Reminders Editable Input Box */
+        .meeting-reminder-input {
+            border: 1px dashed var(--border-color);
+            background: transparent;
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--reminder-color);
+            padding: 4px 10px;
+            border-radius: 4px;
+            outline: none;
+            width: 320px;
+            transition: border-color 0.2s, color 0.3s;
+        }
+        .meeting-reminder-input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 4px rgba(56, 189, 248, 0.4);
+        }
+
         .schedule-table { width: 100%; border-collapse: separate; border-spacing: 4px; table-layout: fixed; border: 2px solid var(--table-border); }
         th { background-color: var(--card-bg); color: var(--header-text); padding: 10px 4px; text-align: center; font-weight: 700; border: 1px solid var(--border-color); font-size: 13px; }
         th.col-member { width: 110px; }
@@ -175,6 +195,7 @@
             td, th { border: 1px solid #000 !important; }
             .day-section { box-shadow: none; padding: 0; margin-bottom: 20px; page-break-after: always; border: none !important; }
             .task-card.off-duty-active { background-color: #9ca3af !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .meeting-reminder-input { border: none !important; color: black !important; }
         }
     </style>
 </head>
@@ -282,7 +303,6 @@
             "Others (As instructed)"
         ];
 
-        // FULL MATCHING SHIFTS FROM ROTA
         const shifts = [
             { id: 'shift-7-16', label: '7:00 - 16:00', endHour: 16, endMinute: 0 },
             { id: 'shift-10-19', label: '10:00 - 19:00', endHour: 19, endMinute: 0 },
@@ -319,6 +339,7 @@
             let defaultDb = {
                 "day_1": {
                     isoDate: new Date().toISOString().split('T')[0],
+                    reminder: "",
                     grid: {}
                 }
             };
@@ -354,13 +375,11 @@
         }
 
         function listenToLiveDatabase() {
-            // Listen to live ROTA Master
             db.ref('rota_data').on('value', (snapshot) => {
                 masterRotaCalendar = snapshot.val() || {};
                 syncShiftsFromRotaMaster();
             });
 
-            // Listen to Daily Roster data
             db.ref('roster_data').on('value', (snapshot) => {
                 const liveData = snapshot.val();
                 if (liveData && typeof liveData === 'object' && Object.keys(liveData).length > 0) {
@@ -381,7 +400,6 @@
             });
         }
 
-        // Parse Shift Text from ROTA to match Daily Roster Shift ID
         function parseRotaShiftToShiftId(rawShiftText) {
             if (!rawShiftText) return null;
 
@@ -407,7 +425,6 @@
             return "shift-adjusted";
         }
 
-        // AUTOMATED SHIFT SYNC FROM ROTA CALENDAR BASED ON EXACT DATE
         function syncShiftsFromRotaMaster() {
             if (!masterRotaCalendar || Object.keys(masterRotaCalendar).length === 0) return;
 
@@ -415,7 +432,7 @@
             Object.keys(database || {}).forEach(dayKey => {
                 let dayData = database[dayKey];
                 if (dayData && dayData.isoDate) {
-                    let dateParts = dayData.isoDate.split('-'); // ISO: YYYY-MM-DD
+                    let dateParts = dayData.isoDate.split('-');
                     if (dateParts.length === 3) {
                         let year = dateParts[0];
                         let month = parseInt(dateParts[1], 10);
@@ -527,6 +544,12 @@
             return (shiftOffDutyMap[shiftId] || []).includes(slotId);
         }
 
+        function updateReminderText(dayKey, newText) {
+            if (!database[dayKey]) database[dayKey] = { grid: {} };
+            database[dayKey].reminder = newText;
+            saveToDatabase();
+        }
+
         function renderAllPages() {
             const container = document.getElementById('pagesContainer');
             container.innerHTML = '';
@@ -539,11 +562,14 @@
                 
                 let titleHTML = `
                     <div class="day-title-area">
-                        <span class="date-picker-wrapper">
-                            📅 
-                            <input type="date" class="date-picker-input" value="${dayData.isoDate || ''}" onchange="updateDayDate('${dayKey}', this.value)">
-                            SHIFT
-                        </span>
+                        <div style="display:flex; align-items:center; gap:15px; flex-wrap:wrap;">
+                            <span class="date-picker-wrapper">
+                                📅 
+                                <input type="date" class="date-picker-input" value="${dayData.isoDate || ''}" onchange="updateDayDate('${dayKey}', this.value)">
+                                SHIFT
+                            </span>
+                            <input type="text" class="meeting-reminder-input" placeholder="📌 Meeting Reminders..." value="${dayData.reminder || ''}" onchange="updateReminderText('${dayKey}', this.value)">
+                        </div>
                         <div class="no-print" style="display:flex; gap:10px; align-items:center;">
                             <button class="btn btn-secondary" onclick="clearDayDuties('${dayKey}')" style="padding:4px 8px; font-size:11px;">🧹 Clear Day</button>
                             <button class="btn btn-danger" onclick="deleteDay('${dayKey}')" style="padding:4px 8px; font-size:11px;">🗑️ Delete Day</button>
@@ -757,7 +783,7 @@
                 let newDayNum = parseInt(lastKey.split('_')[1] || '1') + 1;
                 let newDayId = "day_" + newDayNum;
                 
-                database[newDayId] = { isoDate: newIsoDate, grid: {} };
+                database[newDayId] = { isoDate: newIsoDate, reminder: "", grid: {} };
                 members.forEach(m => {
                     database[newDayId].grid[m.id] = { shift: m.defaultShift, slots: {} };
                 });
