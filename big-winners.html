@@ -30,7 +30,6 @@
             --danger-text: #f87171;
             --input-bg: #0f172a;
 
-            /* Row Highlighting (Dark Theme) */
             --row-pos-bg: rgba(34, 197, 94, 0.08);
             --row-neg-bg: rgba(239, 68, 68, 0.08);
             --row-pos-hover: rgba(34, 197, 94, 0.16);
@@ -55,7 +54,6 @@
             --danger-text: #b91c1c;
             --input-bg: #ffffff;
 
-            /* Row Highlighting (Light Theme) */
             --row-pos-bg: #f0fdf4;
             --row-neg-bg: #fef2f2;
             --row-pos-hover: #dcfce7;
@@ -297,7 +295,6 @@
             vertical-align: middle;
         }
 
-        /* ROW VISIBILITY HIGHLIGHTING */
         .player-row {
             cursor: pointer;
         }
@@ -466,6 +463,9 @@
                 <div class="status-dot"></div>
                 <span id="save-status">✓ Live Synced</span>
             </div>
+            <button class="btn" onclick="restoreFullDatabase()" title="Reset database to full 747 players">
+                🔄 Restore 747 Players
+            </button>
             <button class="btn" id="theme-toggle">
                 <i data-lucide="moon" id="theme-icon"></i>
                 <span id="theme-text">Dark Mode</span>
@@ -480,7 +480,7 @@
         <button class="tab-btn active">Daily Winners & Limits (<span id="user-count">747</span> Active Players)</button>
     </nav>
 
-    <!-- BRAND FILTERS TOOLBAR -->
+    <!-- BRAND FILTERS -->
     <div class="brand-filters">
         <span class="filter-label">Filter Brand:</span>
         <button class="brand-btn active" onclick="setBrandFilter('ALL')">VIEW ALL</button>
@@ -540,8 +540,8 @@
         let selectedBrandFilter = 'ALL';
         const availableBrands = ["qbet", "ibet", "30bet", "55bet", "7abet", "bvbet", "pubs"];
 
-        // Generates Full 747 Player Dataset
-        function getDefaultPlayers() {
+        // Generates Full 747 Players
+        function generate747Players() {
             let defaults = [
                 { id: "51705", email: "rozhi141@gmail.com", link: "https://mga-betbook.center/ibet/players/1840769", brand: "ibet", ccf: "0.20", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-26", amount: 1394.47, notes: "Accumulator Win" }, { date: "2026-08-27", amount: 7353.22, notes: "In-Play Tennis Win" }, { date: "2026-08-28", amount: 24927.52, notes: "Football Win" }] },
                 { id: "55415", email: "mackanlindholm44@gmail.com", link: "https://mga-betbook.center/ibet/players/926979", brand: "ibet", ccf: "3.00", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-27", amount: 1827.77, notes: "Basketball Win" }, { date: "2026-08-28", amount: 2674.30, notes: "In-play Win" }] },
@@ -572,13 +572,20 @@
             return defaults;
         }
 
+        function restoreFullDatabase() {
+            if (confirm("Restore all 747 players back into Firebase?")) {
+                playersData = generate747Players();
+                saveToDatabase();
+            }
+        }
+
         function listenToRealtimeDatabase() {
             db.ref('big_winners_data').on('value', (snapshot) => {
                 const liveData = snapshot.val();
-                if (liveData && Array.isArray(liveData) && liveData.length >= 100) {
+                if (liveData && Array.isArray(liveData) && liveData.length > 50) {
                     playersData = liveData;
                 } else {
-                    playersData = getDefaultPlayers();
+                    playersData = generate747Players();
                     saveToDatabase();
                 }
                 document.getElementById('user-count').textContent = playersData.length;
@@ -639,7 +646,6 @@
                 const fourteenFormatted = (totals.fourteenDay >= 0 ? '+' : '') + totals.fourteenDay.toFixed(2);
                 const fourteenClass = totals.fourteenDay >= 0 ? 'pnl-positive' : 'pnl-negative';
 
-                // Row Highlighting Class based on Total Net
                 const rowHighlightClass = totals.total >= 0 ? 'row-pos' : 'row-neg';
 
                 let brandOptions = availableBrands.map(b => 
@@ -657,9 +663,11 @@
                 row.innerHTML = `
                     <td>
                         <span class="toggle-icon"><i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i></span>
-                        <span contenteditable="true" onblur="updatePlayerField(${pIndex}, 'id', this.innerText)">${player.id}</span>
+                        <input type="text" class="cell-input" style="font-weight:600;" value="${player.id}" onchange="updatePlayerField(${pIndex}, 'id', this.value)">
                     </td>
-                    <td contenteditable="true" onblur="updatePlayerField(${pIndex}, 'email', this.innerText)">${player.email}</td>
+                    <td>
+                        <input type="text" class="cell-input" value="${player.email}" onchange="updatePlayerField(${pIndex}, 'email', this.value)">
+                    </td>
                     <td>
                         <div class="link-cell">
                             <input type="text" class="cell-input" value="${player.link || ''}" onchange="updatePlayerField(${pIndex}, 'link', this.value)">
