@@ -229,11 +229,36 @@
         .bg-pink td { background-color: var(--pink-bg); }
         .bg-blue td { background-color: var(--blue-bg); }
 
-        /* MULTI-LINE TEXTAREA STYLING FOR FULL VISIBILITY */
+        /* DIRECT CLICKABLE URL ANCHOR STYLING */
+        a.clickable-url {
+            color: var(--link-blue) !important;
+            font-size: 0.82rem;
+            font-weight: 600;
+            text-decoration: underline;
+            word-break: break-all;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+
+        a.clickable-url:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
+        .edit-form-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            width: 100%;
+            padding: 2px 0;
+        }
+
         .cell-textarea-label {
             width: 100%;
-            background: transparent;
-            border: none;
+            background: var(--bg-surface);
+            border: 1px solid var(--grid-border);
             color: var(--text-main);
             font-size: 0.82rem;
             font-weight: 700;
@@ -241,12 +266,14 @@
             resize: none;
             overflow: hidden;
             line-height: 1.35;
+            padding: 2px 4px;
+            border-radius: 2px;
         }
 
         .cell-textarea-desc {
             width: 100%;
-            background: transparent;
-            border: none;
+            background: var(--bg-surface);
+            border: 1px solid var(--grid-border);
             color: var(--text-main);
             font-size: 0.82rem;
             font-style: italic;
@@ -254,12 +281,14 @@
             resize: none;
             overflow: hidden;
             line-height: 1.35;
+            padding: 2px 4px;
+            border-radius: 2px;
         }
 
         .cell-textarea-slack {
             width: 100%;
-            background: transparent;
-            border: none;
+            background: var(--bg-surface);
+            border: 1px solid var(--grid-border);
             color: var(--link-blue);
             font-size: 0.82rem;
             font-weight: 700;
@@ -268,58 +297,51 @@
             overflow: hidden;
             line-height: 1.35;
             word-break: break-word;
+            padding: 2px 4px;
+            border-radius: 2px;
         }
 
         .url-input {
             width: 100%;
-            background: transparent;
-            border: none;
+            background: var(--bg-surface);
+            border: 1px solid var(--grid-border);
             color: var(--link-blue) !important;
             font-size: 0.82rem;
             font-weight: 600;
-            text-decoration: underline;
             outline: none;
             resize: none;
             overflow: hidden;
             word-break: break-all;
             line-height: 1.35;
-        }
-
-        .url-input:focus, .cell-textarea-label:focus, .cell-textarea-desc:focus, .cell-textarea-slack:focus {
-            background: rgba(56, 189, 248, 0.15);
+            padding: 2px 4px;
             border-radius: 2px;
         }
 
-        .url-link-icon {
-            color: var(--link-blue);
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            margin-left: 2px;
-            flex-shrink: 0;
-        }
-
-        .url-link-icon:hover {
-            opacity: 0.8;
-        }
-
-        .row-delete-btn {
+        .row-actions-group {
             display: none;
             position: absolute;
             right: 4px;
             top: 4px;
-            background: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-            border: 1px solid #ef4444;
+            gap: 2px;
+            z-index: 5;
+        }
+
+        tr:hover .row-actions-group {
+            display: flex;
+        }
+
+        .action-icon-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--border-color);
             border-radius: 3px;
             padding: 1px 4px;
             font-size: 10px;
             cursor: pointer;
-            z-index: 5;
+            color: #000000;
         }
 
-        tr:hover .row-delete-btn {
-            display: inline-block;
+        .action-icon-btn:hover {
+            background: #ffffff;
         }
 
         /* SLACK CHANNEL TABLE STYLES */
@@ -328,6 +350,21 @@
             color: var(--text-main);
             font-weight: 700;
             text-align: left;
+        }
+
+        .label-text-display {
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .slack-text-display {
+            font-weight: 700;
+            color: var(--link-blue);
+        }
+
+        .desc-text-display {
+            font-style: italic;
+            color: var(--text-main);
         }
 
         @media (max-width: 1280px) {
@@ -483,6 +520,7 @@
         const db = firebase.database();
 
         let hubData = {};
+        let editingRowState = {}; // Tracks which rows are currently being edited
 
         function getDefaultHubData() {
             return {
@@ -558,8 +596,15 @@
         }
 
         function autoResizeTextarea(elem) {
+            if (!elem) return;
             elem.style.height = 'auto';
             elem.style.height = elem.scrollHeight + 'px';
+        }
+
+        function toggleEditRow(sectionKey, idx) {
+            const key = `${sectionKey}-${idx}`;
+            editingRowState[key] = !editingRowState[key];
+            renderAllTables();
         }
 
         function listenToDatabase() {
@@ -594,19 +639,42 @@
             const list = hubData[sectionKey] || [];
 
             list.forEach((item, idx) => {
+                const isEditing = !!editingRowState[`${sectionKey}-${idx}`];
                 const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="width: 40%;">
-                        <textarea class="cell-textarea-label" rows="1" oninput="autoResizeTextarea(this)" onchange="updateItem('${sectionKey}', ${idx}, 'label', this.value)">${item.label || ''}</textarea>
-                    </td>
-                    <td>
-                        <div style="display:flex; align-items:flex-start; justify-content:space-between; width:100%; gap:4px;">
-                            <textarea class="url-input" rows="1" oninput="autoResizeTextarea(this)" onchange="updateItem('${sectionKey}', ${idx}, 'url', this.value)">${item.url || ''}</textarea>
-                            ${item.url ? `<a href="${item.url}" target="_blank" class="url-link-icon" title="Open Link"><i data-lucide="external-link" style="width:12px; height:12px;"></i></a>` : ''}
-                        </div>
-                        <button class="row-delete-btn" onclick="deleteItem('${sectionKey}', ${idx})">🗑️</button>
-                    </td>
-                `;
+
+                if (isEditing) {
+                    tr.innerHTML = `
+                        <td style="width: 40%;">
+                            <textarea class="cell-textarea-label" rows="1" oninput="autoResizeTextarea(this)" onchange="updateItem('${sectionKey}', ${idx}, 'label', this.value)">${item.label || ''}</textarea>
+                        </td>
+                        <td>
+                            <div class="edit-form-container">
+                                <textarea class="url-input" rows="1" oninput="autoResizeTextarea(this)" onchange="updateItem('${sectionKey}', ${idx}, 'url', this.value)">${item.url || ''}</textarea>
+                            </div>
+                            <div class="row-actions-group">
+                                <button class="action-icon-btn" onclick="toggleEditRow('${sectionKey}', ${idx})" title="Done Editing">✓</button>
+                                <button class="action-icon-btn" onclick="deleteItem('${sectionKey}', ${idx})" title="Delete Row">🗑️</button>
+                            </div>
+                        </td>
+                    `;
+                } else {
+                    const displayUrl = item.url || '';
+                    const linkMarkup = displayUrl 
+                        ? `<a href="${displayUrl}" target="_blank" class="clickable-url">${displayUrl} <i data-lucide="external-link" style="width:12px; height:12px; flex-shrink:0;"></i></a>`
+                        : `<span style="color:var(--text-muted); font-style:italic;">No URL</span>`;
+
+                    tr.innerHTML = `
+                        <td style="width: 40%;" class="label-text-display">${item.label || ''}</td>
+                        <td>
+                            <div>${linkMarkup}</div>
+                            <div class="row-actions-group">
+                                <button class="action-icon-btn" onclick="toggleEditRow('${sectionKey}', ${idx})" title="Edit Row">✏️</button>
+                                <button class="action-icon-btn" onclick="deleteItem('${sectionKey}', ${idx})" title="Delete Row">🗑️</button>
+                            </div>
+                        </td>
+                    `;
+                }
+
                 tbody.appendChild(tr);
             });
         }
@@ -617,13 +685,31 @@
             const list = hubData.tasks || [];
 
             list.forEach((item, idx) => {
+                const isEditing = !!editingRowState[`tasks-${idx}`];
                 const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>
-                        <textarea class="cell-textarea-desc" rows="1" oninput="autoResizeTextarea(this)" onchange="updateItem('tasks', ${idx}, 'task', this.value)">${item.task || ''}</textarea>
-                        <button class="row-delete-btn" onclick="deleteItem('tasks', ${idx})">🗑️</button>
-                    </td>
-                `;
+
+                if (isEditing) {
+                    tr.innerHTML = `
+                        <td>
+                            <textarea class="cell-textarea-desc" rows="1" oninput="autoResizeTextarea(this)" onchange="updateItem('tasks', ${idx}, 'task', this.value)">${item.task || ''}</textarea>
+                            <div class="row-actions-group">
+                                <button class="action-icon-btn" onclick="toggleEditRow('tasks', ${idx})" title="Done Editing">✓</button>
+                                <button class="action-icon-btn" onclick="deleteItem('tasks', ${idx})" title="Delete Row">🗑️</button>
+                            </div>
+                        </td>
+                    `;
+                } else {
+                    tr.innerHTML = `
+                        <td class="desc-text-display">
+                            ${item.task || ''}
+                            <div class="row-actions-group">
+                                <button class="action-icon-btn" onclick="toggleEditRow('tasks', ${idx})" title="Edit Task">✏️</button>
+                                <button class="action-icon-btn" onclick="deleteItem('tasks', ${idx})" title="Delete Task">🗑️</button>
+                            </div>
+                        </td>
+                    `;
+                }
+
                 tbody.appendChild(tr);
             });
         }
@@ -634,16 +720,35 @@
             const list = hubData[sectionKey] || [];
 
             list.forEach((item, idx) => {
+                const isEditing = !!editingRowState[`${sectionKey}-${idx}`];
                 const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>
-                        <textarea class="cell-textarea-slack" rows="1" oninput="autoResizeTextarea(this)" onchange="updateItem('${sectionKey}', ${idx}, 'name', this.value)">${item.name || ''}</textarea>
-                    </td>
-                    <td>
-                        <textarea class="cell-textarea-desc" rows="1" oninput="autoResizeTextarea(this)" onchange="updateItem('${sectionKey}', ${idx}, 'desc', this.value)">${item.desc || ''}</textarea>
-                        <button class="row-delete-btn" onclick="deleteItem('${sectionKey}', ${idx})">🗑️</button>
-                    </td>
-                `;
+
+                if (isEditing) {
+                    tr.innerHTML = `
+                        <td>
+                            <textarea class="cell-textarea-slack" rows="1" oninput="autoResizeTextarea(this)" onchange="updateItem('${sectionKey}', ${idx}, 'name', this.value)">${item.name || ''}</textarea>
+                        </td>
+                        <td>
+                            <textarea class="cell-textarea-desc" rows="1" oninput="autoResizeTextarea(this)" onchange="updateItem('${sectionKey}', ${idx}, 'desc', this.value)">${item.desc || ''}</textarea>
+                            <div class="row-actions-group">
+                                <button class="action-icon-btn" onclick="toggleEditRow('${sectionKey}', ${idx})" title="Done Editing">✓</button>
+                                <button class="action-icon-btn" onclick="deleteItem('${sectionKey}', ${idx})" title="Delete Channel">🗑️</button>
+                            </div>
+                        </td>
+                    `;
+                } else {
+                    tr.innerHTML = `
+                        <td class="slack-text-display">${item.name || ''}</td>
+                        <td class="desc-text-display">
+                            ${(item.desc || '').replace(/\n/g, '<br>')}
+                            <div class="row-actions-group">
+                                <button class="action-icon-btn" onclick="toggleEditRow('${sectionKey}', ${idx})" title="Edit Channel">✏️</button>
+                                <button class="action-icon-btn" onclick="deleteItem('${sectionKey}', ${idx})" title="Delete Channel">🗑️</button>
+                            </div>
+                        </td>
+                    `;
+                }
+
                 tbody.appendChild(tr);
             });
         }
@@ -657,7 +762,6 @@
             renderSlackTable('slackMain', 'tbody-slackMain');
             renderSlackTable('slackIbet', 'tbody-slackIbet');
             
-            // Adjust height for all textareas after initial rendering
             document.querySelectorAll('textarea').forEach(ta => autoResizeTextarea(ta));
             lucide.createIcons();
         }
@@ -680,6 +784,8 @@
         function addSectionRow(sectionKey) {
             if (!hubData[sectionKey]) hubData[sectionKey] = [];
 
+            let newIdx = hubData[sectionKey].length;
+
             if (sectionKey === 'tasks') {
                 hubData[sectionKey].push({ task: "New Task Example" });
             } else if (sectionKey === 'slackMain' || sectionKey === 'slackIbet') {
@@ -687,6 +793,9 @@
             } else {
                 hubData[sectionKey].push({ label: "New Reference", url: "https://" });
             }
+
+            // Automatically open edit mode for the newly added row
+            editingRowState[`${sectionKey}-${newIdx}`] = true;
 
             saveToDatabase();
         }
