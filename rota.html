@@ -211,6 +211,7 @@
         .shift-bg-7-16 { background-color: #86efac !important; color: #064e3b !important; }
         .shift-bg-10-19 { background-color: #fed7aa !important; color: #7c2d12 !important; }
         .shift-bg-12-21 { background-color: #bae6fd !important; color: #0c4a6e !important; }
+        .shift-bg-14-23 { background-color: #e9d5ff !important; color: #581c87 !important; }
         .shift-bg-16-1 { background-color: #fca5a5 !important; color: #7f1d1d !important; }
         .shift-bg-7-10-wfh { background-color: #fbcfe8 !important; color: #831843 !important; }
         .shift-bg-7-16-wfh { background-color: #f472b6 !important; color: #831843 !important; }
@@ -222,6 +223,7 @@
         .item-7-16:hover { background-color: #86efac !important; color: #064e3b !important; }
         .item-10-19:hover { background-color: #fed7aa !important; color: #7c2d12 !important; }
         .item-12-21:hover { background-color: #bae6fd !important; color: #0c4a6e !important; }
+        .item-14-23:hover { background-color: #e9d5ff !important; color: #581c87 !important; }
         .item-16-1:hover { background-color: #fca5a5 !important; color: #7f1d1d !important; }
         .item-7-10-wfh:hover { background-color: #fbcfe8 !important; color: #831843 !important; }
         .item-7-16-wfh:hover { background-color: #f472b6 !important; color: #831843 !important; }
@@ -318,9 +320,6 @@
             margin: 1px;
         }
 
-        .warning-text { color: #ef4444; font-weight: bold; }
-        .safe-text { color: #4ade80; font-weight: bold; }
-
         .date-input-cell {
             width: 100%;
             padding: 4px;
@@ -370,8 +369,8 @@
             <input type="number" id="year-input" value="2026" min="2020" max="2035" style="width: 80px;">
         </div>
         <div>
-            <label for="timezone-select">🌐 Timezone: </label>
-            <select id="timezone-select" onchange="changeTimezone(this.value)">
+            <label for="timezone-select">🌐 Global Timezone: </label>
+            <select id="timezone-select" onchange="changeTimezoneGlobal(this.value)">
                 <option value="8" selected>SGT / PHT / HKT (+8)</option>
                 <option value="0">UTC / GMT (+0)</option>
                 <option value="1">CET / CEST (+1)</option>
@@ -380,7 +379,7 @@
         </div>
         <button class="btn btn-secondary" onclick="changeMonth(1)">Next Month ▶</button>
         <div style="margin-left: auto; font-size: 12px; opacity: 0.9;">
-            💾 Schedule & Leaves auto-save instantly!
+            💾 Realtime Synced to Firebase!
         </div>
     </div>
 
@@ -396,13 +395,14 @@
                                 <select class="bulk-select" onchange="bulkSetShift(0, this.value)">
                                     <option value="">-- Set All Month --</option>
                                     <option value="CLEAR">-- Clear Month --</option>
-                                    <option value="7:00 - 16:00" class="opt-7-16">7:00 - 16:00</option>
-                                    <option value="10:00 - 19:00" class="opt-10-19">10:00 - 19:00</option>
-                                    <option value="12:00 - 21:00" class="opt-12-21">12:00 - 21:00</option>
-                                    <option value="16:00 - 1:00" class="opt-16-1">16:00 - 1:00</option>
-                                    <option value="7:00 - 10:00 (WFH)" class="opt-7-10-wfh">7:00 - 10:00 (WFH)</option>
-                                    <option value="7:00 - 16:00 (WFH)" class="opt-7-16-wfh">7:00 - 16:00 (WFH)</option>
-                                    <option value="RD" class="opt-rd">RD</option>
+                                    <option value="7:00 - 16:00">7:00 - 16:00</option>
+                                    <option value="10:00 - 19:00">10:00 - 19:00</option>
+                                    <option value="12:00 - 21:00">12:00 - 21:00</option>
+                                    <option value="14:00 - 23:00">14:00 - 23:00</option>
+                                    <option value="16:00 - 1:00">16:00 - 1:00</option>
+                                    <option value="7:00 - 10:00 (WFH)">7:00 - 10:00 (WFH)</option>
+                                    <option value="7:00 - 16:00 (WFH)">7:00 - 16:00 (WFH)</option>
+                                    <option value="RD">RD</option>
                                 </select>
                             </div>
                         </th>
@@ -412,13 +412,14 @@
                                 <select class="bulk-select" onchange="bulkSetShift(1, this.value)">
                                     <option value="">-- Set All Month --</option>
                                     <option value="CLEAR">-- Clear Month --</option>
-                                    <option value="7:00 - 16:00" class="opt-7-16">7:00 - 16:00</option>
-                                    <option value="10:00 - 19:00" class="opt-10-19">10:00 - 19:00</option>
-                                    <option value="12:00 - 21:00" class="opt-12-21">12:00 - 21:00</option>
-                                    <option value="16:00 - 1:00" class="opt-16-1">16:00 - 1:00</option>
-                                    <option value="7:00 - 10:00 (WFH)" class="opt-7-10-wfh">7:00 - 10:00 (WFH)</option>
-                                    <option value="7:00 - 16:00 (WFH)" class="opt-7-16-wfh">7:00 - 16:00 (WFH)</option>
-                                    <option value="RD" class="opt-rd">RD</option>
+                                    <option value="7:00 - 16:00">7:00 - 16:00</option>
+                                    <option value="10:00 - 19:00">10:00 - 19:00</option>
+                                    <option value="12:00 - 21:00">12:00 - 21:00</option>
+                                    <option value="14:00 - 23:00">14:00 - 23:00</option>
+                                    <option value="16:00 - 1:00">16:00 - 1:00</option>
+                                    <option value="7:00 - 10:00 (WFH)">7:00 - 10:00 (WFH)</option>
+                                    <option value="7:00 - 16:00 (WFH)">7:00 - 16:00 (WFH)</option>
+                                    <option value="RD">RD</option>
                                 </select>
                             </div>
                         </th>
@@ -428,13 +429,14 @@
                                 <select class="bulk-select" onchange="bulkSetShift(2, this.value)">
                                     <option value="">-- Set All Month --</option>
                                     <option value="CLEAR">-- Clear Month --</option>
-                                    <option value="7:00 - 16:00" class="opt-7-16">7:00 - 16:00</option>
-                                    <option value="10:00 - 19:00" class="opt-10-19">10:00 - 19:00</option>
-                                    <option value="12:00 - 21:00" class="opt-12-21">12:00 - 21:00</option>
-                                    <option value="16:00 - 1:00" class="opt-16-1">16:00 - 1:00</option>
-                                    <option value="7:00 - 10:00 (WFH)" class="opt-7-10-wfh">7:00 - 10:00 (WFH)</option>
-                                    <option value="7:00 - 16:00 (WFH)" class="opt-7-16-wfh">7:00 - 16:00 (WFH)</option>
-                                    <option value="RD" class="opt-rd">RD</option>
+                                    <option value="7:00 - 16:00">7:00 - 16:00</option>
+                                    <option value="10:00 - 19:00">10:00 - 19:00</option>
+                                    <option value="12:00 - 21:00">12:00 - 21:00</option>
+                                    <option value="14:00 - 23:00">14:00 - 23:00</option>
+                                    <option value="16:00 - 1:00">16:00 - 1:00</option>
+                                    <option value="7:00 - 10:00 (WFH)">7:00 - 10:00 (WFH)</option>
+                                    <option value="7:00 - 16:00 (WFH)">7:00 - 16:00 (WFH)</option>
+                                    <option value="RD">RD</option>
                                 </select>
                             </div>
                         </th>
@@ -444,18 +446,19 @@
                                 <select class="bulk-select" onchange="bulkSetShift(3, this.value)">
                                     <option value="">-- Set All Month --</option>
                                     <option value="CLEAR">-- Clear Month --</option>
-                                    <option value="7:00 - 16:00" class="opt-7-16">7:00 - 16:00</option>
-                                    <option value="10:00 - 19:00" class="opt-10-19">10:00 - 19:00</option>
-                                    <option value="12:00 - 21:00" class="opt-12-21">12:00 - 21:00</option>
-                                    <option value="16:00 - 1:00" class="opt-16-1">16:00 - 1:00</option>
-                                    <option value="7:00 - 10:00 (WFH)" class="opt-7-10-wfh">7:00 - 10:00 (WFH)</option>
-                                    <option value="7:00 - 16:00 (WFH)" class="opt-7-16-wfh">7:00 - 16:00 (WFH)</option>
-                                    <option value="RD" class="opt-rd">RD</option>
+                                    <option value="7:00 - 16:00">7:00 - 16:00</option>
+                                    <option value="10:00 - 19:00">10:00 - 19:00</option>
+                                    <option value="12:00 - 21:00">12:00 - 21:00</option>
+                                    <option value="14:00 - 23:00">14:00 - 23:00</option>
+                                    <option value="16:00 - 1:00">16:00 - 1:00</option>
+                                    <option value="7:00 - 10:00 (WFH)">7:00 - 10:00 (WFH)</option>
+                                    <option value="7:00 - 16:00 (WFH)">7:00 - 16:00 (WFH)</option>
+                                    <option value="RD">RD</option>
                                 </select>
                             </div>
                         </th>
                         <th style="color: #ffffff;">
-                            Miguel (Custom Input)
+                            Miguel
                         </th>
                     </tr>
                 </thead>
@@ -489,17 +492,15 @@
                 </table>
             </div>
 
-            <!-- AUTOMATED WFH MONITORING TABLE (POSITIONED DIRECTLY BELOW VL/SL DATES) -->
+            <!-- STREAMLINED WFH MONITORING TABLE -->
             <div>
-                <div class="leave-section-title" style="color: #38bdf8;">🏠 WFH Allowance Tracker (Automated)</div>
+                <div class="leave-section-title" style="color: #38bdf8;">🏠 WFH Allowance Tracker</div>
                 <table class="leave-table">
                     <thead>
                         <tr>
                             <th>Team Member</th>
-                            <th>Limit</th>
                             <th>WFH Dates Taken</th>
-                            <th>Total Used</th>
-                            <th>Status</th>
+                            <th style="width: 90px;">Total Used</th>
                         </tr>
                     </thead>
                     <tbody id="wfh-tracker-body"></tbody>
@@ -530,6 +531,7 @@
             { text: "7:00 - 16:00", bgClass: "shift-bg-7-16", itemClass: "item-7-16", start: 7, end: 16 },
             { text: "10:00 - 19:00", bgClass: "shift-bg-10-19", itemClass: "item-10-19", start: 10, end: 19 },
             { text: "12:00 - 21:00", bgClass: "shift-bg-12-21", itemClass: "item-12-21", start: 12, end: 21 },
+            { text: "14:00 - 23:00", bgClass: "shift-bg-14-23", itemClass: "item-14-23", start: 14, end: 23 },
             { text: "16:00 - 1:00", bgClass: "shift-bg-16-1", itemClass: "item-16-1", start: 16, end: 1 },
             { text: "7:00 - 10:00 (WFH)", bgClass: "shift-bg-7-10-wfh", itemClass: "item-7-10-wfh", start: 7, end: 10 },
             { text: "7:00 - 16:00 (WFH)", bgClass: "shift-bg-7-16-wfh", itemClass: "item-7-16-wfh", start: 7, end: 16 },
@@ -552,7 +554,8 @@
         const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thurs", "Fri", "Sat"];
 
         let vlChartInstance = null;
-        let userTzOffset = parseInt(localStorage.getItem('user_tz_offset') || '8');
+        let globalTzOffset = 8;
+        let rotaData = {};
 
         function setupPresenceSystem() {
             const presenceRef = db.ref('rota_active_sessions');
@@ -579,8 +582,31 @@
             });
         }
 
-        function getStorageKey() {
-            return `schedule_${yearInput.value}_${monthSelect.value}`;
+        function listenToDatabase() {
+            const monthKey = `${yearInput.value}_${parseInt(monthSelect.value) + 1}`;
+            
+            db.ref(`rota_data/${monthKey}`).on('value', (snapshot) => {
+                rotaData = snapshot.val() || {};
+                renderCalendar();
+            });
+
+            db.ref('rota_global_timezone').on('value', (snapshot) => {
+                if (snapshot.val() !== null) {
+                    globalTzOffset = parseInt(snapshot.val());
+                    timezoneSelect.value = globalTzOffset.toString();
+                    renderCalendar();
+                }
+            });
+        }
+
+        function saveRotaToDatabase() {
+            const monthKey = `${yearInput.value}_${parseInt(monthSelect.value) + 1}`;
+            db.ref(`rota_data/${monthKey}`).set(rotaData);
+        }
+
+        function changeTimezoneGlobal(val) {
+            globalTzOffset = parseInt(val);
+            db.ref('rota_global_timezone').set(globalTzOffset);
         }
 
         function getLeaveDatesStorageKey() {
@@ -610,13 +636,7 @@
 
             monthSelect.value = currentMonth;
             yearInput.value = currentYear;
-            renderCalendar();
-        }
-
-        function changeTimezone(val) {
-            userTzOffset = parseInt(val);
-            localStorage.setItem('user_tz_offset', userTzOffset);
-            renderCalendar();
+            listenToDatabase();
         }
 
         function formatShiftForTimezone(shiftText) {
@@ -625,7 +645,7 @@
             const baseShift = shiftList.find(s => s.text === shiftText);
             if (!baseShift || baseShift.start === null) return shiftText;
 
-            const diff = userTzOffset - 8;
+            const diff = globalTzOffset - 8;
             let newStart = (baseShift.start + diff + 24) % 24;
             let newEnd = (baseShift.end + diff + 24) % 24;
 
@@ -644,11 +664,6 @@
 
             const totalDays = new Date(selectedYear, selectedMonth + 1, 0).getDate();
             const monthLabel = monthSelect.options[selectedMonth].text.substring(0, 3);
-
-            let savedMonthData = {};
-            try {
-                savedMonthData = JSON.parse(localStorage.getItem(getStorageKey())) || {};
-            } catch(e) { savedMonthData = {}; }
 
             for (let d = 1; d <= totalDays; d++) {
                 const dateObj = new Date(selectedYear, selectedMonth, d);
@@ -669,10 +684,7 @@
                 team.forEach((member, memberIdx) => {
                     const tdShift = document.createElement('td');
                     
-                    let activeShift = "";
-                    if (savedMonthData[d] && savedMonthData[d][memberIdx] !== undefined) {
-                        activeShift = savedMonthData[d][memberIdx];
-                    }
+                    let activeShift = (rotaData[d] && rotaData[d][memberIdx] !== undefined) ? rotaData[d][memberIdx] : "";
 
                     if (member === "Miguel") {
                         const input = document.createElement('input');
@@ -682,15 +694,9 @@
                         input.placeholder = "e.g. 8:00 - 17:00";
 
                         input.addEventListener('change', () => {
-                            let currentMonthData = {};
-                            try {
-                                currentMonthData = JSON.parse(localStorage.getItem(getStorageKey())) || {};
-                            } catch(e) { currentMonthData = {}; }
-
-                            if (!currentMonthData[d]) currentMonthData[d] = Array(team.length).fill("");
-                            currentMonthData[d][memberIdx] = input.value;
-
-                            localStorage.setItem(getStorageKey(), JSON.stringify(currentMonthData));
+                            if (!rotaData[d]) rotaData[d] = Array(team.length).fill("");
+                            rotaData[d][memberIdx] = input.value;
+                            saveRotaToDatabase();
                         });
 
                         tdShift.appendChild(input);
@@ -721,15 +727,10 @@
                                 btn.className = `custom-dropdown-btn ${s.bgClass}`;
                                 menu.classList.remove('show');
 
-                                let currentMonthData = {};
-                                try {
-                                    currentMonthData = JSON.parse(localStorage.getItem(getStorageKey())) || {};
-                                } catch(e) { currentMonthData = {}; }
+                                if (!rotaData[d]) rotaData[d] = Array(team.length).fill("");
+                                rotaData[d][memberIdx] = s.text;
 
-                                if (!currentMonthData[d]) currentMonthData[d] = Array(team.length).fill("");
-                                currentMonthData[d][memberIdx] = s.text;
-
-                                localStorage.setItem(getStorageKey(), JSON.stringify(currentMonthData));
+                                saveRotaToDatabase();
                                 syncLeavesFromSchedule();
                             });
 
@@ -764,19 +765,14 @@
             const selectedYear = parseInt(yearInput.value);
             const totalDays = new Date(selectedYear, selectedMonth + 1, 0).getDate();
 
-            let currentMonthData = {};
-            try {
-                currentMonthData = JSON.parse(localStorage.getItem(getStorageKey())) || {};
-            } catch(e) { currentMonthData = {}; }
-
             let applyValue = (shiftValue === 'CLEAR') ? '' : shiftValue;
 
             for (let d = 1; d <= totalDays; d++) {
-                if (!currentMonthData[d]) currentMonthData[d] = Array(team.length).fill("");
-                currentMonthData[d][memberIdx] = applyValue;
+                if (!rotaData[d]) rotaData[d] = Array(team.length).fill("");
+                rotaData[d][memberIdx] = applyValue;
             }
 
-            localStorage.setItem(getStorageKey(), JSON.stringify(currentMonthData));
+            saveRotaToDatabase();
             renderCalendar();
         }
 
@@ -784,31 +780,22 @@
             let leaveMatrix = {};
             leaveTrackedTeam.forEach(m => leaveMatrix[m] = { vl: [], sl: [] });
 
-            for (let i = 0; i < localStorage.length; i++) {
-                let key = localStorage.key(i);
-                if (key.startsWith("schedule_")) {
-                    let parts = key.split('_');
-                    let monthIdx = parseInt(parts[2]);
-                    let monthLabel = monthSelect.options[monthIdx] ? monthSelect.options[monthIdx].text.substring(0, 3) : '';
+            const selectedMonth = parseInt(monthSelect.value);
+            const monthLabel = monthSelect.options[selectedMonth].text.substring(0, 3);
 
-                    try {
-                        let monthData = JSON.parse(localStorage.getItem(key)) || {};
-                        Object.keys(monthData).forEach(day => {
-                            let row = monthData[day];
-                            team.forEach((member, memberIdx) => {
-                                if (member === "Miguel") return;
+            Object.keys(rotaData).forEach(day => {
+                let row = rotaData[day];
+                team.forEach((member, memberIdx) => {
+                    if (member === "Miguel") return;
 
-                                let shiftVal = row[memberIdx];
-                                if (shiftVal === 'VL') {
-                                    leaveMatrix[member].vl.push(`${day}-${monthLabel}`);
-                                } else if (shiftVal === 'SL') {
-                                    leaveMatrix[member].sl.push(`${day}-${monthLabel}`);
-                                }
-                            });
-                        });
-                    } catch(e){}
-                }
-            }
+                    let shiftVal = row[memberIdx];
+                    if (shiftVal === 'VL') {
+                        leaveMatrix[member].vl.push(`${day}-${monthLabel}`);
+                    } else if (shiftVal === 'SL') {
+                        leaveMatrix[member].sl.push(`${day}-${monthLabel}`);
+                    }
+                });
+            });
 
             leaveTrackedTeam.forEach(m => {
                 while (leaveMatrix[m].vl.length < 10) leaveMatrix[m].vl.push('');
@@ -880,52 +867,29 @@
             const selectedYear = parseInt(yearInput.value);
             const totalDays = new Date(selectedYear, selectedMonth + 1, 0).getDate();
             const monthLabel = monthSelect.options[selectedMonth].text.substring(0, 3);
-            const maxMonthlyWFH = Math.ceil(totalDays / 7);
-
-            let savedMonthData = {};
-            try {
-                savedMonthData = JSON.parse(localStorage.getItem(getStorageKey())) || {};
-            } catch(e) { savedMonthData = {}; }
 
             leaveTrackedTeam.forEach((member) => {
                 const memberIdx = team.indexOf(member);
                 let wfhDates = [];
-                let weeklyCounts = {};
 
                 for (let d = 1; d <= totalDays; d++) {
-                    const shiftVal = (savedMonthData[d] && savedMonthData[d][memberIdx]) ? savedMonthData[d][memberIdx] : '';
+                    const shiftVal = (rotaData[d] && rotaData[d][memberIdx]) ? rotaData[d][memberIdx] : '';
                     if (shiftVal.includes('WFH')) {
                         wfhDates.push(`${d}-${monthLabel}`);
-
-                        const firstDayOfMonth = new Date(selectedYear, selectedMonth, 1);
-                        const weekNum = Math.ceil((d + firstDayOfMonth.getDay()) / 7);
-                        weeklyCounts[weekNum] = (weeklyCounts[weekNum] || 0) + 1;
                     }
                 }
 
                 const usedWFH = wfhDates.length;
-                const hasWeeklyViolation = Object.values(weeklyCounts).some(count => count > 1);
 
                 let wfhBadges = wfhDates.length > 0 
                     ? wfhDates.map(dStr => `<span class="badge-wfh">${dStr}</span>`).join(' ')
                     : '<span style="opacity: 0.6;">None</span>';
 
-                let statusHTML = '';
-                if (hasWeeklyViolation) {
-                    statusHTML = `<span class="warning-text">⚠️ Exceeded (>1/wk)</span>`;
-                } else if (usedWFH > maxMonthlyWFH) {
-                    statusHTML = `<span class="warning-text">⚠️ Limit Exceeded</span>`;
-                } else {
-                    statusHTML = `<span class="safe-text">✓ OK</span>`;
-                }
-
                 let tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td style="font-weight:bold;">${member}</td>
-                    <td>${maxMonthlyWFH}/mo</td>
                     <td>${wfhBadges}</td>
-                    <td><strong>${usedWFH}</strong></td>
-                    <td>${statusHTML}</td>
+                    <td><strong>${usedWFH} WFH</strong></td>
                 `;
                 wfhTrackerBody.appendChild(tr);
             });
@@ -1004,8 +968,13 @@
             });
         }
 
-        monthSelect.addEventListener('change', renderCalendar);
-        yearInput.addEventListener('input', renderCalendar);
+        monthSelect.addEventListener('change', () => {
+            listenToDatabase();
+        });
+
+        yearInput.addEventListener('input', () => {
+            listenToDatabase();
+        });
 
         window.addEventListener('click', () => {
             document.querySelectorAll('.custom-dropdown-menu').forEach(m => m.classList.remove('show'));
@@ -1015,9 +984,8 @@
             if (localStorage.getItem('rota_theme') === 'light') {
                 document.body.setAttribute('data-theme', 'light');
             }
-            timezoneSelect.value = userTzOffset.toString();
             setupPresenceSystem();
-            renderCalendar();
+            listenToDatabase();
             renderVLPieChart();
         };
     </script>
