@@ -246,18 +246,43 @@
         .item-sl:hover { background-color: #c084fc !important; color: #3b0764 !important; }
         .item-adjusted:hover { background-color: #facc15 !important; color: #000000 !important; }
 
-        /* Editable Input Cell Style for Custom Shift/Adjusted */
-        .custom-editable-input {
+        /* Adjusted Hybrid Input Container */
+        .adjusted-input-wrapper {
+            display: flex;
+            align-items: center;
+            background: #facc15;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
             width: 100%;
-            padding: 5px;
+        }
+
+        .custom-editable-input {
+            width: calc(100% - 20px);
+            padding: 4px;
             font-size: 11px;
             font-weight: bold;
             text-align: center;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            background: #facc15;
+            border: none;
+            background: transparent;
             color: #000000;
             outline: none;
+        }
+
+        .adjusted-dropdown-trigger {
+            width: 20px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 9px;
+            color: #000000;
+            background: rgba(0,0,0,0.08);
+            border-left: 1px solid rgba(0,0,0,0.15);
+        }
+        .adjusted-dropdown-trigger:hover {
+            background: rgba(0,0,0,0.18);
         }
 
         .miguel-editable-cell {
@@ -583,7 +608,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // PASSWORD SECURITY KEY (Change password here if needed)
         const ADMIN_SECRET_KEY = "sportsbook2026";
         let isViewOnlyMode = true;
 
@@ -623,7 +647,6 @@
         let rotaData = {};
         let leaveMatrixData = {};
 
-        // PASSWORD PROTECTION & VIEW ONLY SYSTEM
         function checkPermissions() {
             const storedKey = localStorage.getItem('sb_admin_key');
             const urlParams = new URLSearchParams(window.location.search);
@@ -819,6 +842,7 @@
                     
                     let activeShift = (rotaData[d] && rotaData[d][memberIdx] !== undefined) ? rotaData[d][memberIdx] : "";
 
+                    // Miguel Editable Input
                     if (member === "Miguel") {
                         const input = document.createElement('input');
                         input.type = 'text';
@@ -835,8 +859,13 @@
 
                         tdShift.appendChild(input);
                     } 
+                    // Adjusted Shift: Hybrid Editable Text Input with Revert Dropdown Trigger
                     else if (activeShift.startsWith("Adjusted:") || activeShift === "Adjusted") {
                         const customVal = activeShift.replace("Adjusted:", "").trim();
+
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'adjusted-input-wrapper';
+
                         const input = document.createElement('input');
                         input.type = 'text';
                         input.className = 'custom-editable-input';
@@ -849,8 +878,26 @@
                             saveRotaToDatabase();
                         });
 
-                        tdShift.appendChild(input);
+                        // Revert Arrow to Switch Back to Standard Shift Menu
+                        const dropdownTrigger = document.createElement('div');
+                        dropdownTrigger.className = 'adjusted-dropdown-trigger';
+                        dropdownTrigger.title = 'Switch back to standard shift menu';
+                        dropdownTrigger.innerHTML = '▼';
+
+                        dropdownTrigger.addEventListener('click', (e) => {
+                            if (isViewOnlyMode) return;
+                            e.stopPropagation();
+                            if (!rotaData[d]) rotaData[d] = Array(team.length).fill("");
+                            rotaData[d][memberIdx] = "7:00 - 16:00"; // Reset to default standard shift
+                            saveRotaToDatabase();
+                            renderCalendar();
+                        });
+
+                        wrapper.appendChild(input);
+                        wrapper.appendChild(dropdownTrigger);
+                        tdShift.appendChild(wrapper);
                     }
+                    // Standard Shift Dropdown
                     else {
                         const activeInfo = getShiftInfo(activeShift);
                         const convertedText = formatShiftForTimezone(activeShift);
