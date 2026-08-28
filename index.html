@@ -21,6 +21,7 @@
             --accent-btn: #edf2f7;
             --accent-btn-text: #4a5568;
             --reminder-color: #0d233a;
+            --reminder-bg: #e2e8f0;
         }
 
         [data-theme="dark"] {
@@ -34,6 +35,7 @@
             --accent-btn: #374151;
             --accent-btn-text: #f3f4f6;
             --reminder-color: #facc15;
+            --reminder-bg: #374151;
         }
 
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
@@ -104,27 +106,59 @@
         }
         
         .day-section { background: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin-bottom: 30px; position: relative; }
-        .day-title-area { font-size: 18px; font-weight: bold; color: var(--header-text); margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
         
-        .date-picker-wrapper { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+        .day-title-area { 
+            font-size: 18px; 
+            font-weight: bold; 
+            color: var(--header-text); 
+            margin-bottom: 15px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid var(--border-color); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .day-title-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .date-picker-wrapper { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; }
         .date-picker-input { border: none; font-size: 18px; font-weight: bold; color: var(--header-text); width: 160px; outline: none; border-bottom: 1px dashed var(--border-color); background: transparent; cursor: pointer; }
 
-        /* Meeting Reminders Editable Input Box */
+        /* Meeting Reminders Box Container & Input Styling */
+        .meeting-reminder-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background-color: var(--reminder-bg);
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            min-width: 320px;
+            flex: 1;
+            max-width: 500px;
+        }
+
         .meeting-reminder-input {
-            border: 1px dashed var(--border-color);
+            border: none;
             background: transparent;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 800;
             color: var(--reminder-color);
-            padding: 4px 10px;
-            border-radius: 4px;
             outline: none;
-            width: 320px;
-            transition: border-color 0.2s, color 0.3s;
+            width: 100%;
         }
-        .meeting-reminder-input:focus {
-            border-color: #38bdf8;
-            box-shadow: 0 0 4px rgba(56, 189, 248, 0.4);
+        .meeting-reminder-input::placeholder {
+            color: var(--credit-text);
+            font-weight: 600;
+            opacity: 0.7;
         }
 
         .schedule-table { width: 100%; border-collapse: separate; border-spacing: 4px; table-layout: fixed; border: 2px solid var(--table-border); }
@@ -195,7 +229,8 @@
             td, th { border: 1px solid #000 !important; }
             .day-section { box-shadow: none; padding: 0; margin-bottom: 20px; page-break-after: always; border: none !important; }
             .task-card.off-duty-active { background-color: #9ca3af !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .meeting-reminder-input { border: none !important; color: black !important; }
+            .meeting-reminder-wrapper { border: none !important; background: transparent !important; }
+            .meeting-reminder-input { color: black !important; }
         }
     </style>
 </head>
@@ -562,13 +597,16 @@
                 
                 let titleHTML = `
                     <div class="day-title-area">
-                        <div style="display:flex; align-items:center; gap:15px; flex-wrap:wrap;">
+                        <div class="day-title-left">
                             <span class="date-picker-wrapper">
                                 📅 
                                 <input type="date" class="date-picker-input" value="${dayData.isoDate || ''}" onchange="updateDayDate('${dayKey}', this.value)">
                                 SHIFT
                             </span>
-                            <input type="text" class="meeting-reminder-input" placeholder="📌 Meeting Reminders..." value="${dayData.reminder || ''}" onchange="updateReminderText('${dayKey}', this.value)">
+                            <div class="meeting-reminder-wrapper">
+                                <span>📌</span>
+                                <input type="text" class="meeting-reminder-input" placeholder="Meeting Reminders / Notes..." value="${dayData.reminder || ''}" onchange="updateReminderText('${dayKey}', this.value)">
+                            </div>
                         </div>
                         <div class="no-print" style="display:flex; gap:10px; align-items:center;">
                             <button class="btn btn-secondary" onclick="clearDayDuties('${dayKey}')" style="padding:4px 8px; font-size:11px;">🧹 Clear Day</button>
