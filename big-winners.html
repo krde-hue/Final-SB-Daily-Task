@@ -130,8 +130,8 @@
             align-items: center;
             gap: 0.5rem;
             background: var(--bg-surface);
-            border: 1px solid var(--accent-color);
-            padding: 0.35rem 0.75rem;
+            border: 1px solid var(--border-color);
+            padding: 0.4rem 0.75rem;
             border-radius: 0.375rem;
         }
 
@@ -503,13 +503,13 @@
                 <span id="save-status">✓ Live Synced</span>
             </div>
 
-            <!-- HISTORICAL DATE ARCHIVE SELECTOR -->
+            <!-- HISTORICAL DATE ARCHIVE SELECTOR (REPLACES RESET BUTTON) -->
             <div class="history-selector-wrapper">
                 <label for="history-date-picker">
-                    <i data-lucide="calendar" style="width: 15px; height: 15px;"></i> Archive View:
+                    <i data-lucide="history" style="width: 15px; height: 15px;"></i> History:
                 </label>
                 <select id="history-date-picker" class="history-select" onchange="changeHistoricalDate(this.value)">
-                    <option value="ALL" selected>View All History</option>
+                    <option value="ALL" selected>All History</option>
                     <option value="2026-09-01">September 1, 2026</option>
                     <option value="2026-08-31">August 31, 2026</option>
                     <option value="2026-08-30">August 30, 2026</option>
@@ -695,7 +695,6 @@
 
             if (player.records) {
                 player.records.forEach(rec => {
-                    // Filter calculation if a specific date archive is selected
                     if (selectedHistoricalDate !== 'ALL' && rec.date !== selectedHistoricalDate) return;
 
                     const val = parseFloat(rec.amount) || 0;
@@ -786,7 +785,6 @@
                 let recordsHtml = '';
                 if (player.records) {
                     player.records.forEach((rec, rIndex) => {
-                        // Filter records inside subtable when a specific archive date is selected
                         if (selectedHistoricalDate !== 'ALL' && rec.date !== selectedHistoricalDate) return;
 
                         const amt = parseFloat(rec.amount) || 0;
