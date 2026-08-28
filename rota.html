@@ -73,6 +73,7 @@
         .btn-back { background-color: var(--accent-btn); color: var(--accent-btn-text); }
         .btn-secondary { background-color: rgba(255, 255, 255, 0.2); color: var(--text-color); border: 1px solid var(--border-color); }
         .btn-warning { background-color: #eab308; color: #000000; }
+        .btn-success { background-color: #22c55e; color: #ffffff; }
 
         .viewer-badge {
             background-color: rgba(255, 255, 255, 0.15);
@@ -368,7 +369,7 @@
 
     <!-- VIEW ONLY WARNING BANNER -->
     <div id="viewOnlyBanner" class="view-only-banner">
-        🔒 View-Only Mode Active: Editing and navigation actions are disabled for shared viewers.
+        🔒 View-Only Mode Active: Schedule edits are restricted. Click "🔓 Admin Login" to enter password and enable editing.
     </div>
 
     <div class="header-top">
@@ -379,7 +380,8 @@
                 👁️ <span id="activeViewersCount">1</span>
             </span>
             <button class="btn btn-secondary" onclick="toggleDarkMode()">🌓 Mode</button>
-            <button class="btn btn-warning" onclick="copyViewOnlyLink()" title="Generate View-Only Link">🔗 Share View-Only</button>
+            <button class="btn btn-warning" onclick="copyViewOnlyLink()">🔗 Share View-Only Link</button>
+            <button class="btn btn-success" id="btnAdminUnlock" onclick="promptAdminUnlock()">🔓 Admin Login</button>
             <a id="btnBackToDuties" href="index.html" class="btn btn-back">🔙 Back to Daily Duties</a>
         </div>
     </div>
@@ -581,6 +583,10 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // PASSWORD SECURITY KEY (Change password here if needed)
+        const ADMIN_SECRET_KEY = "sportsbook2026";
+        let isViewOnlyMode = true;
+
         const team = ["Ann", "Dave", "Kenneth", "Kriztel", "Miguel"];
         const leaveTrackedTeam = ["Ann", "Dave", "Kenneth", "Kriztel"];
 
@@ -616,23 +622,48 @@
         let globalTzOffset = 8;
         let rotaData = {};
         let leaveMatrixData = {};
-        let isViewOnlyMode = false;
 
-        // View-Only URL parameter check
-        function checkViewOnlyMode() {
+        // PASSWORD PROTECTION & VIEW ONLY SYSTEM
+        function checkPermissions() {
+            const storedKey = localStorage.getItem('sb_admin_key');
             const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('viewonly') === 'true') {
+
+            if (storedKey === ADMIN_SECRET_KEY && urlParams.get('mode') !== 'view') {
+                isViewOnlyMode = false;
+                document.getElementById('viewOnlyBanner').style.display = 'none';
+                document.getElementById('btnBackToDuties').style.display = 'inline-flex';
+                document.getElementById('btnAdminUnlock').innerText = '🔒 Lock View-Only';
+                document.querySelectorAll('.bulk-select').forEach(el => el.disabled = false);
+            } else {
                 isViewOnlyMode = true;
                 document.getElementById('viewOnlyBanner').style.display = 'block';
                 document.getElementById('btnBackToDuties').style.display = 'none';
                 document.querySelectorAll('.bulk-select').forEach(el => el.disabled = true);
+                document.getElementById('btnAdminUnlock').innerText = '🔓 Admin Login';
+            }
+        }
+
+        function promptAdminUnlock() {
+            if (!isViewOnlyMode) {
+                localStorage.removeItem('sb_admin_key');
+                window.location.href = window.location.pathname + "?mode=view";
+                return;
+            }
+
+            const pass = prompt("Enter Admin Password to enable editing:");
+            if (pass === ADMIN_SECRET_KEY) {
+                localStorage.setItem('sb_admin_key', ADMIN_SECRET_KEY);
+                alert("✓ Admin access granted! Reloading editor...");
+                window.location.href = window.location.pathname;
+            } else if (pass !== null) {
+                alert("❌ Incorrect Admin Password. You remain in View-Only Mode.");
             }
         }
 
         function copyViewOnlyLink() {
-            const viewOnlyUrl = `${window.location.origin}${window.location.pathname}?viewonly=true`;
+            const viewOnlyUrl = `${window.location.origin}${window.location.pathname}?mode=view`;
             navigator.clipboard.writeText(viewOnlyUrl).then(() => {
-                alert("✓ View-Only Rota Link copied to clipboard!\nShare this link to restrict edits and hide navigation buttons.");
+                alert("✓ View-Only Link copied to clipboard!\n\nViewers opening this link cannot edit the schedule unless they enter the Admin Password.");
             });
         }
 
@@ -730,7 +761,6 @@
         function formatShiftForTimezone(shiftText) {
             if (!shiftText || ["RD", "VL", "SL", "Adjusted"].includes(shiftText)) return shiftText;
 
-            // Handle Miguel/Custom time format e.g. "8:00 - 17:00"
             if (shiftText.includes("-") && !shiftList.some(s => s.text === shiftText)) {
                 const parts = shiftText.split("-").map(p => p.trim());
                 if (parts.length === 2 && parts[0].includes(":") && parts[1].includes(":")) {
@@ -789,7 +819,6 @@
                     
                     let activeShift = (rotaData[d] && rotaData[d][memberIdx] !== undefined) ? rotaData[d][memberIdx] : "";
 
-                    // Miguel: Free Editable Cell
                     if (member === "Miguel") {
                         const input = document.createElement('input');
                         input.type = 'text';
@@ -806,7 +835,6 @@
 
                         tdShift.appendChild(input);
                     } 
-                    // Adjusted Option Editable Cell
                     else if (activeShift.startsWith("Adjusted:") || activeShift === "Adjusted") {
                         const customVal = activeShift.replace("Adjusted:", "").trim();
                         const input = document.createElement('input');
@@ -823,7 +851,6 @@
 
                         tdShift.appendChild(input);
                     }
-                    // Standard Color Dropdown
                     else {
                         const activeInfo = getShiftInfo(activeShift);
                         const convertedText = formatShiftForTimezone(activeShift);
@@ -1098,7 +1125,7 @@
         });
 
         window.onload = function() {
-            checkViewOnlyMode();
+            checkPermissions();
             if (localStorage.getItem('rota_theme') === 'light') {
                 document.body.setAttribute('data-theme', 'light');
             }
