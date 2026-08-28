@@ -174,11 +174,10 @@
             color: var(--accent-color);
         }
 
-        .btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            border-color: var(--border-color) !important;
-            color: var(--text-muted) !important;
+        .btn-action {
+            background: var(--bg-surface);
+            color: var(--text-main);
+            border: 1px solid var(--accent-color);
         }
 
         .btn-primary {
@@ -510,10 +509,10 @@
             </div>
 
             <!-- UNDO / REDO BUTTONS -->
-            <button class="btn" id="btn-undo" onclick="undo()" disabled title="Undo last action (Ctrl+Z)">
+            <button class="btn btn-action" id="btn-undo" onclick="undo()" title="Undo last change (Ctrl+Z)">
                 <i data-lucide="undo-2" style="width: 15px; height: 15px;"></i> Undo
             </button>
-            <button class="btn" id="btn-redo" onclick="redo()" disabled title="Redo action (Ctrl+Y)">
+            <button class="btn btn-action" id="btn-redo" onclick="redo()" title="Redo change (Ctrl+Y)">
                 <i data-lucide="redo-2" style="width: 15px; height: 15px;"></i> Redo
             </button>
 
@@ -609,7 +608,7 @@
         let selectedHistoricalDate = 'ALL';
         const availableBrands = ["qbet", "ibet", "30bet", "55bet", "7abet", "bvbet", "pubs"];
 
-        // UNDO / REDO SYSTEM (10 STATES LIMIT)
+        // UNDO / REDO HISTORY BUFFER (UP TO 10 STEPS)
         let undoStack = [];
         let redoStack = [];
         const MAX_HISTORY = 10;
@@ -621,15 +620,15 @@
             if (undoStack.length > 0 && undoStack[undoStack.length - 1] === currentState) return;
 
             undoStack.push(currentState);
-            if (undoStack.length > MAX_HISTORY) {
-                undoStack.shift();
-            }
-            redoStack = []; // Clear redo stack on new action
-            updateUndoRedoUI();
+            if (undoStack.length > MAX_HISTORY) undoStack.shift();
+            redoStack = [];
         }
 
         function undo() {
-            if (undoStack.length === 0) return;
+            if (undoStack.length === 0) {
+                alert("No earlier changes to undo.");
+                return;
+            }
             isUndoRedoAction = true;
 
             const currentState = JSON.stringify(playersData);
@@ -641,12 +640,14 @@
 
             saveToDatabase();
             renderTable();
-            updateUndoRedoUI();
             isUndoRedoAction = false;
         }
 
         function redo() {
-            if (redoStack.length === 0) return;
+            if (redoStack.length === 0) {
+                alert("No changes to redo.");
+                return;
+            }
             isUndoRedoAction = true;
 
             const currentState = JSON.stringify(playersData);
@@ -658,15 +659,7 @@
 
             saveToDatabase();
             renderTable();
-            updateUndoRedoUI();
             isUndoRedoAction = false;
-        }
-
-        function updateUndoRedoUI() {
-            const btnUndo = document.getElementById('btn-undo');
-            const btnRedo = document.getElementById('btn-redo');
-            if (btnUndo) btnUndo.disabled = undoStack.length === 0;
-            if (btnRedo) btnRedo.disabled = redoStack.length === 0;
         }
 
         function generate747Players() {
