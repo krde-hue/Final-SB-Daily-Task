@@ -68,17 +68,17 @@
         .btn-secondary:hover { opacity: 0.85; }
 
         .section-card { background: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin-bottom: 25px; }
-        .section-title { font-size: 16px; font-weight: bold; color: var(--header-text); margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .section-title { font-size: 16px; font-weight: bold; color: var(--header-text); margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid var(--border-color); display: flex; justify-content: space-between; align-align: center; }
 
         .table-responsive { width: 100%; overflow-x: auto; }
         .rota-table { width: 100%; border-collapse: collapse; font-size: 12px; }
         .rota-table th, .rota-table td { border: 1px solid var(--table-border); padding: 6px 4px; text-align: center; }
         .rota-table th { background: var(--card-bg); color: var(--header-text); font-weight: 700; }
 
-        /* SHIFT SELECTOR & DROPDOWN MENU COLOR STYLING */
+        /* SHIFT SELECTOR STYLING & DYNAMIC HOVER HIGHLIGHTS */
         .shift-select {
             width: 100%;
-            padding: 4px 1px;
+            padding: 5px 2px;
             font-size: 11px;
             font-weight: 700;
             border: 1px solid var(--border-color);
@@ -86,20 +86,29 @@
             outline: none;
             cursor: pointer;
             text-align: center;
+            transition: all 0.2s ease-in-out;
         }
 
-        /* Color styling for each menu item when the dropdown opens */
-        .opt-7-16 { background-color: #1d4ed8 !important; color: #ffffff !important; }
-        .opt-9-18 { background-color: #422006 !important; color: #fde047 !important; }
-        .opt-10-19 { background-color: #713f12 !important; color: #fde047 !important; }
-        .opt-12-21 { background-color: #854d0e !important; color: #fde047 !important; }
-        .opt-16-1 { background-color: #7c2d12 !important; color: #f97316 !important; }
-        .opt-wfh { background-color: #075985 !important; color: #38bdf8 !important; }
-        .opt-rd { background-color: #374151 !important; color: #9ca3af !important; }
-        .opt-vl { background-color: #14532d !important; color: #4ade80 !important; }
-        .opt-sl { background-color: #7f1d1d !important; color: #f87171 !important; }
+        /* Hover Glow Effects per Shift */
+        .shift-select:hover, td.shift-cell-hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+            z-index: 10;
+            position: relative;
+        }
 
-        /* Shift Cell Background Colors */
+        /* Dynamic Options Color Coding */
+        option[value="shift-7-16"] { background-color: #ffffff; color: #000; }
+        option[value="shift-9-18"] { background-color: #fefce8; color: #000; }
+        option[value="shift-10-19"] { background-color: #fef9c3; color: #000; }
+        option[value="shift-12-21"] { background-color: #fef08a; color: #000; }
+        option[value="shift-16-1"] { background-color: #ffedd5; color: #000; }
+        option[value="shift-9-18-wfh"], option[value="shift-7-16-wfh"], option[value="shift-12-21-wfh"], option[value="shift-16-1-wfh"] { background-color: #e0f2fe; color: #000; }
+        option[value="shift-rd"] { background-color: #e5e7eb; color: #000; }
+        option[value="shift-vl"] { background-color: #dcfce7; color: #14532d; }
+        option[value="shift-sl"] { background-color: #fee2e2; color: #7f1d1d; }
+
+        /* Shift Colors Applied via Classes */
         .color-shift-7-16 { background-color: var(--shift-7-16) !important; color: var(--text-color); }
         .color-shift-9-18 { background-color: var(--shift-9-18) !important; color: var(--text-color); }
         .color-shift-10-19 { background-color: var(--shift-10-19) !important; color: var(--text-color); }
@@ -110,7 +119,7 @@
         .color-shift-vl { background-color: var(--shift-vl) !important; color: #14532d; font-weight: bold; }
         .color-shift-sl { background-color: var(--shift-sl) !important; color: #7f1d1d; font-weight: bold; }
 
-        .leave-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 10px; text-transform: uppercase; margin: 1px; }
+        .leave-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 10px; text-transform: uppercase; }
         .badge-vl { background-color: #dcfce7; color: #15803d; }
         .badge-sl { background-color: #fee2e2; color: #b91c1c; }
         .badge-wfh { background-color: #e0f2fe; color: #0369a1; }
@@ -140,7 +149,7 @@
     <!-- CALENDAR SHIFT ROTA SECTION -->
     <div class="section-card">
         <div class="section-title">
-            <span>📅 Monthly Schedule Rota</span>
+            <span>📅 Monthly Schedule Rota (Hover shift to highlight color)</span>
             <div>
                 <input type="month" id="monthPicker" style="padding:4px 8px; font-weight:bold; border-radius:4px; border:1px solid var(--border-color);" onchange="changeMonthYear(this.value)">
             </div>
@@ -153,24 +162,22 @@
         </div>
     </div>
 
-    <!-- SL / VL LEAVE MONITORING TABLE -->
+    <!-- SL / VL LEAVE MONITORING TABLE (MIGUEL EXCLUDED) -->
     <div class="section-card">
         <div class="section-title">
-            <span>🎋 Vacation & Sick Leave (VL / SL) Tracker</span>
-            <span style="font-size:11px; font-weight:normal; color:var(--accent-btn-text);">*Automated from Calendar Shift Inputs (Miguel Excluded)</span>
+            <span>🏖️ Vacation & Sick Leave (VL / SL) Tracker</span>
+            <span style="font-size:11px; font-weight:normal; color:var(--accent-btn-text);">*Note: Miguel excluded from leave monitor</span>
         </div>
         <div class="table-responsive">
             <table class="rota-table">
                 <thead>
                     <tr>
-                        <th style="width: 120px;">Team Member</th>
+                        <th style="width: 140px;">Team Member</th>
                         <th>VL Allowance</th>
-                        <th>VL Taken (Dates)</th>
-                        <th>Total VL Used</th>
+                        <th>VL Used</th>
                         <th>VL Remaining</th>
                         <th>SL Allowance</th>
-                        <th>SL Taken (Dates)</th>
-                        <th>Total SL Used</th>
+                        <th>SL Used</th>
                         <th>SL Remaining</th>
                     </tr>
                 </thead>
@@ -179,22 +186,21 @@
         </div>
     </div>
 
-    <!-- AUTOMATED WFH MONITORING TABLE -->
+    <!-- WFH MONITORING TABLE (MIGUEL EXCLUDED) -->
     <div class="section-card">
         <div class="section-title">
-            <span>🏠 WFH Allowance Tracker (Automated 1 WFH/Week Check)</span>
-            <span style="font-size:11px; font-weight:normal; color:var(--accent-btn-text);">*Rule: Max 1 WFH day per calendar week (Miguel Excluded)</span>
+            <span>🏠 WFH Allowance Tracker (Limit: 1 WFH Per Week)</span>
+            <span style="font-size:11px; font-weight:normal; color:var(--accent-btn-text);">*Max allowed: 4-5 WFH per month</span>
         </div>
         <div class="table-responsive">
             <table class="rota-table">
                 <thead>
                     <tr>
-                        <th style="width: 120px;">Team Member</th>
+                        <th style="width: 140px;">Team Member</th>
                         <th>Monthly WFH Limit</th>
-                        <th>WFH Dates Taken</th>
-                        <th>Total WFH Used</th>
+                        <th>WFH Days Used This Month</th>
                         <th>WFH Remaining</th>
-                        <th>Weekly Compliance Check</th>
+                        <th>Compliance Status</th>
                     </tr>
                 </thead>
                 <tbody id="wfhTbody"></tbody>
@@ -216,7 +222,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // ALL Calendar Members (Miguel included ONLY here)
+        // ALL Team Members for Calendar Shift Rota (Miguel Included Here)
         const calendarMembers = [
             { id: 'ann', name: 'ANN' },
             { id: 'dave', name: 'DAVE' },
@@ -225,31 +231,26 @@
             { id: 'miguel', name: 'MIGUEL' }
         ];
 
-        // Leave & WFH Tracked Members (Miguel strictly EXCLUDED)
-        const trackedMembers = [
-            { id: 'ann', name: 'ANN' },
-            { id: 'dave', name: 'DAVE' },
-            { id: 'ken', name: 'KEN' },
-            { id: 'kriztel', name: 'KRIZTEL' }
-        ];
+        // Leave & WFH Monitor Members (Miguel Excluded)
+        const leaveTrackedMembers = calendarMembers.filter(m => m.id !== 'miguel');
 
         const shiftOptionsList = [
-            { id: 'shift-7-16', label: '7:00 - 16:00', class: 'color-shift-7-16', optClass: 'opt-7-16' },
-            { id: 'shift-9-18', label: '9:00 - 18:00', class: 'color-shift-9-18', optClass: 'opt-9-18' },
-            { id: 'shift-10-19', label: '10:00 - 19:00', class: 'color-shift-10-19', optClass: 'opt-10-19' },
-            { id: 'shift-12-21', label: '12:00 - 21:00', class: 'color-shift-12-21', optClass: 'opt-12-21' },
-            { id: 'shift-16-1', label: '16:00 - 1:00', class: 'color-shift-16-1', optClass: 'opt-16-1' },
-            { id: 'shift-9-18-wfh', label: '9:00 - 18:00 (WFH)', class: 'color-shift-wfh', optClass: 'opt-wfh' },
-            { id: 'shift-7-16-wfh', label: '7:00 - 16:00 (WFH)', class: 'color-shift-wfh', optClass: 'opt-wfh' },
-            { id: 'shift-12-21-wfh', label: '12:00 - 21:00 (WFH)', class: 'color-shift-wfh', optClass: 'opt-wfh' },
-            { id: 'shift-16-1-wfh', label: '16:00 - 1:00 (WFH)', class: 'color-shift-wfh', optClass: 'opt-wfh' },
-            { id: 'shift-rd', label: 'RD', class: 'color-shift-rd', optClass: 'opt-rd' },
-            { id: 'shift-vl', label: 'VL', class: 'color-shift-vl', optClass: 'opt-vl' },
-            { id: 'shift-sl', label: 'SL', class: 'color-shift-sl', optClass: 'opt-sl' }
+            { id: 'shift-7-16', label: '7:00 - 16:00', class: 'color-shift-7-16' },
+            { id: 'shift-9-18', label: '9:00 - 18:00', class: 'color-shift-9-18' },
+            { id: 'shift-10-19', label: '10:00 - 19:00', class: 'color-shift-10-19' },
+            { id: 'shift-12-21', label: '12:00 - 21:00', class: 'color-shift-12-21' },
+            { id: 'shift-16-1', label: '16:00 - 1:00', class: 'color-shift-16-1' },
+            { id: 'shift-9-18-wfh', label: '9:00 - 18:00 (WFH)', class: 'color-shift-wfh' },
+            { id: 'shift-7-16-wfh', label: '7:00 - 16:00 (WFH)', class: 'color-shift-wfh' },
+            { id: 'shift-12-21-wfh', label: '12:00 - 21:00 (WFH)', class: 'color-shift-wfh' },
+            { id: 'shift-16-1-wfh', label: '16:00 - 1:00 (WFH)', class: 'color-shift-wfh' },
+            { id: 'shift-rd', label: 'RD', class: 'color-shift-rd' },
+            { id: 'shift-vl', label: 'VL', class: 'color-shift-vl' },
+            { id: 'shift-sl', label: 'SL', class: 'color-shift-sl' }
         ];
 
         let currentYear = 2026;
-        let currentMonth = 8; // September 2026
+        let currentMonth = 8; // September 2026 (0-indexed 8)
         let rotaData = {};
         let allowanceData = {
             ann: { vl: 15, sl: 15 },
@@ -262,8 +263,9 @@
             return new Date(year, month + 1, 0).getDate();
         }
 
-        function getShiftObj(shiftId) {
-            return shiftOptionsList.find(s => s.id === shiftId) || shiftOptionsList[0];
+        function getShiftClass(shiftId) {
+            const found = shiftOptionsList.find(s => s.id === shiftId);
+            return found ? found.class : '';
         }
 
         function toggleDarkMode() {
@@ -313,14 +315,9 @@
             }
         }
 
-        function updateShift(memberId, day, newShift, selectElem) {
+        function updateShift(memberId, day, newShift) {
             if (!rotaData[memberId]) rotaData[memberId] = {};
             rotaData[memberId][day] = newShift;
-
-            const shiftObj = getShiftObj(newShift);
-            selectElem.className = `shift-select ${shiftObj.class}`;
-            selectElem.parentElement.className = shiftObj.class;
-
             saveRotaToDatabase();
         }
 
@@ -341,6 +338,7 @@
             const thead = document.getElementById('rotaThead');
             const tbody = document.getElementById('rotaTbody');
 
+            // Header
             let headerHTML = '<tr><th style="width:110px;">TEAM</th>';
             for (let d = 1; d <= totalDays; d++) {
                 const dateObj = new Date(currentYear, currentMonth, d);
@@ -351,6 +349,7 @@
             headerHTML += '</tr>';
             thead.innerHTML = headerHTML;
 
+            // Body
             tbody.innerHTML = '';
             calendarMembers.forEach(m => {
                 let tr = document.createElement('tr');
@@ -358,15 +357,15 @@
 
                 for (let d = 1; d <= totalDays; d++) {
                     const currentShift = (rotaData[m.id] && rotaData[m.id][d]) ? rotaData[m.id][d] : 'shift-7-16';
-                    const shiftObj = getShiftObj(currentShift);
+                    const shiftClass = getShiftClass(currentShift);
 
                     let optionsHTML = shiftOptionsList.map(s => 
-                        `<option value="${s.id}" class="${s.optClass}" ${currentShift === s.id ? 'selected' : ''}>${s.label}</option>`
+                        `<option value="${s.id}" class="${s.class}" ${currentShift === s.id ? 'selected' : ''}>${s.label}</option>`
                     ).join('');
 
                     rowHTML += `
-                        <td class="${shiftObj.class}">
-                            <select class="shift-select ${shiftObj.class}" onchange="updateShift('${m.id}', ${d}, this.value, this)">
+                        <td class="${shiftClass}">
+                            <select class="shift-select ${shiftClass}" onchange="updateShift('${m.id}', ${d}, this.value)">
                                 ${optionsHTML}
                             </select>
                         </td>
@@ -382,46 +381,30 @@
             const tbody = document.getElementById('leaveTbody');
             tbody.innerHTML = '';
 
-            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            const currentMonthName = monthNames[currentMonth];
-
-            trackedMembers.forEach(m => {
-                let vlDates = [];
-                let slDates = [];
+            leaveTrackedMembers.forEach(m => {
+                let usedVL = 0;
+                let usedSL = 0;
 
                 const memberShifts = rotaData[m.id] || {};
                 for (let d = 1; d <= totalDays; d++) {
-                    if (memberShifts[d] === 'shift-vl') vlDates.push(`${currentMonthName} ${d}`);
-                    if (memberShifts[d] === 'shift-sl') slDates.push(`${currentMonthName} ${d}`);
+                    if (memberShifts[d] === 'shift-vl') usedVL++;
+                    if (memberShifts[d] === 'shift-sl') usedSL++;
                 }
 
                 const totalVL = (allowanceData[m.id] && allowanceData[m.id].vl !== undefined) ? allowanceData[m.id].vl : 15;
                 const totalSL = (allowanceData[m.id] && allowanceData[m.id].sl !== undefined) ? allowanceData[m.id].sl : 15;
 
-                const usedVL = vlDates.length;
-                const usedSL = slDates.length;
-
                 const remVL = totalVL - usedVL;
                 const remSL = totalSL - usedSL;
-
-                let vlBadges = vlDates.length > 0 
-                    ? vlDates.map(dateStr => `<span class="leave-badge badge-vl">${dateStr}</span>`).join(' ')
-                    : '<span style="color:var(--accent-btn-text);">None</span>';
-
-                let slBadges = slDates.length > 0 
-                    ? slDates.map(dateStr => `<span class="leave-badge badge-sl">${dateStr}</span>`).join(' ')
-                    : '<span style="color:var(--accent-btn-text);">None</span>';
 
                 let tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td style="font-weight:bold;">${m.name}</td>
                     <td><input type="number" class="allowance-input" value="${totalVL}" onchange="updateAllowance('${m.id}', 'vl', this.value)"></td>
-                    <td>${vlBadges}</td>
-                    <td><strong>${usedVL} Days</strong></td>
+                    <td><span class="leave-badge badge-vl">${usedVL} Days</span></td>
                     <td class="${remVL < 0 ? 'warning-text' : 'safe-text'}">${remVL} Days</td>
                     <td><input type="number" class="allowance-input" value="${totalSL}" onchange="updateAllowance('${m.id}', 'sl', this.value)"></td>
-                    <td>${slBadges}</td>
-                    <td><strong>${usedSL} Days</strong></td>
+                    <td><span class="leave-badge badge-sl">${usedSL} Days</span></td>
                     <td class="${remSL < 0 ? 'warning-text' : 'safe-text'}">${remSL} Days</td>
                 `;
                 tbody.appendChild(tr);
@@ -433,54 +416,33 @@
             const tbody = document.getElementById('wfhTbody');
             tbody.innerHTML = '';
 
-            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            const currentMonthName = monthNames[currentMonth];
-            const maxMonthlyWFH = Math.ceil(totalDays / 7);
+            // Calculate weeks in month
+            const maxAllowedWFH = Math.ceil(totalDays / 7); 
 
-            trackedMembers.forEach(m => {
-                let wfhDates = [];
-                let weeklyCounts = {}; 
-
+            leaveTrackedMembers.forEach(m => {
+                let wfhCount = 0;
                 const memberShifts = rotaData[m.id] || {};
 
                 for (let d = 1; d <= totalDays; d++) {
-                    const shiftVal = memberShifts[d] || '';
-                    if (shiftVal.includes('wfh')) {
-                        wfhDates.push(`${currentMonthName} ${d}`);
-
-                        const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
-                        const weekNum = Math.ceil((d + firstDayOfMonth.getDay()) / 7);
-
-                        weeklyCounts[weekNum] = (weeklyCounts[weekNum] || 0) + 1;
+                    if (memberShifts[d] && memberShifts[d].includes('wfh')) {
+                        wfhCount++;
                     }
                 }
 
-                const usedWFH = wfhDates.length;
-                const remWFH = maxMonthlyWFH - usedWFH;
-
-                let hasWeeklyViolation = Object.values(weeklyCounts).some(count => count > 1);
-
-                let wfhBadges = wfhDates.length > 0 
-                    ? wfhDates.map(dateStr => `<span class="leave-badge badge-wfh">${dateStr}</span>`).join(' ')
-                    : '<span style="color:var(--accent-btn-text);">None</span>';
-
-                let complianceHTML = '';
-                if (hasWeeklyViolation) {
-                    complianceHTML = `<span class="warning-text">⚠️ Exceeded (>1 WFH in a Week)</span>`;
-                } else if (usedWFH > maxMonthlyWFH) {
-                    complianceHTML = `<span class="warning-text">⚠️ Monthly Limit Exceeded</span>`;
-                } else {
-                    complianceHTML = `<span class="safe-text">✓ Compliant (Max 1 WFH/Week)</span>`;
-                }
+                const remWFH = maxAllowedWFH - wfhCount;
+                const isExceeded = wfhCount > maxAllowedWFH;
 
                 let tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td style="font-weight:bold;">${m.name}</td>
-                    <td><strong>${maxMonthlyWFH} Days / Month</strong></td>
-                    <td>${wfhBadges}</td>
-                    <td><strong>${usedWFH} WFH Used</strong></td>
+                    <td><strong>${maxAllowedWFH} Days / Month</strong></td>
+                    <td><span class="leave-badge badge-wfh">${wfhCount} WFH Taken</span></td>
                     <td class="${remWFH < 0 ? 'warning-text' : 'safe-text'}">${remWFH} Remaining</td>
-                    <td>${complianceHTML}</td>
+                    <td>
+                        ${isExceeded 
+                            ? `<span class="warning-text">⚠️ Limit Exceeded (${wfhCount}/${maxAllowedWFH})</span>` 
+                            : `<span class="safe-text">✓ Compliant (Max 1 WFH/wk)</span>`}
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
