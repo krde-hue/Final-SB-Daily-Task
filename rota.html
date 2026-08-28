@@ -379,7 +379,7 @@
         </div>
         <button class="btn btn-secondary" onclick="changeMonth(1)">Next Month ▶</button>
         <div style="margin-left: auto; font-size: 12px; opacity: 0.9;">
-            💾 Realtime Synced to Firebase!
+            ⚡ Realtime Synced to Firebase
         </div>
     </div>
 
@@ -556,6 +556,7 @@
         let vlChartInstance = null;
         let globalTzOffset = 8;
         let rotaData = {};
+        let leaveMatrixData = {};
 
         function setupPresenceSystem() {
             const presenceRef = db.ref('rota_active_sessions');
@@ -585,11 +586,20 @@
         function listenToDatabase() {
             const monthKey = `${yearInput.value}_${parseInt(monthSelect.value) + 1}`;
             
+            // Listen to real-time schedule grid
             db.ref(`rota_data/${monthKey}`).on('value', (snapshot) => {
                 rotaData = snapshot.val() || {};
                 renderCalendar();
+                renderWFHTracker();
             });
 
+            // Listen to real-time leave matrix
+            db.ref('leave_matrix_db').on('value', (snapshot) => {
+                leaveMatrixData = snapshot.val() || {};
+                buildLeaveTables();
+            });
+
+            // Listen to real-time global timezone
             db.ref('rota_global_timezone').on('value', (snapshot) => {
                 if (snapshot.val() !== null) {
                     globalTzOffset = parseInt(snapshot.val());
@@ -604,13 +614,13 @@
             db.ref(`rota_data/${monthKey}`).set(rotaData);
         }
 
+        function saveLeaveMatrixToDatabase() {
+            db.ref('leave_matrix_db').set(leaveMatrixData);
+        }
+
         function changeTimezoneGlobal(val) {
             globalTzOffset = parseInt(val);
             db.ref('rota_global_timezone').set(globalTzOffset);
-        }
-
-        function getLeaveDatesStorageKey() {
-            return `leave_dates_matrix_db`;
         }
 
         function toggleDarkMode() {
@@ -777,8 +787,8 @@
         }
 
         function syncLeavesFromSchedule() {
-            let leaveMatrix = {};
-            leaveTrackedTeam.forEach(m => leaveMatrix[m] = { vl: [], sl: [] });
+            let tempMatrix = {};
+            leaveTrackedTeam.forEach(m => tempMatrix[m] = { vl: [], sl: [] });
 
             const selectedMonth = parseInt(monthSelect.value);
             const monthLabel = monthSelect.options[selectedMonth].text.substring(0, 3);
@@ -790,33 +800,28 @@
 
                     let shiftVal = row[memberIdx];
                     if (shiftVal === 'VL') {
-                        leaveMatrix[member].vl.push(`${day}-${monthLabel}`);
+                        tempMatrix[member].vl.push(`${day}-${monthLabel}`);
                     } else if (shiftVal === 'SL') {
-                        leaveMatrix[member].sl.push(`${day}-${monthLabel}`);
+                        tempMatrix[member].sl.push(`${day}-${monthLabel}`);
                     }
                 });
             });
 
             leaveTrackedTeam.forEach(m => {
-                while (leaveMatrix[m].vl.length < 10) leaveMatrix[m].vl.push('');
-                while (leaveMatrix[m].sl.length < 5) leaveMatrix[m].sl.push('');
-                leaveMatrix[m].vl = leaveMatrix[m].vl.slice(0, 10);
-                leaveMatrix[m].sl = leaveMatrix[m].sl.slice(0, 5);
+                while (tempMatrix[m].vl.length < 10) tempMatrix[m].vl.push('');
+                while (tempMatrix[m].sl.length < 5) tempMatrix[m].sl.push('');
+                tempMatrix[m].vl = tempMatrix[m].vl.slice(0, 10);
+                tempMatrix[m].sl = tempMatrix[m].sl.slice(0, 5);
             });
 
-            localStorage.setItem(getLeaveDatesStorageKey(), JSON.stringify(leaveMatrix));
-            buildLeaveTables();
+            leaveMatrixData = tempMatrix;
+            saveLeaveMatrixToDatabase();
             renderWFHTracker();
             renderVLPieChart();
         }
 
         function buildLeaveTables() {
             leaveDatesBody.innerHTML = '';
-            
-            let leaveMatrix = {};
-            try {
-                leaveMatrix = JSON.parse(localStorage.getItem(getLeaveDatesStorageKey())) || {};
-            } catch(e) { leaveMatrix = {}; }
 
             for (let rowIdx = 0; rowIdx < 15; rowIdx++) {
                 let tr = document.createElement('tr');
@@ -834,21 +839,15 @@
                     input.type = 'text';
                     input.className = 'date-input-cell';
 
-                    let val = (leaveMatrix[member] && leaveMatrix[member][leaveType] && leaveMatrix[member][leaveType][arrayIdx]) ? leaveMatrix[member][leaveType][arrayIdx] : '';
+                    let val = (leaveMatrixData[member] && leaveMatrixData[member][leaveType] && leaveMatrixData[member][leaveType][arrayIdx]) ? leaveMatrixData[member][leaveType][arrayIdx] : '';
                     input.value = val;
 
                     input.addEventListener('input', () => {
-                        let currentMatrix = {};
-                        try {
-                            currentMatrix = JSON.parse(localStorage.getItem(getLeaveDatesStorageKey())) || {};
-                        } catch(e) { currentMatrix = {}; }
+                        if (!leaveMatrixData[member]) leaveMatrixData[member] = { vl: Array(10).fill(''), sl: Array(5).fill('') };
+                        if (!leaveMatrixData[member][leaveType]) leaveMatrixData[member][leaveType] = isVL ? Array(10).fill('') : Array(5).fill('');
 
-                        if (!currentMatrix[member]) currentMatrix[member] = { vl: Array(10).fill(''), sl: Array(5).fill('') };
-                        if (!currentMatrix[member][leaveType]) currentMatrix[member][leaveType] = isVL ? Array(10).fill('') : Array(5).fill('');
-
-                        currentMatrix[member][leaveType][arrayIdx] = input.value;
-                        localStorage.setItem(getLeaveDatesStorageKey(), JSON.stringify(currentMatrix));
-
+                        leaveMatrixData[member][leaveType][arrayIdx] = input.value;
+                        saveLeaveMatrixToDatabase();
                         renderVLPieChart();
                     });
 
@@ -898,25 +897,14 @@
         function renderVLPieChart() {
             let monthVLCounts = Array(12).fill(0);
 
-            for (let i = 0; i < localStorage.length; i++) {
-                let key = localStorage.key(i);
-                if (key.startsWith("schedule_")) {
-                    let parts = key.split('_');
-                    let monthIdx = parseInt(parts[2]);
-
-                    try {
-                        let monthData = JSON.parse(localStorage.getItem(key)) || {};
-                        Object.keys(monthData).forEach(day => {
-                            let row = monthData[day];
-                            team.forEach((member, memberIdx) => {
-                                if (row[memberIdx] === 'VL') {
-                                    monthVLCounts[monthIdx]++;
-                                }
-                            });
-                        });
-                    } catch(e){}
-                }
-            }
+            Object.keys(rotaData).forEach(day => {
+                let row = rotaData[day];
+                team.forEach((member, memberIdx) => {
+                    if (row[memberIdx] === 'VL') {
+                        monthVLCounts[parseInt(monthSelect.value)]++;
+                    }
+                });
+            });
 
             const ctx = document.getElementById('vlPieChart').getContext('2d');
             const activeTheme = document.body.getAttribute('data-theme') || 'dark';
