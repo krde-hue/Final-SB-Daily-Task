@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,32 +13,6 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
-        :root[data-theme="light"] {
-            --bg-base: #f8fafc;
-            --bg-surface: #ffffff;
-            --bg-card: #f1f5f9;
-            --text-main: #000000;
-            --text-muted: #4b5563;
-            --border-color: #cbd5e1;
-            --accent-color: #0d233a;
-            --grid-border: #8ea9db;
-
-            /* High-Visibility Blue Link Color */
-            --link-blue: #0284c7;
-
-            /* Section Colors */
-            --purple-header: #c084fc;
-            --purple-bg: #f3e8ff;
-            --green-header: #86efac;
-            --green-bg: #f0fdf4;
-            --pink-header: #fca5a5;
-            --pink-bg: #fef2f2;
-            --blue-header: #93c5fd;
-            --blue-bg: #eff6ff;
-            --slack-green-header: #22c55e;
-            --slack-red-header: #ef4444;
-        }
-
         :root[data-theme="dark"] {
             --bg-base: #0f172a;
             --bg-surface: #1e293b;
@@ -47,28 +21,53 @@
             --text-muted: #94a3b8;
             --border-color: #334155;
             --accent-color: #38bdf8;
+            --accent-hover: #0284c7;
             --grid-border: #475569;
+            --cell-bg: #1e293b;
 
-            --link-blue: #38bdf8;
-
-            /* Section Colors */
-            --purple-header: #a855f7;
-            --purple-bg: rgba(168, 85, 247, 0.12);
-            --green-header: #4ade80;
-            --green-bg: rgba(74, 222, 128, 0.12);
-            --pink-header: #f87171;
-            --pink-bg: rgba(248, 113, 113, 0.12);
-            --blue-header: #60a5fa;
-            --blue-bg: rgba(96, 165, 250, 0.12);
+            /* Spreadsheet Section Colors */
+            --purple-header: #c084fc;
+            --purple-bg: rgba(192, 132, 252, 0.15);
+            --green-header: #86efac;
+            --green-bg: rgba(134, 239, 172, 0.15);
+            --pink-header: #fca5a5;
+            --pink-bg: rgba(252, 165, 165, 0.15);
+            --blue-header: #93c5fd;
+            --blue-bg: rgba(147, 197, 253, 0.15);
             --slack-green-header: #15803d;
             --slack-red-header: #b91c1c;
+        }
+
+        :root[data-theme="light"] {
+            --bg-base: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-card: #f1f5f9;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --accent-color: #0284c7;
+            --accent-hover: #0369a1;
+            --grid-border: #94a3b8;
+            --cell-bg: #ffffff;
+
+            /* Spreadsheet Section Colors */
+            --purple-header: #d8b4fe;
+            --purple-bg: #f3e8ff;
+            --green-header: #bbf7d0;
+            --green-bg: #f0fdf4;
+            --pink-header: #fecaca;
+            --pink-bg: #fef2f2;
+            --blue-header: #bfdbfe;
+            --blue-bg: #eff6ff;
+            --slack-green-header: #22c55e;
+            --slack-red-header: #ef4444;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: "Segoe UI", Calibri, Arial, sans-serif;
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
             transition: background-color 0.2s, color 0.2s, border-color 0.2s;
         }
 
@@ -142,11 +141,11 @@
         }
 
         .btn:hover {
-            border-color: var(--link-blue);
-            color: var(--link-blue);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
         }
 
-        /* GRID LAYOUT */
+        /* SPREADSHEET MASTER LAYOUT GRID */
         .workspace-grid {
             display: grid;
             grid-template-columns: 1.1fr 1fr 1.3fr 1.2fr;
@@ -160,12 +159,14 @@
             gap: 1.25rem;
         }
 
+        /* SECTION TABLE STYLING */
         .section-card {
             background: var(--bg-surface);
             border: 1.5px solid var(--grid-border);
             border-radius: 4px;
             overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            position: relative;
         }
 
         .section-header {
@@ -211,17 +212,14 @@
         table.sheet-table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: auto;
         }
 
         table.sheet-table td, table.sheet-table th {
             border: 1px solid var(--grid-border);
-            padding: 0.45rem 0.65rem;
-            font-size: 0.82rem;
+            padding: 0.4rem 0.6rem;
+            font-size: 0.8rem;
             vertical-align: middle;
             position: relative;
-            word-wrap: break-word;
-            white-space: normal;
         }
 
         .bg-purple td { background-color: var(--purple-bg); }
@@ -229,148 +227,53 @@
         .bg-pink td { background-color: var(--pink-bg); }
         .bg-blue td { background-color: var(--blue-bg); }
 
-        /* DIRECT CLICKABLE URL ANCHOR STYLING */
-        a.clickable-url {
-            color: var(--link-blue) !important;
-            font-size: 0.82rem;
+        .cell-label {
+            font-weight: 700;
+            color: var(--text-main);
+            width: 38%;
+        }
+
+        .url-link {
+            color: var(--accent-color);
+            text-decoration: none;
             font-weight: 600;
-            text-decoration: underline;
             word-break: break-all;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            cursor: pointer;
+            gap: 0.25rem;
         }
 
-        a.clickable-url:hover {
-            opacity: 0.8;
+        .url-link:hover {
             text-decoration: underline;
         }
 
-        .cell-container-flex {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-            gap: 12px;
-            padding-right: 48px; /* Safe padding distance to prevent icon overlap */
-        }
-
-        .edit-form-container {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            width: 100%;
-            padding: 2px 0;
-            padding-right: 48px;
-        }
-
-        .cell-textarea-label {
-            width: 100%;
-            background: var(--bg-surface);
-            border: 1px solid var(--grid-border);
-            color: var(--text-main);
-            font-size: 0.82rem;
-            font-weight: 700;
-            outline: none;
-            resize: none;
-            overflow: hidden;
-            line-height: 1.35;
-            padding: 2px 4px;
-            border-radius: 2px;
-        }
-
-        .cell-textarea-desc {
-            width: 100%;
-            background: var(--bg-surface);
-            border: 1px solid var(--grid-border);
-            color: var(--text-main);
-            font-size: 0.82rem;
-            font-style: italic;
-            outline: none;
-            resize: none;
-            overflow: hidden;
-            line-height: 1.35;
-            padding: 2px 4px;
-            border-radius: 2px;
-        }
-
-        .cell-textarea-slack {
-            width: 100%;
-            background: var(--bg-surface);
-            border: 1px solid var(--grid-border);
-            color: var(--link-blue);
-            font-size: 0.82rem;
-            font-weight: 700;
-            outline: none;
-            resize: none;
-            overflow: hidden;
-            line-height: 1.35;
-            word-break: break-word;
-            padding: 2px 4px;
-            border-radius: 2px;
-        }
-
-        .url-input {
-            width: 100%;
-            background: var(--bg-surface);
-            border: 1px solid var(--grid-border);
-            color: var(--link-blue) !important;
-            font-size: 0.82rem;
-            font-weight: 600;
-            outline: none;
-            resize: none;
-            overflow: hidden;
-            word-break: break-all;
-            line-height: 1.35;
-            padding: 2px 4px;
-            border-radius: 2px;
-        }
-
-        /* ISOLATED ACTION BUTTON GROUP */
-        .row-actions-group {
+        .row-delete-btn {
             display: none;
             position: absolute;
-            right: 6px;
+            right: 4px;
             top: 50%;
             transform: translateY(-50%);
-            gap: 4px;
-            z-index: 10;
-        }
-
-        tr:hover .row-actions-group {
-            display: flex;
-        }
-
-        .action-icon-btn {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: 2px 5px;
-            font-size: 11px;
-            cursor: pointer;
-            color: var(--text-main);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .action-icon-btn:hover {
-            border-color: var(--link-blue);
-            color: var(--link-blue);
-        }
-
-        .btn-delete-row {
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.4);
+            background: rgba(239, 68, 68, 0.2);
             color: #ef4444;
+            border: 1px solid #ef4444;
+            border-radius: 3px;
+            padding: 1px 4px;
+            font-size: 10px;
+            cursor: pointer;
+            z-index: 5;
         }
 
-        .btn-delete-row:hover {
-            background: rgba(239, 68, 68, 0.3);
-            border-color: #ef4444;
-            color: #ffffff;
+        tr:hover .row-delete-btn {
+            display: inline-block;
         }
 
-        /* SLACK CHANNEL TABLE STYLES */
+        /* TASKS EXAMPLES LIST */
+        .task-list-table td {
+            font-style: italic;
+            font-weight: 600;
+        }
+
+        /* SLACK CHANNEL GUIDE TABLE */
         .slack-table th {
             background-color: var(--bg-card);
             color: var(--text-main);
@@ -378,27 +281,27 @@
             text-align: left;
         }
 
-        .label-text-display {
+        .slack-channel-name {
             font-weight: 700;
-            color: var(--text-main);
+            color: var(--accent-color);
         }
 
-        .slack-text-display {
-            font-weight: 700;
-            color: var(--link-blue);
-        }
-
-        .desc-text-display {
+        .slack-desc {
             font-style: italic;
-            color: var(--text-main);
-            padding-right: 48px;
+            color: var(--text-muted);
+            font-size: 0.78rem;
         }
 
         @media (max-width: 1280px) {
-            .workspace-grid { grid-template-columns: 1fr 1fr; }
+            .workspace-grid {
+                grid-template-columns: 1fr 1fr;
+            }
         }
+
         @media (max-width: 768px) {
-            .workspace-grid { grid-template-columns: 1fr; }
+            .workspace-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -406,7 +309,7 @@
 
     <header>
         <div class="header-title">
-            <i data-lucide="layout-grid" style="color: var(--link-blue)"></i>
+            <i data-lucide="layout-grid" style="color: var(--accent-color)"></i>
             <h1>Sportsbook Operational Workspace</h1>
         </div>
         <div class="header-controls">
@@ -419,8 +322,8 @@
                 <span id="save-status">✓ Live Synced</span>
             </div>
             <button class="btn" id="theme-toggle">
-                <i data-lucide="sun" id="theme-icon"></i>
-                <span id="theme-text">Light Mode</span>
+                <i data-lucide="moon" id="theme-icon"></i>
+                <span id="theme-text">Dark Mode</span>
             </button>
         </div>
     </header>
@@ -474,7 +377,7 @@
                     <span>Tasks Examples</span>
                     <button class="add-row-btn" onclick="addSectionRow('tasks')" title="Add Task">+</button>
                 </div>
-                <table class="sheet-table">
+                <table class="sheet-table task-list-table">
                     <tbody id="tbody-tasks"></tbody>
                 </table>
             </div>
@@ -493,7 +396,8 @@
         </div>
 
         <!-- COLUMN 3: SLACK CHANNELS (Qbet, 30bet, 55bet, BVB) -->
-        <div class="grid-column">
+        <div class="grid-column" style="grid-column: span 1;">
+            
             <div class="section-card">
                 <div class="section-header header-slack-green">
                     <span>Slack Channels (Qbet, 30bet, 55bet) also BVB</span>
@@ -502,17 +406,19 @@
                 <table class="sheet-table slack-table">
                     <thead>
                         <tr>
-                            <th style="width: 42%;">Slack Channel</th>
+                            <th>Slack Channel</th>
                             <th>About Channel (Purpose)</th>
                         </tr>
                     </thead>
                     <tbody id="tbody-slackMain"></tbody>
                 </table>
             </div>
+
         </div>
 
         <!-- COLUMN 4: SLACK CHANNELS (Ibet) -->
-        <div class="grid-column">
+        <div class="grid-column" style="grid-column: span 1;">
+            
             <div class="section-card">
                 <div class="section-header header-slack-red">
                     <span>Slack Channels (Ibet)</span>
@@ -521,13 +427,14 @@
                 <table class="sheet-table slack-table">
                     <thead>
                         <tr>
-                            <th style="width: 42%;">Slack Channel</th>
+                            <th>Slack Channel</th>
                             <th>About Channel (Ibet)</th>
                         </tr>
                     </thead>
                     <tbody id="tbody-slackIbet"></tbody>
                 </table>
             </div>
+
         </div>
 
     </div>
@@ -547,7 +454,6 @@
         const db = firebase.database();
 
         let hubData = {};
-        let editingRowState = {};
 
         function getDefaultHubData() {
             return {
@@ -622,18 +528,6 @@
             };
         }
 
-        function autoResizeTextarea(elem) {
-            if (!elem) return;
-            elem.style.height = 'auto';
-            elem.style.height = elem.scrollHeight + 'px';
-        }
-
-        function toggleEditRow(sectionKey, idx) {
-            const key = `${sectionKey}-${idx}`;
-            editingRowState[key] = !editingRowState[key];
-            renderAllTables();
-        }
-
         function listenToDatabase() {
             db.ref('workspace_hub_data').on('value', (snapshot) => {
                 const live = snapshot.val();
@@ -666,42 +560,14 @@
             const list = hubData[sectionKey] || [];
 
             list.forEach((item, idx) => {
-                const isEditing = !!editingRowState[`${sectionKey}-${idx}`];
                 const tr = document.createElement('tr');
-
-                if (isEditing) {
-                    tr.innerHTML = `
-                        <td style="width: 40%;">
-                            <textarea class="cell-textarea-label" rows="1" oninput="autoResizeTextarea(this)" onchange="updateItem('${sectionKey}', ${idx}, 'label', this.value)">${item.label || ''}</textarea>
-                        </td>
-                        <td>
-                            <div class="edit-form-container">
-                                <textarea class="url-input" rows="1" oninput="autoResizeTextarea(this)" onchange="updateItem('${sectionKey}', ${idx}, 'url', this.value)">${item.url || ''}</textarea>
-                            </div>
-                            <div class="row-actions-group">
-                                <button class="action-icon-btn" onclick="toggleEditRow('${sectionKey}', ${idx})" title="Done Editing">✓</button>
-                                <button class="action-icon-btn btn-delete-row" onclick="deleteItem('${sectionKey}', ${idx})" title="Delete Row">🗑️</button>
-                            </div>
-                        </td>
-                    `;
-                } else {
-                    const displayUrl = item.url || '';
-                    const linkMarkup = displayUrl 
-                        ? `<a href="${displayUrl}" target="_blank" class="clickable-url">${displayUrl} <i data-lucide="external-link" style="width:12px; height:12px; flex-shrink:0;"></i></a>`
-                        : `<span style="color:var(--text-muted); font-style:italic;">No URL</span>`;
-
-                    tr.innerHTML = `
-                        <td style="width: 40%;" class="label-text-display">${item.label || ''}</td>
-                        <td>
-                            <div class="cell-container-flex">${linkMarkup}</div>
-                            <div class="row-actions-group">
-                                <button class="action-icon-btn" onclick="toggleEditRow('${sectionKey}', ${idx})" title="Edit Row">✏️</button>
-                                <button class="action-icon-btn btn-delete-row" onclick="deleteItem('${sectionKey}', ${idx})" title="Delete Row">🗑️</button>
-                            </div>
-                        </td>
-                    `;
-                }
-
+                tr.innerHTML = `
+                    <td class="cell-label">${item.label || ''}</td>
+                    <td>
+                        <a href="${item.url || '#'}" target="_blank" class="url-link">${item.url || ''} <i data-lucide="external-link" style="width:11px; height:11px;"></i></a>
+                        <button class="row-delete-btn" onclick="deleteItem('${sectionKey}', ${idx})">🗑️</button>
+                    </td>
+                `;
                 tbody.appendChild(tr);
             });
         }
@@ -712,31 +578,13 @@
             const list = hubData.tasks || [];
 
             list.forEach((item, idx) => {
-                const isEditing = !!editingRowState[`tasks-${idx}`];
                 const tr = document.createElement('tr');
-
-                if (isEditing) {
-                    tr.innerHTML = `
-                        <td>
-                            <textarea class="cell-textarea-desc" rows="1" oninput="autoResizeTextarea(this)" onchange="updateItem('tasks', ${idx}, 'task', this.value)">${item.task || ''}</textarea>
-                            <div class="row-actions-group">
-                                <button class="action-icon-btn" onclick="toggleEditRow('tasks', ${idx})" title="Done Editing">✓</button>
-                                <button class="action-icon-btn btn-delete-row" onclick="deleteItem('tasks', ${idx})" title="Delete Task">🗑️</button>
-                            </div>
-                        </td>
-                    `;
-                } else {
-                    tr.innerHTML = `
-                        <td class="desc-text-display">
-                            ${item.task || ''}
-                            <div class="row-actions-group">
-                                <button class="action-icon-btn" onclick="toggleEditRow('tasks', ${idx})" title="Edit Task">✏️</button>
-                                <button class="action-icon-btn btn-delete-row" onclick="deleteItem('tasks', ${idx})" title="Delete Task">🗑️</button>
-                            </div>
-                        </td>
-                    `;
-                }
-
+                tr.innerHTML = `
+                    <td>
+                        ${item.task || ''}
+                        <button class="row-delete-btn" onclick="deleteItem('tasks', ${idx})">🗑️</button>
+                    </td>
+                `;
                 tbody.appendChild(tr);
             });
         }
@@ -747,35 +595,14 @@
             const list = hubData[sectionKey] || [];
 
             list.forEach((item, idx) => {
-                const isEditing = !!editingRowState[`${sectionKey}-${idx}`];
                 const tr = document.createElement('tr');
-
-                if (isEditing) {
-                    tr.innerHTML = `
-                        <td>
-                            <textarea class="cell-textarea-slack" rows="1" oninput="autoResizeTextarea(this)" onchange="updateItem('${sectionKey}', ${idx}, 'name', this.value)">${item.name || ''}</textarea>
-                        </td>
-                        <td>
-                            <textarea class="cell-textarea-desc" rows="1" oninput="autoResizeTextarea(this)" onchange="updateItem('${sectionKey}', ${idx}, 'desc', this.value)">${item.desc || ''}</textarea>
-                            <div class="row-actions-group">
-                                <button class="action-icon-btn" onclick="toggleEditRow('${sectionKey}', ${idx})" title="Done Editing">✓</button>
-                                <button class="action-icon-btn btn-delete-row" onclick="deleteItem('${sectionKey}', ${idx})" title="Delete Channel">🗑️</button>
-                            </div>
-                        </td>
-                    `;
-                } else {
-                    tr.innerHTML = `
-                        <td class="slack-text-display">${item.name || ''}</td>
-                        <td class="desc-text-display">
-                            ${(item.desc || '').replace(/\n/g, '<br>')}
-                            <div class="row-actions-group">
-                                <button class="action-icon-btn" onclick="toggleEditRow('${sectionKey}', ${idx})" title="Edit Channel">✏️</button>
-                                <button class="action-icon-btn btn-delete-row" onclick="deleteItem('${sectionKey}', ${idx})" title="Delete Channel">🗑️</button>
-                            </div>
-                        </td>
-                    `;
-                }
-
+                tr.innerHTML = `
+                    <td class="slack-channel-name">${item.name || ''}</td>
+                    <td class="slack-desc">
+                        ${(item.desc || '').replace(/\n/g, '<br>')}
+                        <button class="row-delete-btn" onclick="deleteItem('${sectionKey}', ${idx})">🗑️</button>
+                    </td>
+                `;
                 tbody.appendChild(tr);
             });
         }
@@ -788,17 +615,7 @@
             renderTasksTable();
             renderSlackTable('slackMain', 'tbody-slackMain');
             renderSlackTable('slackIbet', 'tbody-slackIbet');
-            
-            document.querySelectorAll('textarea').forEach(ta => autoResizeTextarea(ta));
             lucide.createIcons();
-        }
-
-        function updateItem(sectionKey, idx, field, val) {
-            if (!hubData[sectionKey]) hubData[sectionKey] = [];
-            if (hubData[sectionKey][idx]) {
-                hubData[sectionKey][idx][field] = val;
-                saveToDatabase();
-            }
         }
 
         function deleteItem(sectionKey, idx) {
@@ -811,17 +628,18 @@
         function addSectionRow(sectionKey) {
             if (!hubData[sectionKey]) hubData[sectionKey] = [];
 
-            let newIdx = hubData[sectionKey].length;
-
             if (sectionKey === 'tasks') {
-                hubData[sectionKey].push({ task: "New Task Example" });
+                const newVal = prompt("Enter new task name:", "New Task Example");
+                if (newVal) hubData[sectionKey].push({ task: newVal });
             } else if (sectionKey === 'slackMain' || sectionKey === 'slackIbet') {
-                hubData[sectionKey].push({ name: "#new-slack-channel", desc: "Add channel description" });
+                const name = prompt("Enter Slack channel name:", "#new-channel");
+                const desc = prompt("Enter channel purpose/description:", "Channel purpose");
+                if (name) hubData[sectionKey].push({ name, desc: desc || "" });
             } else {
-                hubData[sectionKey].push({ label: "New Reference", url: "https://" });
+                const label = prompt("Enter reference label:", "New Item");
+                const url = prompt("Enter URL:", "https://");
+                if (label) hubData[sectionKey].push({ label, url: url || "https://" });
             }
-
-            editingRowState[`${sectionKey}-${newIdx}`] = true;
 
             saveToDatabase();
         }
@@ -840,7 +658,7 @@
                 themeText.textContent = 'Light Mode';
             }
             lucide.createIcons();
-            localStorage.setItem('workspace_grid_theme', theme);
+            localStorage.setItem('workspace_hub_theme', theme);
         }
 
         themeToggleBtn.addEventListener('click', () => {
@@ -849,7 +667,7 @@
         });
 
         document.addEventListener('DOMContentLoaded', () => {
-            const savedTheme = localStorage.getItem('workspace_grid_theme') || 'light';
+            const savedTheme = localStorage.getItem('workspace_hub_theme') || 'dark';
             setTheme(savedTheme);
             listenToDatabase();
         });
