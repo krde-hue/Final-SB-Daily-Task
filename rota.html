@@ -3,205 +3,595 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Team Monthly Rota Schedule</title>
+    <title>Team Monthly Rota Schedule Manager</title>
 
+    <!-- Chart.js CDN for Pie Chart Visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <!-- Firebase Realtime Database SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <style>
         :root {
+            --bg-color: #0b2240;
+            --card-bg: #133054;
+            --text-color: #ffffff;
+            --header-text: #ffffff;
+            --border-color: #ffffff;
+            --table-header-bg: #0b2240;
+            --accent-btn: #38bdf8;
+            --accent-btn-text: #0b2240;
+        }
+
+        [data-theme="light"] {
             --bg-color: #f4f7f6;
             --card-bg: #ffffff;
             --text-color: #333333;
             --header-text: #0d233a;
-            --credit-text: #64748b;
             --border-color: #cbd5e0;
-            --table-border: #2d3748;
-            --accent-btn: #edf2f7;
-            --accent-btn-text: #4a5568;
-        }
-
-        [data-theme="dark"] {
-            --bg-color: #111827;
-            --card-bg: #1f2937;
-            --text-color: #f3f4f6;
-            --header-text: #60a5fa;
-            --credit-text: #94a3b8;
-            --border-color: #374151;
-            --table-border: #4b5563;
-            --accent-btn: #374151;
-            --accent-btn-text: #f3f4f6;
+            --table-header-bg: #0d233a;
+            --accent-btn: #0d233a;
+            --accent-btn-text: #ffffff;
         }
 
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
-        body { background-color: var(--bg-color); padding: 20px; color: var(--text-color); transition: background-color 0.3s; }
 
-        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: var(--card-bg); padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .title-group { display: flex; flex-direction: column; gap: 2px; }
-        h1 { font-size: 20px; color: var(--header-text); }
-
-        .title-credit { 
-            font-size: 11px; 
-            font-weight: 600; 
-            color: var(--credit-text); 
-            letter-spacing: 0.2px; 
-            opacity: 0.85;
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
         }
 
-        .btn-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
 
-        .btn { padding: 8px 14px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 13px; transition: background-color 0.2s; text-decoration: none; display: inline-flex; align-items: center; }
-        .btn-primary { background-color: #0d233a; color: white; }
-        .btn-primary:hover { background-color: #173b61; }
-        .btn-secondary { background-color: var(--accent-btn); color: var(--accent-btn-text); border: 1px solid var(--border-color); }
-        .btn-secondary:hover { opacity: 0.85; }
-        .btn-warning { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-
-        .month-selector-container {
+        .header-top-controls {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 15px;
-            background: var(--card-bg);
-            padding: 12px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        .month-select {
-            padding: 6px 12px;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
-            background: var(--card-bg);
-            color: var(--text-color);
-            font-weight: bold;
-            font-size: 14px;
-            outline: none;
-            cursor: pointer;
-        }
-
-        .rota-table-wrapper {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-            overflow-x: auto;
-        }
-
-        table.rota-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-            text-align: center;
-        }
-
-        table.rota-table th, table.rota-table td {
-            border: 1px solid var(--border-color);
-            padding: 8px 6px;
-            white-space: nowrap;
-        }
-
-        table.rota-table th {
-            background-color: var(--card-bg);
-            color: var(--header-text);
-            font-weight: 700;
-        }
-
-        .shift-select-cell {
-            padding: 2px !important;
-        }
-
-        .rota-select {
-            width: 100%;
+        .btn {
+            padding: 8px 14px;
             border: none;
-            background: transparent;
-            color: var(--text-color);
-            font-weight: 600;
-            font-size: 11px;
-            text-align-last: center;
+            border-radius: 5px;
+            font-weight: bold;
             cursor: pointer;
-            outline: none;
-            padding: 4px 2px;
-        }
-
-        .rota-select:disabled {
-            cursor: not-allowed;
-            opacity: 0.8;
-        }
-
-        .autosave-badge {
-            font-size: 11px;
-            color: #2f855a;
-            font-weight: bold;
-            opacity: 0;
-            transition: opacity 0.3s;
-            background: #c6f6d5;
-            padding: 3px 8px;
-            border-radius: 12px;
-            display: inline-block;
-        }
-
-        .lock-indicator {
-            font-size: 12px;
-            font-weight: bold;
-            padding: 4px 10px;
-            border-radius: 4px;
+            text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
+            transition: opacity 0.2s;
         }
-        .lock-indicator.locked { background: #fee2e2; color: #991b1b; }
-        .lock-indicator.unlocked { background: #d1fae5; color: #065f46; }
+        .btn:hover { opacity: 0.85; }
+        .btn-back { background-color: var(--accent-btn); color: var(--accent-btn-text); }
+        .btn-secondary { background-color: rgba(255, 255, 255, 0.2); color: var(--text-color); border: 1px solid var(--border-color); }
+        .btn-warning { background-color: #eab308; color: #000000; }
+        .btn-success { background-color: #22c55e; color: #ffffff; }
+
+        .viewer-badge {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .view-only-banner {
+            background-color: #ef4444;
+            color: #ffffff;
+            font-weight: bold;
+            text-align: center;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 6px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        label { font-weight: bold; font-size: 14px; }
+        select, input {
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-weight: bold;
+        }
+
+        .main-layout {
+            display: flex;
+            gap: 25px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .table-container { overflow-x: auto; }
+
+        table {
+            border-collapse: collapse;
+            width: auto;
+            min-width: 650px;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 5px;
+            text-align: center;
+            font-size: 13px;
+            position: relative;
+        }
+
+        th {
+            background-color: var(--table-header-bg);
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        .day-col, .date-col { width: 75px; }
+
+        .bulk-set-container {
+            margin-top: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .bulk-select {
+            font-size: 10px !important;
+            padding: 2px !important;
+            width: 100%;
+        }
+
+        /* CUSTOM DROPDOWN STYLING & HOVER COLORS */
+        .custom-dropdown {
+            position: relative;
+            width: 100%;
+            user-select: none;
+        }
+
+        .custom-dropdown-btn {
+            width: 100%;
+            padding: 5px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            background-color: #ffffff;
+            color: #000000;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .custom-dropdown-btn::after {
+            content: '▼';
+            font-size: 8px;
+            margin-left: 2px;
+        }
+
+        .custom-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: #1e293b;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+            z-index: 1000;
+            max-height: 220px;
+            overflow-y: auto;
+            margin-top: 2px;
+        }
+
+        .custom-dropdown-menu.show {
+            display: block;
+        }
+
+        .custom-dropdown-item {
+            padding: 6px 8px;
+            font-weight: bold;
+            font-size: 11px;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.15s, color 0.15s;
+        }
+
+        /* Shift Cell Background Colors */
+        .shift-bg-7-16 { background-color: #86efac !important; color: #064e3b !important; }
+        .shift-bg-10-19 { background-color: #fed7aa !important; color: #7c2d12 !important; }
+        .shift-bg-12-21 { background-color: #bae6fd !important; color: #0c4a6e !important; }
+        .shift-bg-14-23 { background-color: #e9d5ff !important; color: #581c87 !important; }
+        .shift-bg-16-1 { background-color: #fca5a5 !important; color: #7f1d1d !important; }
+        .shift-bg-7-10-wfh { background-color: #fbcfe8 !important; color: #831843 !important; }
+        .shift-bg-7-16-wfh { background-color: #f472b6 !important; color: #831843 !important; }
+        .shift-bg-rd { background-color: #9ca3af !important; color: #111827 !important; }
+        .shift-bg-vl { background-color: #fde047 !important; color: #713f12 !important; }
+        .shift-bg-sl { background-color: #c084fc !important; color: #3b0764 !important; }
+        .shift-bg-adjusted { background-color: #facc15 !important; color: #000000 !important; }
+
+        /* Item Hover Classes */
+        .item-7-16:hover { background-color: #86efac !important; color: #064e3b !important; }
+        .item-10-19:hover { background-color: #fed7aa !important; color: #7c2d12 !important; }
+        .item-12-21:hover { background-color: #bae6fd !important; color: #0c4a6e !important; }
+        .item-14-23:hover { background-color: #e9d5ff !important; color: #581c87 !important; }
+        .item-16-1:hover { background-color: #fca5a5 !important; color: #7f1d1d !important; }
+        .item-7-10-wfh:hover { background-color: #fbcfe8 !important; color: #831843 !important; }
+        .item-7-16-wfh:hover { background-color: #f472b6 !important; color: #831843 !important; }
+        .item-rd:hover { background-color: #9ca3af !important; color: #111827 !important; }
+        .item-vl:hover { background-color: #fde047 !important; color: #713f12 !important; }
+        .item-sl:hover { background-color: #c084fc !important; color: #3b0764 !important; }
+        .item-adjusted:hover { background-color: #facc15 !important; color: #000000 !important; }
+
+        /* Adjusted Hybrid Input Wrapper with Arrow Trigger */
+        .adjusted-input-wrapper {
+            display: flex;
+            align-items: center;
+            background: #facc15;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .custom-editable-input {
+            width: calc(100% - 18px);
+            padding: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            text-align: center;
+            border: none;
+            background: transparent;
+            color: #000000;
+            outline: none;
+        }
+
+        .adjusted-dropdown-trigger {
+            width: 18px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 8px;
+            color: #000000;
+            background: rgba(0,0,0,0.1);
+            border-left: 1px solid rgba(0,0,0,0.2);
+        }
+        .adjusted-dropdown-trigger:hover {
+            background: rgba(0,0,0,0.25);
+        }
+
+        .miguel-editable-cell {
+            width: 100%;
+            padding: 5px;
+            font-size: 11px;
+            font-weight: bold;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-color);
+            color: var(--text-color);
+            outline: none;
+        }
+        .miguel-editable-cell:focus, .custom-editable-input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 5px rgba(56, 189, 248, 0.8);
+        }
+
+        .leave-section {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            min-width: 480px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .leave-section-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #ef4444;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chart-box {
+            background: var(--bg-color);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+        }
+
+        .chart-container-inner {
+            position: relative;
+            width: 100%;
+            max-width: 320px;
+            height: 320px;
+        }
+
+        .leave-table {
+            width: 100%;
+            min-width: 100%;
+        }
+
+        .badge-vl {
+            background-color: #86efac;
+            color: #064e3b;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .badge-sl {
+            background-color: #ef4444;
+            color: #ffffff;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .badge-wfh {
+            background-color: #38bdf8;
+            color: #0b2240;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 3px;
+            display: inline-block;
+            margin: 1px;
+        }
+
+        .date-input-cell {
+            width: 100%;
+            padding: 4px;
+            font-size: 12px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            background: var(--bg-color);
+            color: var(--text-color);
+            outline: none;
+            border-radius: 3px;
+        }
+        .date-input-cell:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 4px rgba(56, 189, 248, 0.5);
+        }
     </style>
 </head>
 <body>
 
-    <div class="header-container">
-        <div class="title-group">
-            <h1>Team Monthly Rota Schedule</h1>
-            <span class="title-credit">kdv_2026 model</span>
-        </div>
-        <div class="btn-controls">
-            <span id="activeViewersBadge" class="btn btn-secondary" style="cursor: default; pointer-events: none;" title="Active Viewers">
+    <!-- VIEW ONLY WARNING BANNER -->
+    <div id="viewOnlyBanner" class="view-only-banner">
+        🔒 View-Only Mode Active: Schedule edits are restricted. Click "🔓 Admin Login" to enter password and enable editing.
+    </div>
+
+    <div class="header-top">
+        <h2>Team Monthly Rota Schedule Manager</h2>
+        <div class="header-top-controls">
+            <!-- Active Viewers Eye Badge -->
+            <span class="viewer-badge" title="Active Viewers">
                 👁️ <span id="activeViewersCount">1</span>
             </span>
-            <span id="saveStatus" class="autosave-badge">✓ Live Synced</span>
-
-            <span id="lockStatusBadge" class="lock-indicator locked">🔒 View Only</span>
-
-            <button id="adminToggleBtn" class="btn btn-warning" onclick="toggleAdminMode()">🔑 Admin Unlock</button>
-            <button class="btn btn-secondary" onclick="shareViewOnlyLink()">🔗 Share View-Only Link</button>
-            
             <button class="btn btn-secondary" onclick="toggleDarkMode()">🌓 Mode</button>
-            <a href="index.html" class="btn btn-primary">📅 Daily Duties Roster</a>
+            <button class="btn btn-warning" onclick="copyViewOnlyLink()">🔗 Share View-Only Link</button>
+            <button class="btn btn-success" id="btnAdminUnlock" onclick="promptAdminUnlock()">🔓 Admin Login</button>
+            <a id="btnBackToDuties" href="index.html" class="btn btn-back">🔙 Back to Daily Duties</a>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <button class="btn btn-secondary" onclick="changeMonth(-1)">◀ Prev Month</button>
+        <div>
+            <label for="month-select">Month: </label>
+            <select id="month-select">
+                <option value="0">January</option><option value="1">February</option>
+                <option value="2">March</option><option value="3">April</option>
+                <option value="4">May</option><option value="5">June</option>
+                <option value="6">July</option><option value="7">August</option>
+                <option value="8" selected>September</option><option value="9">October</option>
+                <option value="10">November</option><option value="11">December</option>
+            </select>
+        </div>
+        <div>
+            <label for="year-input">Year: </label>
+            <input type="number" id="year-input" value="2026" min="2020" max="2035" style="width: 80px;">
+        </div>
+        <div>
+            <label for="timezone-select">🌐 Global Timezone: </label>
+            <select id="timezone-select" onchange="changeTimezoneGlobal(this.value)">
+                <option value="-10">HST - Hawaii (-10)</option>
+                <option value="-8">PST / PDT (-8)</option>
+                <option value="-7">MST / MDT (-7)</option>
+                <option value="-6">CST / CDT (-6)</option>
+                <option value="-5">EST / EDT (-5)</option>
+                <option value="0">UTC / GMT (+0)</option>
+                <option value="1">CET / CEST (+1)</option>
+                <option value="2">EET / EEST (+2)</option>
+                <option value="4">GST - Gulf (+4)</option>
+                <option value="5.5">IST - India (+5.5)</option>
+                <option value="7">WIB - Jakarta (+7)</option>
+                <option value="8" selected>SGT / PHT / HKT (+8)</option>
+                <option value="9">JST / KST (+9)</option>
+                <option value="10">AEST - Sydney (+10)</option>
+                <option value="12">NZST - New Zealand (+12)</option>
+            </select>
+        </div>
+        <button class="btn btn-secondary" onclick="changeMonth(1)">Next Month ▶</button>
+        <div style="margin-left: auto; font-size: 12px; opacity: 0.9;">
+            ⚡ Realtime Synced to Firebase
         </div>
     </div>
 
-    <div class="month-selector-container">
-        <label for="monthSelect" style="font-weight: 700; font-size: 14px;">Select Month / Year:</label>
-        <select id="monthSelect" class="month-select" onchange="changeMonthYear()">
-            <option value="2026_9">September 2026</option>
-            <option value="2026-10">October 2026</option>
-            <option value="2026-11">November 2026</option>
-            <option value="2026-12">December 2026</option>
-        </select>
-    </div>
+    <div class="main-layout">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan="2">Date</th>
+                        <th style="color: #ffc0cb;">
+                            Ann
+                            <div class="bulk-set-container">
+                                <select class="bulk-select" onchange="bulkSetShift(0, this)">
+                                    <option value="">-- Set All Month --</option>
+                                    <option value="CLEAR">-- Clear Month --</option>
+                                    <option value="7:00 - 16:00">7:00 - 16:00</option>
+                                    <option value="10:00 - 19:00">10:00 - 19:00</option>
+                                    <option value="12:00 - 21:00">12:00 - 21:00</option>
+                                    <option value="14:00 - 23:00">14:00 - 23:00</option>
+                                    <option value="16:00 - 1:00">16:00 - 1:00</option>
+                                    <option value="7:00 - 10:00 (WFH)">7:00 - 10:00 (WFH)</option>
+                                    <option value="7:00 - 16:00 (WFH)">7:00 - 16:00 (WFH)</option>
+                                    <option value="RD">RD</option>
+                                </select>
+                            </div>
+                        </th>
+                        <th style="color: #9cc2e5;">
+                            Dave
+                            <div class="bulk-set-container">
+                                <select class="bulk-select" onchange="bulkSetShift(1, this)">
+                                    <option value="">-- Set All Month --</option>
+                                    <option value="CLEAR">-- Clear Month --</option>
+                                    <option value="7:00 - 16:00">7:00 - 16:00</option>
+                                    <option value="10:00 - 19:00">10:00 - 19:00</option>
+                                    <option value="12:00 - 21:00">12:00 - 21:00</option>
+                                    <option value="14:00 - 23:00">14:00 - 23:00</option>
+                                    <option value="16:00 - 1:00">16:00 - 1:00</option>
+                                    <option value="7:00 - 10:00 (WFH)">7:00 - 10:00 (WFH)</option>
+                                    <option value="7:00 - 16:00 (WFH)">7:00 - 16:00 (WFH)</option>
+                                    <option value="RD">RD</option>
+                                </select>
+                            </div>
+                        </th>
+                        <th style="color: #b4c6e7;">
+                            Kenneth
+                            <div class="bulk-set-container">
+                                <select class="bulk-select" onchange="bulkSetShift(2, this)">
+                                    <option value="">-- Set All Month --</option>
+                                    <option value="CLEAR">-- Clear Month --</option>
+                                    <option value="7:00 - 16:00">7:00 - 16:00</option>
+                                    <option value="10:00 - 19:00">10:00 - 19:00</option>
+                                    <option value="12:00 - 21:00">12:00 - 21:00</option>
+                                    <option value="14:00 - 23:00">14:00 - 23:00</option>
+                                    <option value="16:00 - 1:00">16:00 - 1:00</option>
+                                    <option value="7:00 - 10:00 (WFH)">7:00 - 10:00 (WFH)</option>
+                                    <option value="7:00 - 16:00 (WFH)">7:00 - 16:00 (WFH)</option>
+                                    <option value="RD">RD</option>
+                                </select>
+                            </div>
+                        </th>
+                        <th style="color: #c6e0b4;">
+                            Kriztel
+                            <div class="bulk-set-container">
+                                <select class="bulk-select" onchange="bulkSetShift(3, this)">
+                                    <option value="">-- Set All Month --</option>
+                                    <option value="CLEAR">-- Clear Month --</option>
+                                    <option value="7:00 - 16:00">7:00 - 16:00</option>
+                                    <option value="10:00 - 19:00">10:00 - 19:00</option>
+                                    <option value="12:00 - 21:00">12:00 - 21:00</option>
+                                    <option value="14:00 - 23:00">14:00 - 23:00</option>
+                                    <option value="16:00 - 1:00">16:00 - 1:00</option>
+                                    <option value="7:00 - 10:00 (WFH)">7:00 - 10:00 (WFH)</option>
+                                    <option value="7:00 - 16:00 (WFH)">7:00 - 16:00 (WFH)</option>
+                                    <option value="RD">RD</option>
+                                </select>
+                            </div>
+                        </th>
+                        <th style="color: #ffffff;">
+                            Miguel
+                            <div class="bulk-set-container">
+                                <select class="bulk-select" onchange="bulkSetShift(4, this)">
+                                    <option value="">-- Set All Month --</option>
+                                    <option value="CLEAR">-- Clear Month --</option>
+                                    <option value="7:00 - 16:00">7:00 - 16:00</option>
+                                    <option value="10:00 - 19:00">10:00 - 19:00</option>
+                                    <option value="12:00 - 21:00">12:00 - 21:00</option>
+                                    <option value="14:00 - 23:00">14:00 - 23:00</option>
+                                    <option value="16:00 - 1:00">16:00 - 1:00</option>
+                                    <option value="7:00 - 10:00 (WFH)">7:00 - 10:00 (WFH)</option>
+                                    <option value="7:00 - 16:00 (WFH)">7:00 - 16:00 (WFH)</option>
+                                    <option value="RD">RD</option>
+                                </select>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="schedule-body"></tbody>
+            </table>
+        </div>
 
-    <div class="rota-table-wrapper">
-        <table class="rota-table">
-            <thead>
-                <tr>
-                    <th style="width: 80px;">Date</th>
-                    <th style="width: 100px;">Day</th>
-                    <th>ANN</th>
-                    <th>DAVE</th>
-                    <th>KEN</th>
-                    <th>KRIZTEL</th>
-                </tr>
-            </thead>
-            <tbody id="rotaTbody"></tbody>
-        </table>
+        <div class="leave-section">
+            <div>
+                <div class="leave-section-title">📊 Team VL Usage by Month</div>
+                <div class="chart-box">
+                    <div class="chart-container-inner">
+                        <canvas id="vlPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="leave-section-title">🎋 Vacation & Sick Leave Dates</div>
+                <table class="leave-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">Type</th>
+                            <th>Ann</th>
+                            <th>Dave</th>
+                            <th>Kenneth</th>
+                            <th>Kriztel</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leave-dates-body"></tbody>
+                </table>
+            </div>
+
+            <!-- STREAMLINED WFH MONITORING TABLE -->
+            <div>
+                <div class="leave-section-title" style="color: #38bdf8;">🏠 WFH Allowance Tracker</div>
+                <table class="leave-table">
+                    <thead>
+                        <tr>
+                            <th>Team Member</th>
+                            <th>WFH Dates Taken</th>
+                            <th style="width: 90px;">Total Used</th>
+                        </tr>
+                    </thead>
+                    <tbody id="wfh-tracker-body"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -218,174 +608,90 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const members = ['ANN', 'DAVE', 'KEN', 'KRIZTEL'];
+        const ADMIN_SECRET_KEY = "sportsbook2026";
+        let isViewOnlyMode = true;
 
-        const shiftOptions = [
-            '-- Select --',
-            '7:00 - 16:00',
-            '9:00 - 18:00',
-            '10:00 - 19:00',
-            '12:00 - 21:00',
-            '14:00 - 23:00',
-            '16:00 - 1:00',
-            '7:00 - 10:00 (WFH)',
-            '7:00 - 16:00 (WFH)',
-            'Adjusted',
-            'RD',
-            'VL',
-            'SL'
+        const team = ["Ann", "Dave", "Kenneth", "Kriztel", "Miguel"];
+        const leaveTrackedTeam = ["Ann", "Dave", "Kenneth", "Kriztel"];
+
+        const shiftList = [
+            { text: "", bgClass: "", itemClass: "", start: null, end: null },
+            { text: "7:00 - 16:00", bgClass: "shift-bg-7-16", itemClass: "item-7-16", start: 7, end: 16 },
+            { text: "10:00 - 19:00", bgClass: "shift-bg-10-19", itemClass: "item-10-19", start: 10, end: 19 },
+            { text: "12:00 - 21:00", bgClass: "shift-bg-12-21", itemClass: "item-12-21", start: 12, end: 21 },
+            { text: "14:00 - 23:00", bgClass: "shift-bg-14-23", itemClass: "item-14-23", start: 14, end: 23 },
+            { text: "16:00 - 1:00", bgClass: "shift-bg-16-1", itemClass: "item-16-1", start: 16, end: 1 },
+            { text: "7:00 - 10:00 (WFH)", bgClass: "shift-bg-7-10-wfh", itemClass: "item-7-10-wfh", start: 7, end: 10 },
+            { text: "7:00 - 16:00 (WFH)", bgClass: "shift-bg-7-16-wfh", itemClass: "item-7-16-wfh", start: 7, end: 16 },
+            { text: "Adjusted", bgClass: "shift-bg-adjusted", itemClass: "item-adjusted", start: null, end: null },
+            { text: "RD", bgClass: "shift-bg-rd", itemClass: "item-rd", start: null, end: null },
+            { text: "VL", bgClass: "shift-bg-vl", itemClass: "item-vl", start: null, end: null },
+            { text: "SL", bgClass: "shift-bg-sl", itemClass: "item-sl", start: null, end: null }
         ];
 
-        let currentSelectedMonthKey = "2026_9";
-        let rotaDataMaster = {};
-        let isAdminUnlocked = false;
-        const ADMIN_PASSWORD = "admin"; // Change password here if desired
+        const monthNames = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
 
-        function checkURLParams() {
+        const monthSelect = document.getElementById('month-select');
+        const yearInput = document.getElementById('year-input');
+        const timezoneSelect = document.getElementById('timezone-select');
+        const tbody = document.getElementById('schedule-body');
+        const leaveDatesBody = document.getElementById('leave-dates-body');
+        const wfhTrackerBody = document.getElementById('wfh-tracker-body');
+        const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thurs", "Fri", "Sat"];
+
+        let vlChartInstance = null;
+        let globalTzOffset = 8;
+        let rotaData = {};
+        let leaveMatrixData = {};
+
+        function checkPermissions() {
+            const storedKey = localStorage.getItem('sb_admin_key');
             const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('viewonly') === 'true') {
-                isAdminUnlocked = false;
-                updateLockUI();
-            }
-        }
 
-        function toggleAdminMode() {
-            if (!isAdminUnlocked) {
-                let password = prompt("Enter Admin Password to Edit Schedule:");
-                if (password === ADMIN_PASSWORD) {
-                    isAdminUnlocked = true;
-                    alert("Admin Mode Unlocked! You can now edit shifts.");
-                } else if (password !== null) {
-                    alert("Incorrect Password!");
-                }
+            if (storedKey === ADMIN_SECRET_KEY && urlParams.get('mode') !== 'view') {
+                isViewOnlyMode = false;
+                document.getElementById('viewOnlyBanner').style.display = 'none';
+                document.getElementById('btnBackToDuties').style.display = 'inline-flex';
+                document.getElementById('btnAdminUnlock').innerText = '🔒 Lock View-Only';
+                document.querySelectorAll('.bulk-select').forEach(el => el.disabled = false);
             } else {
-                isAdminUnlocked = false;
-                alert("Schedule Locked to View-Only Mode.");
-            }
-            updateLockUI();
-            renderMonthRota();
-        }
-
-        function updateLockUI() {
-            const badge = document.getElementById('lockStatusBadge');
-            const btn = document.getElementById('adminToggleBtn');
-
-            if (isAdminUnlocked) {
-                badge.className = 'lock-indicator unlocked';
-                badge.innerText = '🔓 Edit Mode';
-                btn.innerText = '🔒 Lock Schedule';
-            } else {
-                badge.className = 'lock-indicator locked';
-                badge.innerText = '🔒 View Only';
-                btn.innerText = '🔑 Admin Unlock';
+                isViewOnlyMode = true;
+                document.getElementById('viewOnlyBanner').style.display = 'block';
+                document.getElementById('btnBackToDuties').style.display = 'none';
+                document.querySelectorAll('.bulk-select').forEach(el => el.disabled = true);
+                document.getElementById('btnAdminUnlock').innerText = '🔓 Admin Login';
             }
         }
 
-        function shareViewOnlyLink() {
-            let viewOnlyURL = window.location.origin + window.location.pathname + '?viewonly=true';
-            navigator.clipboard.writeText(viewOnlyURL).then(() => {
-                alert("View-Only Link copied to clipboard:\n" + viewOnlyURL);
-            }).catch(() => {
-                prompt("Copy this View-Only link:", viewOnlyURL);
+        function promptAdminUnlock() {
+            if (!isViewOnlyMode) {
+                localStorage.removeItem('sb_admin_key');
+                window.location.href = window.location.pathname + "?mode=view";
+                return;
+            }
+
+            const pass = prompt("Enter Admin Password to enable editing:");
+            if (pass === ADMIN_SECRET_KEY) {
+                localStorage.setItem('sb_admin_key', ADMIN_SECRET_KEY);
+                alert("✓ Admin access granted! Reloading editor...");
+                window.location.href = window.location.pathname;
+            } else if (pass !== null) {
+                alert("❌ Incorrect Admin Password. You remain in View-Only Mode.");
+            }
+        }
+
+        function copyViewOnlyLink() {
+            const viewOnlyUrl = `${window.location.origin}${window.location.pathname}?mode=view`;
+            navigator.clipboard.writeText(viewOnlyUrl).then(() => {
+                alert("✓ View-Only Link copied to clipboard!\n\nViewers opening this link cannot edit the schedule unless they enter the Admin Password.");
             });
-        }
-
-        function listenToDatabase() {
-            db.ref('rota_data').on('value', (snapshot) => {
-                rotaDataMaster = snapshot.val() || {};
-                renderMonthRota();
-            });
-        }
-
-        function saveToDatabase() {
-            if (!isAdminUnlocked) return;
-            db.ref('rota_data').set(rotaDataMaster);
-            let statusBadge = document.getElementById('saveStatus');
-            if (statusBadge) {
-                statusBadge.style.opacity = '1';
-                setTimeout(() => { statusBadge.style.opacity = '0'; }, 1000);
-            }
-        }
-
-        function changeMonthYear() {
-            currentSelectedMonthKey = document.getElementById('monthSelect').value;
-            renderMonthRota();
-        }
-
-        function renderMonthRota() {
-            const tbody = document.getElementById('rotaTbody');
-            tbody.innerHTML = '';
-
-            let monthData = rotaDataMaster[currentSelectedMonthKey] || {};
-            let year = 2026;
-            let month = 9;
-
-            let keyParts = currentSelectedMonthKey.split('_');
-            if (keyParts.length === 2) {
-                year = parseInt(keyParts[0]);
-                month = parseInt(keyParts[1]);
-            } else {
-                keyParts = currentSelectedMonthKey.split('-');
-                if (keyParts.length === 2) {
-                    year = parseInt(keyParts[0]);
-                    month = parseInt(keyParts[1]);
-                }
-            }
-
-            let daysInMonth = new Date(year, month, 0).getDate();
-            const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-            for (let day = 1; day <= daysInMonth; day++) {
-                let currentDate = new Date(year, month - 1, day);
-                let dayName = daysOfWeek[currentDate.getDay()];
-                let dayRowData = monthData[day] || {};
-
-                let tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="font-weight: bold;">${day < 10 ? '0' + day : day}/${month < 10 ? '0' + month : month}/${year}</td>
-                    <td style="font-weight: 600; color: var(--header-text);">${dayName}</td>
-                `;
-
-                members.forEach((m, memberIdx) => {
-                    let currentShift = dayRowData[memberIdx] || '-- Select --';
-                    let optionsHTML = shiftOptions.map(s => 
-                        `<option value="${s}" ${currentShift === s ? 'selected' : ''}>${s}</option>`
-                    ).join('');
-
-                    let disabledAttr = isAdminUnlocked ? '' : 'disabled';
-
-                    tr.innerHTML += `
-                        <td class="shift-select-cell">
-                            <select class="rota-select" ${disabledAttr} onchange="updateShift(${day}, ${memberIdx}, this.value)">
-                                ${optionsHTML}
-                            </select>
-                        </td>
-                    `;
-                });
-
-                tbody.appendChild(tr);
-            }
-        }
-
-        function updateShift(day, memberIdx, value) {
-            if (!isAdminUnlocked) return;
-
-            if (!rotaDataMaster[currentSelectedMonthKey]) rotaDataMaster[currentSelectedMonthKey] = {};
-            if (!rotaDataMaster[currentSelectedMonthKey][day]) rotaDataMaster[currentSelectedMonthKey][day] = {};
-
-            rotaDataMaster[currentSelectedMonthKey][day][memberIdx] = value;
-            saveToDatabase();
-        }
-
-        function toggleDarkMode() {
-            const currentTheme = document.body.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            document.body.setAttribute('data-theme', newTheme);
-            localStorage.setItem('sb_theme', newTheme);
         }
 
         function setupPresenceSystem() {
-            const presenceRef = db.ref('active_rota_sessions');
+            const presenceRef = db.ref('rota_active_sessions');
             const connectedRef = db.ref('.info/connected');
 
             connectedRef.on('value', (snap) => {
@@ -409,14 +715,500 @@
             });
         }
 
-        window.onload = function() {
-            if (localStorage.getItem('sb_theme') === 'dark') {
-                document.body.setAttribute('data-theme', 'dark');
+        function listenToDatabase() {
+            const monthKey = `${yearInput.value}_${parseInt(monthSelect.value) + 1}`;
+            
+            db.ref(`rota_data/${monthKey}`).on('value', (snapshot) => {
+                rotaData = snapshot.val() || {};
+                renderCalendar();
+                renderWFHTracker();
+            });
+
+            db.ref('leave_matrix_db').on('value', (snapshot) => {
+                leaveMatrixData = snapshot.val() || {};
+                buildLeaveTables();
+            });
+
+            db.ref('rota_global_timezone').on('value', (snapshot) => {
+                if (snapshot.val() !== null) {
+                    globalTzOffset = parseFloat(snapshot.val());
+                    timezoneSelect.value = globalTzOffset.toString();
+                    renderCalendar();
+                }
+            });
+        }
+
+        function saveRotaToDatabase() {
+            if (isViewOnlyMode) return;
+            const monthKey = `${yearInput.value}_${parseInt(monthSelect.value) + 1}`;
+            db.ref(`rota_data/${monthKey}`).set(rotaData);
+        }
+
+        function saveLeaveMatrixToDatabase() {
+            if (isViewOnlyMode) return;
+            db.ref('leave_matrix_db').set(leaveMatrixData);
+        }
+
+        function changeTimezoneGlobal(val) {
+            if (isViewOnlyMode) return;
+            globalTzOffset = parseFloat(val);
+            db.ref('rota_global_timezone').set(globalTzOffset);
+        }
+
+        function toggleDarkMode() {
+            const currentTheme = document.body.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('rota_theme', newTheme);
+            renderVLPieChart();
+        }
+
+        function changeMonth(offset) {
+            let currentMonth = parseInt(monthSelect.value);
+            let currentYear = parseInt(yearInput.value);
+
+            currentMonth += offset;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            } else if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
             }
-            checkURLParams();
-            updateLockUI();
+
+            monthSelect.value = currentMonth;
+            yearInput.value = currentYear;
             listenToDatabase();
+        }
+
+        function formatShiftForTimezone(shiftText) {
+            if (!shiftText || ["RD", "VL", "SL", "Adjusted"].includes(shiftText)) return shiftText;
+
+            if (shiftText.includes("-") && !shiftList.some(s => s.text === shiftText)) {
+                const parts = shiftText.split("-").map(p => p.trim());
+                if (parts.length === 2 && parts[0].includes(":") && parts[1].includes(":")) {
+                    const startH = parseInt(parts[0].split(":")[0]);
+                    const endH = parseInt(parts[1].split(":")[0]);
+                    const diff = globalTzOffset - 8;
+                    let newStart = (startH + diff + 24) % 24;
+                    let newEnd = (endH + diff + 24) % 24;
+                    return `${newStart}:00 - ${newEnd}:00`;
+                }
+                return shiftText;
+            }
+
+            const baseShift = shiftList.find(s => s.text === shiftText);
+            if (!baseShift || baseShift.start === null) return shiftText;
+
+            const diff = globalTzOffset - 8;
+            let newStart = (baseShift.start + diff + 24) % 24;
+            let newEnd = (baseShift.end + diff + 24) % 24;
+
+            const isWFH = shiftText.includes("(WFH)") ? " (WFH)" : "";
+            return `${newStart}:00 - ${newEnd}:00${isWFH}`;
+        }
+
+        function getShiftInfo(val) {
+            if (val && val.startsWith("Adjusted:")) return { bgClass: "shift-bg-adjusted" };
+            return shiftList.find(s => s.text === val) || shiftList[0];
+        }
+
+        function renderCalendar() {
+            tbody.innerHTML = '';
+            const selectedMonth = parseInt(monthSelect.value);
+            const selectedYear = parseInt(yearInput.value);
+
+            const totalDays = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+            const monthLabel = monthSelect.options[selectedMonth].text.substring(0, 3);
+
+            for (let d = 1; d <= totalDays; d++) {
+                const dateObj = new Date(selectedYear, selectedMonth, d);
+                const dayName = weekdays[dateObj.getDay()];
+
+                const tr = document.createElement('tr');
+
+                const tdDay = document.createElement('td');
+                tdDay.className = 'day-col';
+                tdDay.textContent = dayName;
+                tr.appendChild(tdDay);
+
+                const tdDate = document.createElement('td');
+                tdDate.className = 'date-col';
+                tdDate.textContent = `${d}-${monthLabel}`;
+                tr.appendChild(tdDate);
+
+                team.forEach((member, memberIdx) => {
+                    const tdShift = document.createElement('td');
+                    
+                    let activeShift = (rotaData[d] && rotaData[d][memberIdx] !== undefined) ? rotaData[d][memberIdx] : "";
+
+                    // Miguel Editable Cell
+                    if (member === "Miguel") {
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.className = 'miguel-editable-cell';
+                        input.value = formatShiftForTimezone(activeShift);
+                        input.placeholder = "e.g. 8:00 - 17:00";
+                        if (isViewOnlyMode) input.disabled = true;
+
+                        input.addEventListener('change', () => {
+                            if (!rotaData[d]) rotaData[d] = Array(team.length).fill("");
+                            rotaData[d][memberIdx] = input.value;
+                            saveRotaToDatabase();
+                        });
+
+                        tdShift.appendChild(input);
+                    } 
+                    // Adjusted Shift: Hybrid Editable Container with Arrow Menu Trigger
+                    else if (activeShift.startsWith("Adjusted:") || activeShift === "Adjusted") {
+                        const customVal = activeShift.replace("Adjusted:", "").trim();
+
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'adjusted-input-wrapper custom-dropdown';
+
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.className = 'custom-editable-input';
+                        input.value = customVal || "e.g. 06:00 - 15:00";
+                        if (isViewOnlyMode) input.disabled = true;
+
+                        input.addEventListener('change', () => {
+                            if (!rotaData[d]) rotaData[d] = Array(team.length).fill("");
+                            rotaData[d][memberIdx] = `Adjusted: ${input.value}`;
+                            saveRotaToDatabase();
+                        });
+
+                        // Dropdown Arrow Trigger to Open Menu
+                        const dropdownTrigger = document.createElement('div');
+                        dropdownTrigger.className = 'adjusted-dropdown-trigger';
+                        dropdownTrigger.title = 'Click to switch back to standard shift options';
+                        dropdownTrigger.innerHTML = '▼';
+
+                        const menu = document.createElement('div');
+                        menu.className = 'custom-dropdown-menu';
+
+                        shiftList.forEach(s => {
+                            const item = document.createElement('div');
+                            item.className = `custom-dropdown-item ${s.itemClass}`;
+                            const displayShift = formatShiftForTimezone(s.text);
+                            item.textContent = displayShift === "" ? "-- Select --" : displayShift;
+
+                            item.addEventListener('click', (e) => {
+                                if (isViewOnlyMode) return;
+                                e.stopPropagation();
+                                
+                                if (s.text === "Adjusted") {
+                                    menu.classList.remove('show');
+                                    return;
+                                }
+
+                                menu.classList.remove('show');
+                                if (!rotaData[d]) rotaData[d] = Array(team.length).fill("");
+                                rotaData[d][memberIdx] = s.text;
+
+                                saveRotaToDatabase();
+                                renderCalendar();
+                            });
+
+                            menu.appendChild(item);
+                        });
+
+                        dropdownTrigger.addEventListener('click', (e) => {
+                            if (isViewOnlyMode) return;
+                            e.stopPropagation();
+                            document.querySelectorAll('.custom-dropdown-menu').forEach(m => {
+                                if (m !== menu) m.classList.remove('show');
+                            });
+                            menu.classList.toggle('show');
+                        });
+
+                        wrapper.appendChild(input);
+                        wrapper.appendChild(dropdownTrigger);
+                        wrapper.appendChild(menu);
+                        tdShift.appendChild(wrapper);
+                    }
+                    // Standard Custom Shift Dropdown
+                    else {
+                        const activeInfo = getShiftInfo(activeShift);
+                        const convertedText = formatShiftForTimezone(activeShift);
+
+                        const dropdownContainer = document.createElement('div');
+                        dropdownContainer.className = 'custom-dropdown';
+
+                        const btn = document.createElement('div');
+                        btn.className = `custom-dropdown-btn ${activeInfo.bgClass}`;
+                        btn.textContent = convertedText === "" ? "-- Select --" : convertedText;
+
+                        const menu = document.createElement('div');
+                        menu.className = 'custom-dropdown-menu';
+
+                        shiftList.forEach(s => {
+                            const item = document.createElement('div');
+                            item.className = `custom-dropdown-item ${s.itemClass}`;
+                            const displayShift = formatShiftForTimezone(s.text);
+                            item.textContent = displayShift === "" ? "-- Select --" : displayShift;
+
+                            item.addEventListener('click', (e) => {
+                                if (isViewOnlyMode) return;
+                                e.stopPropagation();
+                                
+                                if (s.text === "Adjusted") {
+                                    if (!rotaData[d]) rotaData[d] = Array(team.length).fill("");
+                                    rotaData[d][memberIdx] = "Adjusted: ";
+                                    saveRotaToDatabase();
+                                    renderCalendar();
+                                    return;
+                                }
+
+                                btn.textContent = displayShift === "" ? "-- Select --" : displayShift;
+                                btn.className = `custom-dropdown-btn ${s.bgClass}`;
+                                menu.classList.remove('show');
+
+                                if (!rotaData[d]) rotaData[d] = Array(team.length).fill("");
+                                rotaData[d][memberIdx] = s.text;
+
+                                saveRotaToDatabase();
+                                syncLeavesFromSchedule();
+                            });
+
+                            menu.appendChild(item);
+                        });
+
+                        btn.addEventListener('click', (e) => {
+                            if (isViewOnlyMode) return;
+                            e.stopPropagation();
+                            document.querySelectorAll('.custom-dropdown-menu').forEach(m => {
+                                if (m !== menu) m.classList.remove('show');
+                            });
+                            menu.classList.toggle('show');
+                        });
+
+                        dropdownContainer.appendChild(btn);
+                        dropdownContainer.appendChild(menu);
+                        tdShift.appendChild(dropdownContainer);
+                    }
+
+                    tr.appendChild(tdShift);
+                });
+
+                tbody.appendChild(tr);
+            }
+
+            syncLeavesFromSchedule();
+        }
+
+        function bulkSetShift(memberIdx, selectElem) {
+            if (isViewOnlyMode) return;
+            const shiftValue = selectElem.value;
+            if (!shiftValue) return;
+            const selectedMonth = parseInt(monthSelect.value);
+            const selectedYear = parseInt(yearInput.value);
+            const totalDays = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+
+            let applyValue = (shiftValue === 'CLEAR') ? '' : shiftValue;
+
+            for (let d = 1; d <= totalDays; d++) {
+                if (!rotaData[d]) rotaData[d] = Array(team.length).fill("");
+                rotaData[d][memberIdx] = applyValue;
+            }
+
+            saveRotaToDatabase();
+            renderCalendar();
+
+            selectElem.value = "";
+        }
+
+        function syncLeavesFromSchedule() {
+            let tempMatrix = {};
+            leaveTrackedTeam.forEach(m => tempMatrix[m] = { vl: [], sl: [] });
+
+            const selectedMonth = parseInt(monthSelect.value);
+            const monthLabel = monthSelect.options[selectedMonth].text.substring(0, 3);
+
+            Object.keys(rotaData).forEach(day => {
+                let row = rotaData[day];
+                team.forEach((member, memberIdx) => {
+                    if (member === "Miguel") return;
+
+                    let shiftVal = row[memberIdx];
+                    if (shiftVal === 'VL') {
+                        tempMatrix[member].vl.push(`${day}-${monthLabel}`);
+                    } else if (shiftVal === 'SL') {
+                        tempMatrix[member].sl.push(`${day}-${monthLabel}`);
+                    }
+                });
+            });
+
+            leaveTrackedTeam.forEach(m => {
+                while (tempMatrix[m].vl.length < 10) tempMatrix[m].vl.push('');
+                while (tempMatrix[m].sl.length < 5) tempMatrix[m].sl.push('');
+                tempMatrix[m].vl = tempMatrix[m].vl.slice(0, 10);
+                tempMatrix[m].sl = tempMatrix[m].sl.slice(0, 5);
+            });
+
+            leaveMatrixData = tempMatrix;
+            saveLeaveMatrixToDatabase();
+            renderWFHTracker();
+            renderVLPieChart();
+        }
+
+        function buildLeaveTables() {
+            leaveDatesBody.innerHTML = '';
+
+            for (let rowIdx = 0; rowIdx < 15; rowIdx++) {
+                let tr = document.createElement('tr');
+                let isVL = rowIdx < 10;
+                let leaveType = isVL ? 'vl' : 'sl';
+                let arrayIdx = isVL ? rowIdx : rowIdx - 10;
+
+                let tdType = document.createElement('td');
+                tdType.innerHTML = isVL ? '<span class="badge-vl">VL</span>' : '<span class="badge-sl">SL</span>';
+                tr.appendChild(tdType);
+
+                leaveTrackedTeam.forEach((member) => {
+                    let tdDate = document.createElement('td');
+                    let input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'date-input-cell';
+                    if (isViewOnlyMode) input.disabled = true;
+
+                    let val = (leaveMatrixData[member] && leaveMatrixData[member][leaveType] && leaveMatrixData[member][leaveType][arrayIdx]) ? leaveMatrixData[member][leaveType][arrayIdx] : '';
+                    input.value = val;
+
+                    input.addEventListener('input', () => {
+                        if (!leaveMatrixData[member]) leaveMatrixData[member] = { vl: Array(10).fill(''), sl: Array(5).fill('') };
+                        if (!leaveMatrixData[member][leaveType]) leaveMatrixData[member][leaveType] = isVL ? Array(10).fill('') : Array(5).fill('');
+
+                        leaveMatrixData[member][leaveType][arrayIdx] = input.value;
+                        saveLeaveMatrixToDatabase();
+                        renderVLPieChart();
+                    });
+
+                    tdDate.appendChild(input);
+                    tr.appendChild(tdDate);
+                });
+
+                leaveDatesBody.appendChild(tr);
+            }
+        }
+
+        function renderWFHTracker() {
+            wfhTrackerBody.innerHTML = '';
+
+            const selectedMonth = parseInt(monthSelect.value);
+            const selectedYear = parseInt(yearInput.value);
+            const totalDays = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+            const monthLabel = monthSelect.options[selectedMonth].text.substring(0, 3);
+
+            leaveTrackedTeam.forEach((member) => {
+                const memberIdx = team.indexOf(member);
+                let wfhDates = [];
+
+                for (let d = 1; d <= totalDays; d++) {
+                    const shiftVal = (rotaData[d] && rotaData[d][memberIdx]) ? rotaData[d][memberIdx] : '';
+                    if (shiftVal.includes('WFH')) {
+                        wfhDates.push(`${d}-${monthLabel}`);
+                    }
+                }
+
+                const usedWFH = wfhDates.length;
+
+                let wfhBadges = wfhDates.length > 0 
+                    ? wfhDates.map(dStr => `<span class="badge-wfh">${dStr}</span>`).join(' ')
+                    : '<span style="opacity: 0.6;">None</span>';
+
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight:bold;">${member}</td>
+                    <td>${wfhBadges}</td>
+                    <td><strong>${usedWFH} WFH</strong></td>
+                `;
+                wfhTrackerBody.appendChild(tr);
+            });
+        }
+
+        function renderVLPieChart() {
+            let monthVLCounts = Array(12).fill(0);
+
+            Object.keys(rotaData).forEach(day => {
+                let row = rotaData[day];
+                team.forEach((member, memberIdx) => {
+                    if (row[memberIdx] === 'VL') {
+                        monthVLCounts[parseInt(monthSelect.value)]++;
+                    }
+                });
+            });
+
+            const ctx = document.getElementById('vlPieChart').getContext('2d');
+            const activeTheme = document.body.getAttribute('data-theme') || 'dark';
+            const fontColor = activeTheme === 'light' ? '#333333' : '#ffffff';
+
+            if (vlChartInstance) {
+                vlChartInstance.destroy();
+            }
+
+            vlChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: monthNames,
+                    datasets: [{
+                        label: 'Total Team VL Days',
+                        data: monthVLCounts,
+                        backgroundColor: [
+                            '#f87171', '#fb923c', '#fbbf24', '#facc15',
+                            '#a3e635', '#4ade80', '#34d399', '#2dd4bf',
+                            '#38bdf8', '#60a5fa', '#818cf8', '#c084fc'
+                        ],
+                        borderWidth: 1,
+                        borderColor: '#0b2240'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: fontColor,
+                                font: { size: 10, weight: 'bold' },
+                                boxWidth: 12
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    let value = context.parsed || 0;
+                                    return `${label}: ${value} VL Day(s)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        monthSelect.addEventListener('change', () => {
+            listenToDatabase();
+        });
+
+        yearInput.addEventListener('input', () => {
+            listenToDatabase();
+        });
+
+        window.addEventListener('click', () => {
+            document.querySelectorAll('.custom-dropdown-menu').forEach(m => m.classList.remove('show'));
+        });
+
+        window.onload = function() {
+            checkPermissions();
+            if (localStorage.getItem('rota_theme') === 'light') {
+                document.body.setAttribute('data-theme', 'light');
+            }
             setupPresenceSystem();
+            listenToDatabase();
+            renderVLPieChart();
         };
     </script>
 </body>
