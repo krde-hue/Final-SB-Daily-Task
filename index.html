@@ -20,9 +20,6 @@
             --table-border: #2d3748;
             --accent-btn: #edf2f7;
             --accent-btn-text: #4a5568;
-            --excel-green: #107c41;
-            --excel-header-bg: #f3f2f1;
-            --excel-grid: #e1dfdd;
         }
 
         [data-theme="dark"] {
@@ -35,8 +32,6 @@
             --table-border: #4b5563;
             --accent-btn: #374151;
             --accent-btn-text: #f3f4f6;
-            --excel-header-bg: #2d3748;
-            --excel-grid: #374151;
         }
 
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
@@ -102,8 +97,35 @@
         .legend-color { width: 20px; height: 10px; border-radius: 2px; border: 1px solid #ccc; }
 
         .autosave-badge { font-size: 11px; color: #2f855a; font-weight: bold; opacity: 0; transition: opacity 0.3s; background: #c6f6d5; padding: 3px 8px; border-radius: 12px; display: inline-block; }
+        
+        @keyframes bounceSticker {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-12px) scale(1.2); }
+        }
+        @keyframes blinkBanner {
+            0%, 100% { opacity: 1; box-shadow: 0 0 15px rgba(34, 197, 94, 0.6); }
+            50% { opacity: 0.82; box-shadow: 0 0 5px rgba(34, 197, 94, 0.2); }
+        }
 
-        /* Excel-Style Workspace Modal Design */
+        .jumping-sticker { display: inline-block; font-size: 28px; animation: bounceSticker 0.6s infinite ease-in-out; margin: 0 8px; }
+        
+        .shift-end-banner {
+            background: linear-gradient(135deg, #fef08a, #86efac);
+            color: #14532d;
+            border: 2px solid #22c55e;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: blinkBanner 1.2s infinite ease-in-out;
+            text-align: center;
+        }
+
+        /* Match Exact Dark Target UI */
         .workspace-modal {
             display: none;
             position: fixed;
@@ -111,7 +133,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
+            background-color: rgba(0, 0, 0, 0.7);
             z-index: 1000;
             justify-content: center;
             align-items: center;
@@ -120,123 +142,78 @@
         .workspace-modal.active {
             display: flex;
         }
-        .excel-window {
-            background: var(--card-bg);
-            border-radius: 6px;
+        .workspace-card-wrapper {
+            background-color: #172131;
+            border-radius: 10px;
             width: 100%;
-            max-width: 950px;
-            height: 85vh;
+            max-width: 900px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            border: 1px solid #28374d;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #ffffff;
         }
-        .excel-ribbon {
-            background: var(--excel-green);
-            color: white;
-            padding: 10px 16px;
+        .workspace-card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid #233144;
+            background-color: #1b2638;
         }
-        .excel-title {
-            font-size: 14px;
-            font-weight: 600;
+        .workspace-card-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #3b82f6;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
-        .excel-formula-bar {
+        .workspace-card-body {
+            padding: 20px;
             display: flex;
-            align-items: center;
-            background: var(--card-bg);
-            border-bottom: 1px solid var(--excel-grid);
-            padding: 4px 8px;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .workspace-subtitle {
             font-size: 12px;
-            gap: 8px;
+            color: #94a3b8;
         }
-        .cell-address {
-            font-weight: bold;
-            color: var(--text-color);
-            padding: 2px 8px;
-            border-right: 1px solid var(--excel-grid);
-            min-width: 45px;
-            text-align: center;
-        }
-        .fx-symbol {
-            font-style: italic;
-            font-weight: bold;
-            color: #666;
-        }
-        .formula-input {
-            flex: 1;
-            border: none;
+        .workspace-inner-box {
+            border: 1px solid #1d4ed8;
+            border-radius: 8px;
+            background-color: #0f172a;
+            padding: 20px;
+            min-height: 420px;
+            max-height: 60vh;
+            overflow-y: auto;
+            color: #ffffff;
+            font-size: 13px;
             outline: none;
-            background: transparent;
-            color: var(--text-color);
-            font-size: 12px;
         }
-        .excel-grid-container {
-            flex: 1;
-            overflow: auto;
-            background: var(--card-bg);
-            position: relative;
+        .workspace-inner-box:focus {
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
         }
-        .excel-table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
+        .workspace-inner-box a {
+            color: #60a5fa !important;
+            text-decoration: underline;
+            cursor: pointer;
+            pointer-events: auto !important;
         }
-        .excel-table th {
-            background: var(--excel-header-bg);
-            border: 1px solid var(--excel-grid);
-            color: var(--text-color);
-            font-weight: 600;
-            font-size: 11px;
-            padding: 4px;
-            text-align: center;
-            user-select: none;
+        .workspace-inner-box a:hover {
+            color: #93c5fd !important;
         }
-        .excel-table th.row-header {
-            width: 40px;
+        .workspace-inner-box p {
+            margin-bottom: 8px;
         }
-        .excel-table td {
-            border: 1px solid var(--excel-grid);
-            padding: 0;
-            vertical-align: top;
-            height: 100%;
+        .workspace-inner-box ul {
+            margin-left: 20px;
+            margin-top: 6px;
+            margin-bottom: 16px;
         }
-        .excel-cell-content {
-            padding: 8px 10px;
-            font-size: 12px;
-            color: var(--text-color);
-            outline: none;
-            min-height: 100px;
-            word-break: break-word;
-            white-space: pre-wrap;
-            line-height: 1.5;
-        }
-        .excel-cell-content:focus {
-            box-shadow: inset 0 0 0 2px var(--excel-green);
-        }
-        .excel-sheet-bar {
-            background: var(--excel-header-bg);
-            border-top: 1px solid var(--excel-grid);
-            padding: 4px 12px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            font-size: 11px;
-        }
-        .excel-tab {
-            background: var(--card-bg);
-            padding: 4px 16px;
-            border: 1px solid var(--excel-grid);
-            border-bottom: 2px solid var(--excel-green);
-            font-weight: bold;
-            color: var(--excel-green);
+        .workspace-inner-box li {
+            margin-bottom: 10px;
         }
 
         @media print {
@@ -289,70 +266,31 @@
         <div class="legend-item"><div class="legend-color" style="background-color: #9ca3af;"></div><span>Off-Duty</span></div>
     </div>
 
-    <!-- Clean Systematic Excel-Designed Workspace Modal -->
+    <!-- Exact Target Design Modal -->
     <div id="workspaceModal" class="workspace-modal" role="dialog" aria-labelledby="workspaceModalTitle" aria-modal="true" onclick="closeWorkspaceModalOnBackdrop(event)">
-        <div class="excel-window">
-            <div class="excel-ribbon">
-                <div class="excel-title" id="workspaceModalTitle">
-                    <span>📊</span>
-                    <span>Workspace_Data.xlsx - Operational Workspace & Reference Sheet</span>
+        <div class="workspace-card-wrapper">
+            <div class="workspace-card-header">
+                <div class="workspace-card-title" id="workspaceModalTitle">
+                    <span>💼</span>
+                    <span>Operational Workspace & Reference Data</span>
                 </div>
-                <button class="btn btn-danger" onclick="closeWorkspaceModal()" style="padding: 2px 8px; font-size: 11px;">✕ Close</button>
+                <button class="btn btn-secondary" onclick="closeWorkspaceModal()" style="background: #2a3a52; color: #ffffff; border: 1px solid #3d506d;">✕ Close</button>
             </div>
-            
-            <div class="excel-formula-bar">
-                <span class="cell-address">A1</span>
-                <span class="fx-symbol">fx</span>
-                <input type="text" class="formula-input" value="=HYPERLINK_LIST(Operational_References)" readonly>
-            </div>
-
-            <div class="excel-grid-container">
-                <table class="excel-table">
-                    <thead>
-                        <tr>
-                            <th class="row-header"></th>
-                            <th style="width: 45%;">A</th>
-                            <th style="width: 55%;">B</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <th class="row-header">1</th>
-                            <td>
-                                <div id="cell-A1" class="excel-cell-content" contenteditable="true" oninput="saveWorkspaceContent()">
-                                    <p><strong>SB Operational Quick Links & References:</strong></p>
-                                    <ul style="margin-left: 20px; margin-top: 5px;">
-                                        <li><a href="https://test-daily-task--sb.firebaseapp.com" target="_blank" style="color: #2563eb; text-decoration: underline;">Firebase Realtime Dashboard</a></li>
-                                        <li><a href="https://sportsbookrisk.com" target="_blank" style="color: #2563eb; text-decoration: underline;">Sportsbook Risk Portal</a></li>
-                                        <li><a href="https://predictionmarket.com" target="_blank" style="color: #2563eb; text-decoration: underline;">Prediction Market Ticker Monitor</a></li>
-                                    </ul>
-                                </div>
-                            </td>
-                            <td>
-                                <div id="cell-B1" class="excel-cell-content" contenteditable="true" oninput="saveWorkspaceContent()">
-                                    <p><strong>Operational Notes:</strong></p>
-                                    <p>- Verify all Big Winner Checks before handovers.</p>
-                                    <p>- Maintain live synchronization across shifts.</p>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th class="row-header">2</th>
-                            <td><div id="cell-A2" class="excel-cell-content" contenteditable="true" oninput="saveWorkspaceContent()"></div></td>
-                            <td><div id="cell-B2" class="excel-cell-content" contenteditable="true" oninput="saveWorkspaceContent()"></div></td>
-                        </tr>
-                        <tr>
-                            <th class="row-header">3</th>
-                            <td><div id="cell-A3" class="excel-cell-content" contenteditable="true" oninput="saveWorkspaceContent()"></div></td>
-                            <td><div id="cell-B3" class="excel-cell-content" contenteditable="true" oninput="saveWorkspaceContent()"></div></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="excel-sheet-bar">
-                <div class="excel-tab">Sheet1</div>
-                <span style="color: var(--credit-text);">Ready | 100% Zoom</span>
+            <div class="workspace-card-body">
+                <div class="workspace-subtitle">
+                    This box is editable and accessible. Keep your notes, references, and active links below. All links remain clickable.
+                </div>
+                <div id="workspaceContentArea" class="workspace-inner-box" contenteditable="true" oninput="saveWorkspaceContent()">
+                    <p><strong>SB Operational Quick Links &amp; References:</strong></p>
+                    <ul>
+                        <li><a href="https://test-daily-task--sb.firebaseapp.com" target="_blank">Firebase Realtime Dashboard</a></li>
+                        <li><a href="https://sportsbookrisk.com" target="_blank">Sportsbook Risk Portal</a></li>
+                        <li><a href="https://predictionmarket.com" target="_blank">Prediction Market Ticker Monitor</a></li>
+                    </ul>
+                    <p><strong>Operational Notes:</strong></p>
+                    <p>- Verify all Big Winner Checks before handovers.</p>
+                    <p>- Maintain live synchronization across shifts.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -447,13 +385,10 @@
             const modal = document.getElementById('workspaceModal');
             if (modal) {
                 modal.classList.add('active');
-                const cellIds = ['cell-A1', 'cell-B1', 'cell-A2', 'cell-B2', 'cell-A3', 'cell-B3'];
-                cellIds.forEach(id => {
-                    const savedContent = localStorage.getItem(`excel_${id}`);
-                    if (savedContent !== null) {
-                        document.getElementById(id).innerHTML = savedContent;
-                    }
-                });
+                const savedContent = localStorage.getItem('sb_exact_workspace_data');
+                if (savedContent !== null) {
+                    document.getElementById('workspaceContentArea').innerHTML = savedContent;
+                }
             }
         }
 
@@ -471,13 +406,8 @@
         }
 
         function saveWorkspaceContent() {
-            const cellIds = ['cell-A1', 'cell-B1', 'cell-A2', 'cell-B2', 'cell-A3', 'cell-B3'];
-            cellIds.forEach(id => {
-                const cell = document.getElementById(id);
-                if (cell) {
-                    localStorage.setItem(`excel_${id}`, cell.innerHTML);
-                }
-            });
+            const content = document.getElementById('workspaceContentArea').innerHTML;
+            localStorage.setItem('sb_exact_workspace_data', content);
         }
 
         function setupPresenceSystem() {
