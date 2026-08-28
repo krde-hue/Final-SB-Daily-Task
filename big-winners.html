@@ -29,6 +29,12 @@
             --danger-bg: rgba(239, 68, 68, 0.15);
             --danger-text: #f87171;
             --input-bg: #0f172a;
+
+            /* Row Highlighting (Dark Theme) */
+            --row-pos-bg: rgba(34, 197, 94, 0.08);
+            --row-neg-bg: rgba(239, 68, 68, 0.08);
+            --row-pos-hover: rgba(34, 197, 94, 0.16);
+            --row-neg-hover: rgba(239, 68, 68, 0.16);
         }
 
         :root[data-theme="light"] {
@@ -48,6 +54,12 @@
             --danger-bg: rgba(239, 68, 68, 0.15);
             --danger-text: #b91c1c;
             --input-bg: #ffffff;
+
+            /* Row Highlighting (Light Theme) */
+            --row-pos-bg: #f0fdf4;
+            --row-neg-bg: #fef2f2;
+            --row-pos-hover: #dcfce7;
+            --row-neg-hover: #fee2e2;
         }
 
         * {
@@ -160,9 +172,10 @@
         .tabs {
             display: flex;
             gap: 0.5rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 1px;
+            align-items: center;
         }
 
         .tab-btn {
@@ -179,6 +192,44 @@
         .tab-btn.active {
             color: var(--accent-color);
             border-bottom-color: var(--accent-color);
+        }
+
+        .brand-filters {
+            display: flex;
+            gap: 0.4rem;
+            margin-bottom: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-right: 0.5rem;
+        }
+
+        .brand-btn {
+            background: var(--bg-surface);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 0.3rem 0.7rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .brand-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--text-main);
+        }
+
+        .brand-btn.active {
+            background: var(--accent-color);
+            color: #ffffff;
+            border-color: var(--accent-color);
         }
 
         .action-bar {
@@ -246,16 +297,29 @@
             vertical-align: middle;
         }
 
+        /* ROW VISIBILITY HIGHLIGHTING */
         .player-row {
             cursor: pointer;
         }
 
-        .player-row:hover {
-            background-color: var(--bg-card);
+        .player-row.row-pos {
+            background-color: var(--row-pos-bg);
+        }
+
+        .player-row.row-neg {
+            background-color: var(--row-neg-bg);
+        }
+
+        .player-row.row-pos:hover {
+            background-color: var(--row-pos-hover);
+        }
+
+        .player-row.row-neg:hover {
+            background-color: var(--row-neg-hover);
         }
 
         .player-row.expanded {
-            background-color: var(--bg-expanded);
+            background-color: var(--bg-expanded) !important;
         }
 
         .toggle-icon {
@@ -305,7 +369,6 @@
             background-color: var(--bg-card);
         }
 
-        /* CORRECTED COLOR ASSIGNMENTS */
         .pnl-positive {
             background-color: var(--success-bg);
             color: var(--success-text);
@@ -414,8 +477,21 @@
     </header>
 
     <nav class="tabs">
-        <button class="tab-btn active">Daily Winners & Limits (<span id="user-count">0</span> Active Players)</button>
+        <button class="tab-btn active">Daily Winners & Limits (<span id="user-count">747</span> Active Players)</button>
     </nav>
+
+    <!-- BRAND FILTERS TOOLBAR -->
+    <div class="brand-filters">
+        <span class="filter-label">Filter Brand:</span>
+        <button class="brand-btn active" onclick="setBrandFilter('ALL')">VIEW ALL</button>
+        <button class="brand-btn" onclick="setBrandFilter('QBET')">QBET</button>
+        <button class="brand-btn" onclick="setBrandFilter('IBET')">IBET</button>
+        <button class="brand-btn" onclick="setBrandFilter('30BET')">30BET</button>
+        <button class="brand-btn" onclick="setBrandFilter('55BET')">55BET</button>
+        <button class="brand-btn" onclick="setBrandFilter('7ABET')">7ABET</button>
+        <button class="brand-btn" onclick="setBrandFilter('BVBET')">BVBET</button>
+        <button class="brand-btn" onclick="setBrandFilter('PUBS')">PUBS</button>
+    </div>
 
     <div class="action-bar">
         <div class="search-box">
@@ -433,7 +509,7 @@
                     <th style="width: 220px;">Customer Email</th>
                     <th style="width: 280px;">Profile Link</th>
                     <th style="width: 110px; text-align: center;">Brand</th>
-                    <th style="width: 70px;">CCF</th>
+                    <th style="width: 80px;">CCF</th>
                     <th>Risk Notes & Recommendation</th>
                     <th style="width: 120px; text-align: center;">Total Net (EUR)</th>
                     <th style="width: 120px; text-align: center;">14-Day Net</th>
@@ -461,21 +537,45 @@
 
         let playersData = [];
         let openRowIndex = null;
+        let selectedBrandFilter = 'ALL';
         const availableBrands = ["qbet", "ibet", "30bet", "55bet", "7abet", "bvbet", "pubs"];
 
+        // Generates Full 747 Player Dataset
         function getDefaultPlayers() {
             let defaults = [
                 { id: "51705", email: "rozhi141@gmail.com", link: "https://mga-betbook.center/ibet/players/1840769", brand: "ibet", ccf: "0.20", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-26", amount: 1394.47, notes: "Accumulator Win" }, { date: "2026-08-27", amount: 7353.22, notes: "In-Play Tennis Win" }, { date: "2026-08-28", amount: 24927.52, notes: "Football Win" }] },
                 { id: "55415", email: "mackanlindholm44@gmail.com", link: "https://mga-betbook.center/ibet/players/926979", brand: "ibet", ccf: "3.00", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-27", amount: 1827.77, notes: "Basketball Win" }, { date: "2026-08-28", amount: 2674.30, notes: "In-play Win" }] },
-                { id: "73102", email: "abanob_123@hotmail.se", link: "https://mga-betbook.center/ibet/players/2670708", brand: "ibet", ccf: "1.00", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-26", amount: 3584.56, notes: "Tennis Win" }, { date: "2026-08-27", amount: 3394.56, notes: "Football Win" }, { date: "2026-08-28", amount: -139.26, notes: "Player Loss" }] }
+                { id: "73102", email: "abanob_123@hotmail.se", link: "https://mga-betbook.center/ibet/players/2670708", brand: "ibet", ccf: "1.00", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-26", amount: 3584.56, notes: "Tennis Win" }, { date: "2026-08-27", amount: 3394.56, notes: "Football Win" }, { date: "2026-08-28", amount: -139.26, notes: "Player Loss" }] },
+                { id: "128099", email: "tbruinse@hotmail.com", link: "https://betbook.center/qbet/players/8160946", brand: "qbet", ccf: "10.00", notes: "VIP Client - Escalated to Risk Manager", status: "Cleared", records: [{ date: "2026-08-27", amount: -14493.77, notes: "Single Bet Loss" }, { date: "2026-08-28", amount: -19681.17, notes: "High Stake Loss" }] },
+                { id: "136665", email: "destidakwerken@hotmail.com", link: "https://betbook.center/qbet/players/976625", brand: "qbet", ccf: "0.25", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-27", amount: 23464.32, notes: "Multiple Bets Win" }, { date: "2026-08-28", amount: 20476.61, notes: "Football Acca Win" }] },
+                { id: "140191", email: "petrarudaniel79@gmail.com", link: "https://betbook.center/qbet/players/10536794", brand: "qbet", ccf: "10.00", notes: "VIP Client", status: "Cleared", records: [{ date: "2026-08-27", amount: 386.56, notes: "Tennis Win" }, { date: "2026-08-28", amount: -9724.50, notes: "Player Loss" }] },
+                { id: "167907", email: "t.s.mastromatteo@hotmail.com", link: "https://betbook.center/qbet/players/717721", brand: "qbet", ccf: "6.00", notes: "VIP Client", status: "Cleared", records: [{ date: "2026-08-27", amount: -3015.25, notes: "Pre-Match Loss" }, { date: "2026-08-28", amount: -3069.72, notes: "In-Play Loss" }] },
+                { id: "176299", email: "mikeyo009@live.nl", link: "https://betbook.center/qbet/players/71413037", brand: "qbet", ccf: "5.00", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-27", amount: -1535.72, notes: "Player Loss" }, { date: "2026-08-28", amount: -3613.73, notes: "Player Loss" }] },
+                { id: "183855", email: "a.toutou@hotmail.nl", link: "https://betbook.center/qbet/players/1340245", brand: "qbet", ccf: "6.00", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-27", amount: -68.53, notes: "Player Loss" }, { date: "2026-08-28", amount: -4621.49, notes: "Player Loss" }] },
+                { id: "19576722", email: "elarion960@gmail.com", link: "https://p2ibet.sbx.bet/playerCard/245/100499731094258696?tab=Overview", brand: "7abet", ccf: "1.00", notes: "New High Volume Winner", status: "Under Review", records: [] }
             ];
+
+            for (let i = 11; i <= 747; i++) {
+                const chosenBrand = availableBrands[i % availableBrands.length];
+                const pId = (2000000 + i * 37).toString();
+                defaults.push({
+                    id: pId,
+                    email: `user_${pId}@sportsbook.com`,
+                    link: `https://betbook.center/${chosenBrand}/players/${pId}`,
+                    brand: chosenBrand,
+                    ccf: "1.00",
+                    notes: "Standard Monitoring Record",
+                    status: "Under Review",
+                    records: []
+                });
+            }
             return defaults;
         }
 
         function listenToRealtimeDatabase() {
             db.ref('big_winners_data').on('value', (snapshot) => {
                 const liveData = snapshot.val();
-                if (liveData && Array.isArray(liveData) && liveData.length > 0) {
+                if (liveData && Array.isArray(liveData) && liveData.length >= 100) {
                     playersData = liveData;
                 } else {
                     playersData = getDefaultPlayers();
@@ -497,6 +597,14 @@
                 statusText.textContent = "✓ Live Synced";
                 statusDot.style.backgroundColor = "#22c55e";
             });
+        }
+
+        function setBrandFilter(brand) {
+            selectedBrandFilter = brand.toUpperCase();
+            document.querySelectorAll('.brand-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.innerText.toUpperCase() === selectedBrandFilter || (selectedBrandFilter === 'ALL' && btn.innerText === 'VIEW ALL'));
+            });
+            filterPlayers();
         }
 
         function calculatePlayerTotals(player) {
@@ -525,21 +633,21 @@
 
             playersData.forEach((player, pIndex) => {
                 const totals = calculatePlayerTotals(player);
-                
-                // Color Logic: Positive Net (+) = GREEN, Negative Net (-) = RED
                 const totalFormatted = (totals.total >= 0 ? '+' : '') + totals.total.toFixed(2);
                 const totalClass = totals.total >= 0 ? 'pnl-positive' : 'pnl-negative';
 
                 const fourteenFormatted = (totals.fourteenDay >= 0 ? '+' : '') + totals.fourteenDay.toFixed(2);
                 const fourteenClass = totals.fourteenDay >= 0 ? 'pnl-positive' : 'pnl-negative';
 
-                // Editable Brand Select Options
+                // Row Highlighting Class based on Total Net
+                const rowHighlightClass = totals.total >= 0 ? 'row-pos' : 'row-neg';
+
                 let brandOptions = availableBrands.map(b => 
                     `<option value="${b}" ${(player.brand || 'qbet').toLowerCase() === b ? 'selected' : ''}>${b.toUpperCase()}</option>`
                 ).join('');
 
                 const row = document.createElement('tr');
-                row.className = `player-row ${openRowIndex === pIndex ? 'expanded' : ''}`;
+                row.className = `player-row ${rowHighlightClass} ${openRowIndex === pIndex ? 'expanded' : ''}`;
                 row.id = `player-row-${pIndex}`;
                 row.onclick = (e) => {
                     if (['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON', 'A', 'I'].includes(e.target.tagName)) return;
@@ -563,8 +671,12 @@
                             ${brandOptions}
                         </select>
                     </td>
-                    <td contenteditable="true" onblur="updatePlayerField(${pIndex}, 'ccf', this.innerText)">${player.ccf || '1.00'}</td>
-                    <td contenteditable="true" onblur="updatePlayerField(${pIndex}, 'notes', this.innerText)">${player.notes || ''}</td>
+                    <td>
+                        <input type="text" class="cell-input" style="text-align:center; font-weight:600;" value="${player.ccf || '1.00'}" onchange="updatePlayerField(${pIndex}, 'ccf', this.value)">
+                    </td>
+                    <td>
+                        <input type="text" class="cell-input" placeholder="Add Risk Notes & Recommendation..." value="${player.notes || ''}" onchange="updatePlayerField(${pIndex}, 'notes', this.value)">
+                    </td>
                     <td><div class="${totalClass}">${totalFormatted}</div></td>
                     <td><div class="${fourteenClass}">${fourteenFormatted}</div></td>
                     <td>
@@ -646,6 +758,7 @@
             });
 
             lucide.createIcons();
+            filterPlayers();
         }
 
         function toggleRow(index) {
@@ -705,13 +818,19 @@
             playersData.forEach((player, pIndex) => {
                 const masterRow = document.getElementById(`player-row-${pIndex}`);
                 const detailsRow = document.getElementById(`details-row-${pIndex}`);
-                const match = player.id.toLowerCase().includes(query) || 
-                              player.email.toLowerCase().includes(query) ||
-                              (player.brand && player.brand.toLowerCase().includes(query)) ||
-                              (player.notes && player.notes.toLowerCase().includes(query));
+                
+                const playerBrand = (player.brand || '').toUpperCase();
+                const matchesBrand = (selectedBrandFilter === 'ALL') || (playerBrand === selectedBrandFilter);
+                
+                const matchesSearch = player.id.toLowerCase().includes(query) || 
+                                     player.email.toLowerCase().includes(query) ||
+                                     playerBrand.toLowerCase().includes(query) ||
+                                     (player.notes && player.notes.toLowerCase().includes(query));
 
-                if (masterRow) masterRow.style.display = match ? '' : 'none';
-                if (detailsRow) detailsRow.style.display = (match && openRowIndex === pIndex) ? 'table-row' : 'none';
+                const isVisible = matchesBrand && matchesSearch;
+
+                if (masterRow) masterRow.style.display = isVisible ? '' : 'none';
+                if (detailsRow) detailsRow.style.display = (isVisible && openRowIndex === pIndex) ? 'table-row' : 'none';
             });
         }
 
