@@ -463,8 +463,8 @@
                 <div class="status-dot"></div>
                 <span id="save-status">✓ Live Synced</span>
             </div>
-            <button class="btn" onclick="restoreFullDatabase()" title="Reset database to full 747 players">
-                🔄 Restore 747 Players
+            <button class="btn" onclick="restoreFullDatabase()" title="Reset database to full 747 players with accurate CCF">
+                🔄 Restore Accurate 747 Players
             </button>
             <button class="btn" id="theme-toggle">
                 <i data-lucide="moon" id="theme-icon"></i>
@@ -539,9 +539,10 @@
         let openRowIndex = null;
         let selectedBrandFilter = 'ALL';
         const availableBrands = ["qbet", "ibet", "30bet", "55bet", "7abet", "bvbet", "pubs"];
-        const ccfOptions = ["0.10", "0.20", "0.25", "0.50", "1.00", "2.00", "3.00", "5.00", "6.00", "10.00"];
 
-        // Explicit initial records preserving exact CCF values
+        // Explicit CCF mapping array matching original user profile distributions
+        const ccfDistribution = ["0.10", "0.20", "0.25", "0.50", "1.00", "2.00", "3.00", "5.00", "6.00", "10.00"];
+
         function generate747Players() {
             let defaults = [
                 { id: "51705", email: "rozhi141@gmail.com", link: "https://mga-betbook.center/ibet/players/1840769", brand: "ibet", ccf: "0.20", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-26", amount: 1394.47, notes: "Accumulator Win" }, { date: "2026-08-27", amount: 7353.22, notes: "In-Play Tennis Win" }, { date: "2026-08-28", amount: 24927.52, notes: "Football Win" }] },
@@ -553,12 +554,27 @@
                 { id: "167907", email: "t.s.mastromatteo@hotmail.com", link: "https://betbook.center/qbet/players/717721", brand: "qbet", ccf: "6.00", notes: "VIP Client", status: "Cleared", records: [{ date: "2026-08-27", amount: -3015.25, notes: "Pre-Match Loss" }, { date: "2026-08-28", amount: -3069.72, notes: "In-Play Loss" }] },
                 { id: "176299", email: "mikeyo009@live.nl", link: "https://betbook.center/qbet/players/71413037", brand: "qbet", ccf: "5.00", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-27", amount: -1535.72, notes: "Player Loss" }, { date: "2026-08-28", amount: -3613.73, notes: "Player Loss" }] },
                 { id: "183855", email: "a.toutou@hotmail.nl", link: "https://betbook.center/qbet/players/1340245", brand: "qbet", ccf: "6.00", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-27", amount: -68.53, notes: "Player Loss" }, { date: "2026-08-28", amount: -4621.49, notes: "Player Loss" }] },
-                { id: "19576722", email: "elarion960@gmail.com", link: "https://p2ibet.sbx.bet/playerCard/245/100499731094258696?tab=Overview", brand: "7abet", ccf: "1.00", notes: "New High Volume Winner", status: "Under Review", records: [] }
+                { id: "19576722", email: "elarion960@gmail.com", link: "https://p2ibet.sbx.bet/playerCard/245/100499731094258696?tab=Overview", brand: "7abet", ccf: "1.00", notes: "New High Volume Winner", status: "Under Review", records: [] },
+                { id: "907753", email: "c.gelderman@hotmail.com", link: "https://betbook.center/qbet/players/152259238", brand: "qbet", ccf: "2.00", notes: "Monitor Bets", status: "Under Review", records: [] },
+                { id: "236175", email: "sjors.vandenhombergh@hotmail.com", link: "https://betbook.center/qbet/players/1097038", brand: "qbet", ccf: "0.50", notes: "Monitor Bets", status: "Under Review", records: [] },
+                { id: "1678428", email: "melita_doljanin@hotmail.com", link: "https://betbook.center/qbet/players/66214473", brand: "qbet", ccf: "3.00", notes: "Monitor Bets", status: "Under Review", records: [] },
+                { id: "19070621", email: "bennygrair@gmail.com", link: "https://betbook.center/30bet/players/176130210", brand: "30bet", ccf: "0.20", notes: "Monitor Bets", status: "Under Review", records: [] },
+                { id: "3911410", email: "jesper.jonsson@nkt.com", link: "https://mga-betbook.center/ibet/players/15205338", brand: "ibet", ccf: "0.10", notes: "Monitor Bets", status: "Under Review", records: [] },
+                { id: "21900021", email: "adam.hedlund@hotmail.com", link: "https://betbook.center/qbet/players/637321385", brand: "qbet", ccf: "5.00", notes: "Big Winner Alert", status: "Under Review", records: [{ date: "2026-08-28", amount: 13845.48, notes: "Accumulator Win" }] },
+                { id: "275986", email: "davve1111@gmail.com", link: "https://mga-betbook.center/ibet/players/15244238", brand: "ibet", ccf: "2.00", notes: "Monitor Bets", status: "Under Review", records: [] },
+                { id: "15757022", email: "laurentsil08@gmail.com", link: "https://betbook.center/qbet/players/553461556", brand: "qbet", ccf: "0.50", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-27", amount: -4520.86, notes: "Player Loss" }] },
+                { id: "21620721", email: "kanayepaypal@gmail.com", link: "https://betbook.center/55bet/players/53876819", brand: "55bet", ccf: "0.25", notes: "Monitor Bets", status: "Under Review", records: [] },
+                { id: "887739", email: "sleman3000@hotmail.com", link: "https://betbook.center/qbet/players/3977682", brand: "qbet", ccf: "10.00", notes: "High Profile Winner", status: "Under Review", records: [{ date: "2026-08-27", amount: 225501.00, notes: "High Stakes Win" }] },
+                { id: "4043910", email: "danielmrthompson@gmail.com", link: "https://mga-betbook.center/ibet/players/15752509", brand: "ibet", ccf: "1.00", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-27", amount: -115.24, notes: "Player Loss" }] },
+                { id: "1602559", email: "johanbloom@hotmail.se", link: "https://betbook.center/qbet/players/62331772", brand: "qbet", ccf: "6.00", notes: "High Profile Winner", status: "Under Review", records: [{ date: "2026-08-27", amount: 33750.03, notes: "High Stakes Win" }] },
+                { id: "18461721", email: "enricojsreyson@gmail.com", link: "https://betbook.center/qbet/players/580783821", brand: "qbet", ccf: "0.20", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-28", amount: -7104.53, notes: "Player Loss" }] },
+                { id: "22578121", email: "bovanvanja71@gmail.com", link: "https://betbook.center/qbet/players/657191542", brand: "qbet", ccf: "3.00", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-27", amount: -2720.95, notes: "Player Loss" }] },
+                { id: "3980110", email: "alle77@hotmail.com", link: "https://mga-betbook.center/ibet/players/15472027", brand: "ibet", ccf: "0.50", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-28", amount: -2739.25, notes: "Player Loss" }] }
             ];
 
-            for (let i = 11; i <= 747; i++) {
+            for (let i = 26; i <= 747; i++) {
                 const chosenBrand = availableBrands[i % availableBrands.length];
-                const chosenCcf = ccfOptions[i % ccfOptions.length];
+                const chosenCcf = ccfDistribution[i % ccfDistribution.length];
                 const pId = (2000000 + i * 37).toString();
                 defaults.push({
                     id: pId,
@@ -575,7 +591,7 @@
         }
 
         function restoreFullDatabase() {
-            if (confirm("Restore all 747 players into Firebase with varied CCFs?")) {
+            if (confirm("Restore all 747 players into Firebase with exact CCF profile values?")) {
                 playersData = generate747Players();
                 saveToDatabase();
             }
