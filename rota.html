@@ -236,9 +236,9 @@
             transition: background-color 0.15s, color 0.15s;
         }
 
-        /* Shift Cell Background Colors */
+        /* CONSISTENT SHIFT CELL BACKGROUND COLORS (ADMIN & VIEW ONLY) */
         .shift-bg-7-16 { background-color: #86efac !important; color: #064e3b !important; }
-        .shift-bg-9-18 { background-color: #a7f3d0 !important; color: #065f46 !important; } /* Lighter Green */
+        .shift-bg-9-18 { background-color: #a7f3d0 !important; color: #065f46 !important; } /* FRESH MINT GREEN */
         .shift-bg-10-19 { background-color: #fed7aa !important; color: #7c2d12 !important; }
         .shift-bg-12-21 { background-color: #bae6fd !important; color: #0c4a6e !important; }
         .shift-bg-14-23 { background-color: #e9d5ff !important; color: #581c87 !important; }
@@ -252,7 +252,7 @@
 
         /* Item Hover Classes */
         .item-7-16:hover { background-color: #86efac !important; color: #064e3b !important; }
-        .item-9-18:hover { background-color: #a7f3d0 !important; color: #065f46 !important; } /* Lighter Green Hover */
+        .item-9-18:hover { background-color: #a7f3d0 !important; color: #065f46 !important; }
         .item-10-19:hover { background-color: #fed7aa !important; color: #7c2d12 !important; }
         .item-12-21:hover { background-color: #bae6fd !important; color: #0c4a6e !important; }
         .item-14-23:hover { background-color: #e9d5ff !important; color: #581c87 !important; }
@@ -627,14 +627,16 @@
         let rotaData = {};
         let leaveMatrixData = {};
         
-        let isViewOnlyMode = sessionStorage.getItem("admin_authenticated") !== "true";
+        let isViewOnlyMode = true;
         const ADMIN_PASSWORD = "sportsbook2026";
 
         function checkViewOnlyMode() {
-            if (sessionStorage.getItem("admin_authenticated") === "true") {
-                isViewOnlyMode = false;
-            } else {
+            const urlParams = new URLSearchParams(window.location.search);
+            // Lock to view-only if explicitly passed in URL or if admin is not authenticated
+            if (urlParams.get('viewonly') === 'true' || sessionStorage.getItem("admin_authenticated") !== "true") {
                 isViewOnlyMode = true;
+            } else {
+                isViewOnlyMode = false;
             }
             updateAdminUI();
         }
@@ -810,6 +812,8 @@
 
         function getShiftInfo(val) {
             if (val && val.startsWith("Adjusted:")) return { bgClass: "shift-bg-adjusted" };
+            // FIX: Ensure 9:00 - 18:00 gets matched explicitly to prevent defaulting to standard styling
+            if (val === "9:00 - 18:00") return { bgClass: "shift-bg-9-18", itemClass: "item-9-18" };
             return shiftList.find(s => s.text === val) || shiftList[0];
         }
 
