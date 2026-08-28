@@ -222,6 +222,8 @@
         <div class="legend-item"><div class="legend-color" style="background-color: #fef9c3;"></div><span>12:00 - 21:00</span></div>
         <div class="legend-item"><div class="legend-color" style="background-color: #e9d5ff;"></div><span>14:00 - 23:00</span></div>
         <div class="legend-item"><div class="legend-color" style="background-color: #ffedd5;"></div><span>16:00 - 1:00</span></div>
+        <div class="legend-item"><div class="legend-color" style="background-color: #fbcfe8;"></div><span>7:00 - 10:00 (WFH)</span></div>
+        <div class="legend-item"><div class="legend-color" style="background-color: #f472b6;"></div><span>7:00 - 16:00 (WFH)</span></div>
         <div class="legend-item"><div class="legend-color" style="background-color: #e5e7eb;"></div><span>RD (Rest Day)</span></div>
         <div class="legend-item"><div class="legend-color" style="background-color: #9ca3af;"></div><span>Off-Duty</span></div>
     </div>
@@ -280,13 +282,19 @@
             "Others (As instructed)"
         ];
 
+        // FULL MATCHING SHIFTS FROM ROTA
         const shifts = [
             { id: 'shift-7-16', label: '7:00 - 16:00', endHour: 16, endMinute: 0 },
             { id: 'shift-10-19', label: '10:00 - 19:00', endHour: 19, endMinute: 0 },
             { id: 'shift-12-21', label: '12:00 - 21:00', endHour: 21, endMinute: 0 },
             { id: 'shift-14-23', label: '14:00 - 23:00', endHour: 23, endMinute: 0 },
             { id: 'shift-16-1', label: '16:00 - 1:00', endHour: 1, endMinute: 0 },
-            { id: 'shift-rd', label: 'RD', endHour: null, endMinute: null }
+            { id: 'shift-7-10-wfh', label: '7:00 - 10:00 (WFH)', endHour: 10, endMinute: 0 },
+            { id: 'shift-7-16-wfh', label: '7:00 - 16:00 (WFH)', endHour: 16, endMinute: 0 },
+            { id: 'shift-adjusted', label: 'Adjusted', endHour: null, endMinute: null },
+            { id: 'shift-rd', label: 'RD', endHour: null, endMinute: null },
+            { id: 'shift-vl', label: 'VL', endHour: null, endMinute: null },
+            { id: 'shift-sl', label: 'SL', endHour: null, endMinute: null }
         ];
 
         const shiftOffDutyMap = {
@@ -295,7 +303,12 @@
             'shift-12-21': ['slot_7_10', 'slot_10_12', 'slot_22_1'],
             'shift-14-23': ['slot_7_10', 'slot_10_12', 'slot_22_1'],
             'shift-16-1': ['slot_7_10', 'slot_10_12', 'slot_12_16'],
-            'shift-rd': ['slot_7_10', 'slot_10_12', 'slot_12_16', 'slot_16_19', 'slot_19_21', 'slot_22_1']
+            'shift-7-10-wfh': ['slot_10_12', 'slot_12_16', 'slot_16_19', 'slot_19_21', 'slot_22_1'],
+            'shift-7-16-wfh': ['slot_16_19', 'slot_19_21', 'slot_22_1'],
+            'shift-adjusted': [],
+            'shift-rd': ['slot_7_10', 'slot_10_12', 'slot_12_16', 'slot_16_19', 'slot_19_21', 'slot_22_1'],
+            'shift-vl': ['slot_7_10', 'slot_10_12', 'slot_12_16', 'slot_16_19', 'slot_19_21', 'slot_22_1'],
+            'shift-sl': ['slot_7_10', 'slot_10_12', 'slot_12_16', 'slot_16_19', 'slot_19_21', 'slot_22_1']
         };
 
         let database = createDefaultDatabase();
@@ -374,13 +387,16 @@
 
             let text = rawShiftText.trim();
 
-            if (text.startsWith("Adjusted:")) {
-                text = text.replace("Adjusted:", "").trim();
+            if (text.startsWith("Adjusted:") || text === "Adjusted") {
+                return "shift-adjusted";
             }
 
-            if (text === "RD" || text === "VL" || text === "SL") {
-                return "shift-rd";
-            }
+            if (text === "RD") return "shift-rd";
+            if (text === "VL") return "shift-vl";
+            if (text === "SL") return "shift-sl";
+
+            if (text === "7:00 - 10:00 (WFH)") return "shift-7-10-wfh";
+            if (text === "7:00 - 16:00 (WFH)") return "shift-7-16-wfh";
 
             if (text.includes("7:00") && text.includes("16:00")) return "shift-7-16";
             if (text.includes("10:00") && text.includes("19:00")) return "shift-10-19";
@@ -388,14 +404,7 @@
             if (text.includes("14:00") && text.includes("23:00")) return "shift-14-23";
             if (text.includes("16:00") && text.includes("1:00")) return "shift-16-1";
 
-            // Fallback for custom time entries e.g. "06:00 - 15:00"
-            if (text.includes("7:00")) return "shift-7-16";
-            if (text.includes("10:00")) return "shift-10-19";
-            if (text.includes("12:00")) return "shift-12-21";
-            if (text.includes("14:00")) return "shift-14-23";
-            if (text.includes("16:00")) return "shift-16-1";
-
-            return null;
+            return "shift-adjusted";
         }
 
         // AUTOMATED SHIFT SYNC FROM ROTA CALENDAR BASED ON EXACT DATE
