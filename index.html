@@ -58,6 +58,49 @@
         .btn-secondary:hover { opacity: 0.85; }
         .btn-danger { background-color: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
         .btn-danger:hover { background-color: #fed7d7; }
+
+        /* --- SB HUB DROPDOWN STYLES --- */
+        .hub-dropdown-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .hub-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            min-width: 150px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+
+        .hub-dropdown-menu.show {
+            display: block;
+        }
+
+        .hub-dropdown-item {
+            display: block;
+            padding: 10px 14px;
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+
+        .hub-dropdown-item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        [data-theme="dark"] .hub-dropdown-item:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
         
         .day-section { background: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin-bottom: 30px; position: relative; }
         .day-title-area { font-size: 18px; font-weight: bold; color: var(--header-text); margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
@@ -148,15 +191,27 @@
                 👁️ <span id="activeViewersCount">1</span>
             </span>
             <span id="saveStatus" class="autosave-badge">✓ Live Synced</span>
+            
+            <!-- Header Controls -->
             <button class="btn btn-secondary" onclick="toggleDarkMode()">🌓 Mode</button>
             <a href="rota.html" class="btn btn-secondary">📅 ROTA</a>
+            
+            <!-- SB HUB DROPDOWN -->
+            <div class="hub-dropdown-container">
+                <button class="btn btn-secondary" onclick="toggleHubDropdown(event)">🏢 SB HUB ▼</button>
+                <div id="sbHubDropdown" class="hub-dropdown-menu">
+                    <a href="workspace.html" class="hub-dropdown-item">📁 Workspace</a>
+                    <a href="big-winners.html" class="hub-dropdown-item">🏆 Big Winners</a>
+                </div>
+            </div>
+
             <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All</button>
             <button class="btn btn-secondary" onclick="addNewDay()">➕ Add Next Day</button>
             <button class="btn btn-primary" onclick="window.print()">🖨️ Print / PDF</button>
         </div>
     </div>
 
-    <!-- Motivational Dynamic End-of-Shift Banner -->
+    <!-- Dynamic Banner -->
     <div id="shiftEndBanner" class="shift-end-banner" style="display: none;">
         <span class="jumping-sticker">🥳</span>
         <span id="shiftEndMessage">Almost there! Great job today!</span>
@@ -324,6 +379,13 @@
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             document.body.setAttribute('data-theme', newTheme);
             localStorage.setItem('sb_theme', newTheme);
+        }
+
+        /* --- TOGGLE SB HUB DROPDOWN --- */
+        function toggleHubDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('sbHubDropdown');
+            dropdown.classList.toggle('show');
         }
 
         function checkNearShiftEnd() {
@@ -629,9 +691,15 @@
             setupPresenceSystem();
             
             window.addEventListener('click', function(e) {
+                // Close task dropdowns
                 if (!e.target.closest('.task-dropdown-container')) {
                     document.querySelectorAll('.task-dropdown-content').forEach(el => el.classList.remove('show'));
                     activeOpenDropdownId = null;
+                }
+                // Close SB HUB dropdown on outside click
+                if (!e.target.closest('.hub-dropdown-container')) {
+                    const hubMenu = document.getElementById('sbHubDropdown');
+                    if (hubMenu) hubMenu.classList.remove('show');
                 }
             });
         };
