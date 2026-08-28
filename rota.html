@@ -72,8 +72,6 @@
         .btn:hover { opacity: 0.85; }
         .btn-back { background-color: var(--accent-btn); color: var(--accent-btn-text); }
         .btn-secondary { background-color: rgba(255, 255, 255, 0.2); color: var(--text-color); border: 1px solid var(--border-color); }
-        .btn-warning { background-color: #eab308; color: #000000; }
-        .btn-success { background-color: #22c55e; color: #ffffff; }
 
         .viewer-badge {
             background-color: rgba(255, 255, 255, 0.15);
@@ -86,17 +84,6 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-        }
-
-        .view-only-banner {
-            background-color: #ef4444;
-            color: #ffffff;
-            font-weight: bold;
-            text-align: center;
-            padding: 8px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            display: none;
         }
 
         .controls {
@@ -231,7 +218,6 @@
         .shift-bg-rd { background-color: #9ca3af !important; color: #111827 !important; }
         .shift-bg-vl { background-color: #fde047 !important; color: #713f12 !important; }
         .shift-bg-sl { background-color: #c084fc !important; color: #3b0764 !important; }
-        .shift-bg-adjusted { background-color: #facc15 !important; color: #000000 !important; }
 
         /* Item Hover Classes */
         .item-7-16:hover { background-color: #86efac !important; color: #064e3b !important; }
@@ -244,47 +230,8 @@
         .item-rd:hover { background-color: #9ca3af !important; color: #111827 !important; }
         .item-vl:hover { background-color: #fde047 !important; color: #713f12 !important; }
         .item-sl:hover { background-color: #c084fc !important; color: #3b0764 !important; }
-        .item-adjusted:hover { background-color: #facc15 !important; color: #000000 !important; }
 
-        /* Adjusted Hybrid Input Wrapper with Arrow Trigger */
-        .adjusted-input-wrapper {
-            display: flex;
-            align-items: center;
-            background: #facc15;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            overflow: hidden;
-            width: 100%;
-        }
-
-        .custom-editable-input {
-            width: calc(100% - 18px);
-            padding: 4px;
-            font-size: 11px;
-            font-weight: bold;
-            text-align: center;
-            border: none;
-            background: transparent;
-            color: #000000;
-            outline: none;
-        }
-
-        .adjusted-dropdown-trigger {
-            width: 18px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 8px;
-            color: #000000;
-            background: rgba(0,0,0,0.1);
-            border-left: 1px solid rgba(0,0,0,0.2);
-        }
-        .adjusted-dropdown-trigger:hover {
-            background: rgba(0,0,0,0.25);
-        }
-
+        /* Miguel Editable Cell Style */
         .miguel-editable-cell {
             width: 100%;
             padding: 5px;
@@ -297,7 +244,7 @@
             color: var(--text-color);
             outline: none;
         }
-        .miguel-editable-cell:focus, .custom-editable-input:focus {
+        .miguel-editable-cell:focus {
             border-color: #38bdf8;
             box-shadow: 0 0 5px rgba(56, 189, 248, 0.8);
         }
@@ -392,11 +339,6 @@
 </head>
 <body>
 
-    <!-- VIEW ONLY WARNING BANNER -->
-    <div id="viewOnlyBanner" class="view-only-banner">
-        🔒 View-Only Mode Active: Schedule edits are restricted. Click "🔓 Admin Login" to enter password and enable editing.
-    </div>
-
     <div class="header-top">
         <h2>Team Monthly Rota Schedule Manager</h2>
         <div class="header-top-controls">
@@ -405,9 +347,7 @@
                 👁️ <span id="activeViewersCount">1</span>
             </span>
             <button class="btn btn-secondary" onclick="toggleDarkMode()">🌓 Mode</button>
-            <button class="btn btn-warning" onclick="copyViewOnlyLink()">🔗 Share View-Only Link</button>
-            <button class="btn btn-success" id="btnAdminUnlock" onclick="promptAdminUnlock()">🔓 Admin Login</button>
-            <a id="btnBackToDuties" href="index.html" class="btn btn-back">🔙 Back to Daily Duties</a>
+            <a href="index.html" class="btn btn-back">🔙 Back to Daily Duties</a>
         </div>
     </div>
     
@@ -431,21 +371,10 @@
         <div>
             <label for="timezone-select">🌐 Global Timezone: </label>
             <select id="timezone-select" onchange="changeTimezoneGlobal(this.value)">
-                <option value="-10">HST - Hawaii (-10)</option>
-                <option value="-8">PST / PDT (-8)</option>
-                <option value="-7">MST / MDT (-7)</option>
-                <option value="-6">CST / CDT (-6)</option>
-                <option value="-5">EST / EDT (-5)</option>
+                <option value="8" selected>SGT / PHT / HKT (+8)</option>
                 <option value="0">UTC / GMT (+0)</option>
                 <option value="1">CET / CEST (+1)</option>
-                <option value="2">EET / EEST (+2)</option>
-                <option value="4">GST - Gulf (+4)</option>
-                <option value="5.5">IST - India (+5.5)</option>
-                <option value="7">WIB - Jakarta (+7)</option>
-                <option value="8" selected>SGT / PHT / HKT (+8)</option>
-                <option value="9">JST / KST (+9)</option>
-                <option value="10">AEST - Sydney (+10)</option>
-                <option value="12">NZST - New Zealand (+12)</option>
+                <option value="-5">EST / EDT (-5)</option>
             </select>
         </div>
         <button class="btn btn-secondary" onclick="changeMonth(1)">Next Month ▶</button>
@@ -463,7 +392,7 @@
                         <th style="color: #ffc0cb;">
                             Ann
                             <div class="bulk-set-container">
-                                <select class="bulk-select" onchange="bulkSetShift(0, this)">
+                                <select class="bulk-select" onchange="bulkSetShift(0, this.value)">
                                     <option value="">-- Set All Month --</option>
                                     <option value="CLEAR">-- Clear Month --</option>
                                     <option value="7:00 - 16:00">7:00 - 16:00</option>
@@ -480,7 +409,7 @@
                         <th style="color: #9cc2e5;">
                             Dave
                             <div class="bulk-set-container">
-                                <select class="bulk-select" onchange="bulkSetShift(1, this)">
+                                <select class="bulk-select" onchange="bulkSetShift(1, this.value)">
                                     <option value="">-- Set All Month --</option>
                                     <option value="CLEAR">-- Clear Month --</option>
                                     <option value="7:00 - 16:00">7:00 - 16:00</option>
@@ -497,7 +426,7 @@
                         <th style="color: #b4c6e7;">
                             Kenneth
                             <div class="bulk-set-container">
-                                <select class="bulk-select" onchange="bulkSetShift(2, this)">
+                                <select class="bulk-select" onchange="bulkSetShift(2, this.value)">
                                     <option value="">-- Set All Month --</option>
                                     <option value="CLEAR">-- Clear Month --</option>
                                     <option value="7:00 - 16:00">7:00 - 16:00</option>
@@ -514,7 +443,7 @@
                         <th style="color: #c6e0b4;">
                             Kriztel
                             <div class="bulk-set-container">
-                                <select class="bulk-select" onchange="bulkSetShift(3, this)">
+                                <select class="bulk-select" onchange="bulkSetShift(3, this.value)">
                                     <option value="">-- Set All Month --</option>
                                     <option value="CLEAR">-- Clear Month --</option>
                                     <option value="7:00 - 16:00">7:00 - 16:00</option>
@@ -530,20 +459,6 @@
                         </th>
                         <th style="color: #ffffff;">
                             Miguel
-                            <div class="bulk-set-container">
-                                <select class="bulk-select" onchange="bulkSetShift(4, this)">
-                                    <option value="">-- Set All Month --</option>
-                                    <option value="CLEAR">-- Clear Month --</option>
-                                    <option value="7:00 - 16:00">7:00 - 16:00</option>
-                                    <option value="10:00 - 19:00">10:00 - 19:00</option>
-                                    <option value="12:00 - 21:00">12:00 - 21:00</option>
-                                    <option value="14:00 - 23:00">14:00 - 23:00</option>
-                                    <option value="16:00 - 1:00">16:00 - 1:00</option>
-                                    <option value="7:00 - 10:00 (WFH)">7:00 - 10:00 (WFH)</option>
-                                    <option value="7:00 - 16:00 (WFH)">7:00 - 16:00 (WFH)</option>
-                                    <option value="RD">RD</option>
-                                </select>
-                            </div>
                         </th>
                     </tr>
                 </thead>
@@ -608,9 +523,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const ADMIN_SECRET_KEY = "sportsbook2026";
-        let isViewOnlyMode = true;
-
         const team = ["Ann", "Dave", "Kenneth", "Kriztel", "Miguel"];
         const leaveTrackedTeam = ["Ann", "Dave", "Kenneth", "Kriztel"];
 
@@ -623,7 +535,6 @@
             { text: "16:00 - 1:00", bgClass: "shift-bg-16-1", itemClass: "item-16-1", start: 16, end: 1 },
             { text: "7:00 - 10:00 (WFH)", bgClass: "shift-bg-7-10-wfh", itemClass: "item-7-10-wfh", start: 7, end: 10 },
             { text: "7:00 - 16:00 (WFH)", bgClass: "shift-bg-7-16-wfh", itemClass: "item-7-16-wfh", start: 7, end: 16 },
-            { text: "Adjusted", bgClass: "shift-bg-adjusted", itemClass: "item-adjusted", start: null, end: null },
             { text: "RD", bgClass: "shift-bg-rd", itemClass: "item-rd", start: null, end: null },
             { text: "VL", bgClass: "shift-bg-vl", itemClass: "item-vl", start: null, end: null },
             { text: "SL", bgClass: "shift-bg-sl", itemClass: "item-sl", start: null, end: null }
@@ -646,49 +557,6 @@
         let globalTzOffset = 8;
         let rotaData = {};
         let leaveMatrixData = {};
-
-        function checkPermissions() {
-            const storedKey = localStorage.getItem('sb_admin_key');
-            const urlParams = new URLSearchParams(window.location.search);
-
-            if (storedKey === ADMIN_SECRET_KEY && urlParams.get('mode') !== 'view') {
-                isViewOnlyMode = false;
-                document.getElementById('viewOnlyBanner').style.display = 'none';
-                document.getElementById('btnBackToDuties').style.display = 'inline-flex';
-                document.getElementById('btnAdminUnlock').innerText = '🔒 Lock View-Only';
-                document.querySelectorAll('.bulk-select').forEach(el => el.disabled = false);
-            } else {
-                isViewOnlyMode = true;
-                document.getElementById('viewOnlyBanner').style.display = 'block';
-                document.getElementById('btnBackToDuties').style.display = 'none';
-                document.querySelectorAll('.bulk-select').forEach(el => el.disabled = true);
-                document.getElementById('btnAdminUnlock').innerText = '🔓 Admin Login';
-            }
-        }
-
-        function promptAdminUnlock() {
-            if (!isViewOnlyMode) {
-                localStorage.removeItem('sb_admin_key');
-                window.location.href = window.location.pathname + "?mode=view";
-                return;
-            }
-
-            const pass = prompt("Enter Admin Password to enable editing:");
-            if (pass === ADMIN_SECRET_KEY) {
-                localStorage.setItem('sb_admin_key', ADMIN_SECRET_KEY);
-                alert("✓ Admin access granted! Reloading editor...");
-                window.location.href = window.location.pathname;
-            } else if (pass !== null) {
-                alert("❌ Incorrect Admin Password. You remain in View-Only Mode.");
-            }
-        }
-
-        function copyViewOnlyLink() {
-            const viewOnlyUrl = `${window.location.origin}${window.location.pathname}?mode=view`;
-            navigator.clipboard.writeText(viewOnlyUrl).then(() => {
-                alert("✓ View-Only Link copied to clipboard!\n\nViewers opening this link cannot edit the schedule unless they enter the Admin Password.");
-            });
-        }
 
         function setupPresenceSystem() {
             const presenceRef = db.ref('rota_active_sessions');
@@ -718,20 +586,23 @@
         function listenToDatabase() {
             const monthKey = `${yearInput.value}_${parseInt(monthSelect.value) + 1}`;
             
+            // Listen to real-time schedule grid
             db.ref(`rota_data/${monthKey}`).on('value', (snapshot) => {
                 rotaData = snapshot.val() || {};
                 renderCalendar();
                 renderWFHTracker();
             });
 
+            // Listen to real-time leave matrix
             db.ref('leave_matrix_db').on('value', (snapshot) => {
                 leaveMatrixData = snapshot.val() || {};
                 buildLeaveTables();
             });
 
+            // Listen to real-time global timezone
             db.ref('rota_global_timezone').on('value', (snapshot) => {
                 if (snapshot.val() !== null) {
-                    globalTzOffset = parseFloat(snapshot.val());
+                    globalTzOffset = parseInt(snapshot.val());
                     timezoneSelect.value = globalTzOffset.toString();
                     renderCalendar();
                 }
@@ -739,19 +610,16 @@
         }
 
         function saveRotaToDatabase() {
-            if (isViewOnlyMode) return;
             const monthKey = `${yearInput.value}_${parseInt(monthSelect.value) + 1}`;
             db.ref(`rota_data/${monthKey}`).set(rotaData);
         }
 
         function saveLeaveMatrixToDatabase() {
-            if (isViewOnlyMode) return;
             db.ref('leave_matrix_db').set(leaveMatrixData);
         }
 
         function changeTimezoneGlobal(val) {
-            if (isViewOnlyMode) return;
-            globalTzOffset = parseFloat(val);
+            globalTzOffset = parseInt(val);
             db.ref('rota_global_timezone').set(globalTzOffset);
         }
 
@@ -782,20 +650,7 @@
         }
 
         function formatShiftForTimezone(shiftText) {
-            if (!shiftText || ["RD", "VL", "SL", "Adjusted"].includes(shiftText)) return shiftText;
-
-            if (shiftText.includes("-") && !shiftList.some(s => s.text === shiftText)) {
-                const parts = shiftText.split("-").map(p => p.trim());
-                if (parts.length === 2 && parts[0].includes(":") && parts[1].includes(":")) {
-                    const startH = parseInt(parts[0].split(":")[0]);
-                    const endH = parseInt(parts[1].split(":")[0]);
-                    const diff = globalTzOffset - 8;
-                    let newStart = (startH + diff + 24) % 24;
-                    let newEnd = (endH + diff + 24) % 24;
-                    return `${newStart}:00 - ${newEnd}:00`;
-                }
-                return shiftText;
-            }
+            if (!shiftText || ["RD", "VL", "SL"].includes(shiftText)) return shiftText;
 
             const baseShift = shiftList.find(s => s.text === shiftText);
             if (!baseShift || baseShift.start === null) return shiftText;
@@ -809,7 +664,6 @@
         }
 
         function getShiftInfo(val) {
-            if (val && val.startsWith("Adjusted:")) return { bgClass: "shift-bg-adjusted" };
             return shiftList.find(s => s.text === val) || shiftList[0];
         }
 
@@ -842,14 +696,12 @@
                     
                     let activeShift = (rotaData[d] && rotaData[d][memberIdx] !== undefined) ? rotaData[d][memberIdx] : "";
 
-                    // Miguel Editable Cell
                     if (member === "Miguel") {
                         const input = document.createElement('input');
                         input.type = 'text';
                         input.className = 'miguel-editable-cell';
-                        input.value = formatShiftForTimezone(activeShift);
+                        input.value = activeShift;
                         input.placeholder = "e.g. 8:00 - 17:00";
-                        if (isViewOnlyMode) input.disabled = true;
 
                         input.addEventListener('change', () => {
                             if (!rotaData[d]) rotaData[d] = Array(team.length).fill("");
@@ -859,75 +711,6 @@
 
                         tdShift.appendChild(input);
                     } 
-                    // Adjusted Shift: Hybrid Editable Container with Arrow Menu Trigger
-                    else if (activeShift.startsWith("Adjusted:") || activeShift === "Adjusted") {
-                        const customVal = activeShift.replace("Adjusted:", "").trim();
-
-                        const wrapper = document.createElement('div');
-                        wrapper.className = 'adjusted-input-wrapper custom-dropdown';
-
-                        const input = document.createElement('input');
-                        input.type = 'text';
-                        input.className = 'custom-editable-input';
-                        input.value = customVal || "e.g. 06:00 - 15:00";
-                        if (isViewOnlyMode) input.disabled = true;
-
-                        input.addEventListener('change', () => {
-                            if (!rotaData[d]) rotaData[d] = Array(team.length).fill("");
-                            rotaData[d][memberIdx] = `Adjusted: ${input.value}`;
-                            saveRotaToDatabase();
-                        });
-
-                        // Dropdown Arrow Trigger to Open Menu
-                        const dropdownTrigger = document.createElement('div');
-                        dropdownTrigger.className = 'adjusted-dropdown-trigger';
-                        dropdownTrigger.title = 'Click to switch back to standard shift options';
-                        dropdownTrigger.innerHTML = '▼';
-
-                        const menu = document.createElement('div');
-                        menu.className = 'custom-dropdown-menu';
-
-                        shiftList.forEach(s => {
-                            const item = document.createElement('div');
-                            item.className = `custom-dropdown-item ${s.itemClass}`;
-                            const displayShift = formatShiftForTimezone(s.text);
-                            item.textContent = displayShift === "" ? "-- Select --" : displayShift;
-
-                            item.addEventListener('click', (e) => {
-                                if (isViewOnlyMode) return;
-                                e.stopPropagation();
-                                
-                                if (s.text === "Adjusted") {
-                                    menu.classList.remove('show');
-                                    return;
-                                }
-
-                                menu.classList.remove('show');
-                                if (!rotaData[d]) rotaData[d] = Array(team.length).fill("");
-                                rotaData[d][memberIdx] = s.text;
-
-                                saveRotaToDatabase();
-                                renderCalendar();
-                            });
-
-                            menu.appendChild(item);
-                        });
-
-                        dropdownTrigger.addEventListener('click', (e) => {
-                            if (isViewOnlyMode) return;
-                            e.stopPropagation();
-                            document.querySelectorAll('.custom-dropdown-menu').forEach(m => {
-                                if (m !== menu) m.classList.remove('show');
-                            });
-                            menu.classList.toggle('show');
-                        });
-
-                        wrapper.appendChild(input);
-                        wrapper.appendChild(dropdownTrigger);
-                        wrapper.appendChild(menu);
-                        tdShift.appendChild(wrapper);
-                    }
-                    // Standard Custom Shift Dropdown
                     else {
                         const activeInfo = getShiftInfo(activeShift);
                         const convertedText = formatShiftForTimezone(activeShift);
@@ -949,17 +732,7 @@
                             item.textContent = displayShift === "" ? "-- Select --" : displayShift;
 
                             item.addEventListener('click', (e) => {
-                                if (isViewOnlyMode) return;
                                 e.stopPropagation();
-                                
-                                if (s.text === "Adjusted") {
-                                    if (!rotaData[d]) rotaData[d] = Array(team.length).fill("");
-                                    rotaData[d][memberIdx] = "Adjusted: ";
-                                    saveRotaToDatabase();
-                                    renderCalendar();
-                                    return;
-                                }
-
                                 btn.textContent = displayShift === "" ? "-- Select --" : displayShift;
                                 btn.className = `custom-dropdown-btn ${s.bgClass}`;
                                 menu.classList.remove('show');
@@ -975,7 +748,6 @@
                         });
 
                         btn.addEventListener('click', (e) => {
-                            if (isViewOnlyMode) return;
                             e.stopPropagation();
                             document.querySelectorAll('.custom-dropdown-menu').forEach(m => {
                                 if (m !== menu) m.classList.remove('show');
@@ -997,9 +769,7 @@
             syncLeavesFromSchedule();
         }
 
-        function bulkSetShift(memberIdx, selectElem) {
-            if (isViewOnlyMode) return;
-            const shiftValue = selectElem.value;
+        function bulkSetShift(memberIdx, shiftValue) {
             if (!shiftValue) return;
             const selectedMonth = parseInt(monthSelect.value);
             const selectedYear = parseInt(yearInput.value);
@@ -1014,8 +784,6 @@
 
             saveRotaToDatabase();
             renderCalendar();
-
-            selectElem.value = "";
         }
 
         function syncLeavesFromSchedule() {
@@ -1070,7 +838,6 @@
                     let input = document.createElement('input');
                     input.type = 'text';
                     input.className = 'date-input-cell';
-                    if (isViewOnlyMode) input.disabled = true;
 
                     let val = (leaveMatrixData[member] && leaveMatrixData[member][leaveType] && leaveMatrixData[member][leaveType][arrayIdx]) ? leaveMatrixData[member][leaveType][arrayIdx] : '';
                     input.value = val;
@@ -1202,7 +969,6 @@
         });
 
         window.onload = function() {
-            checkPermissions();
             if (localStorage.getItem('rota_theme') === 'light') {
                 document.body.setAttribute('data-theme', 'light');
             }
