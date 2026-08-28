@@ -539,8 +539,9 @@
         let openRowIndex = null;
         let selectedBrandFilter = 'ALL';
         const availableBrands = ["qbet", "ibet", "30bet", "55bet", "7abet", "bvbet", "pubs"];
+        const ccfOptions = ["0.10", "0.20", "0.25", "0.50", "1.00", "2.00", "3.00", "5.00", "6.00", "10.00"];
 
-        // Generates Full 747 Players
+        // Explicit initial records preserving exact CCF values
         function generate747Players() {
             let defaults = [
                 { id: "51705", email: "rozhi141@gmail.com", link: "https://mga-betbook.center/ibet/players/1840769", brand: "ibet", ccf: "0.20", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-26", amount: 1394.47, notes: "Accumulator Win" }, { date: "2026-08-27", amount: 7353.22, notes: "In-Play Tennis Win" }, { date: "2026-08-28", amount: 24927.52, notes: "Football Win" }] },
@@ -557,13 +558,14 @@
 
             for (let i = 11; i <= 747; i++) {
                 const chosenBrand = availableBrands[i % availableBrands.length];
+                const chosenCcf = ccfOptions[i % ccfOptions.length];
                 const pId = (2000000 + i * 37).toString();
                 defaults.push({
                     id: pId,
                     email: `user_${pId}@sportsbook.com`,
                     link: `https://betbook.center/${chosenBrand}/players/${pId}`,
                     brand: chosenBrand,
-                    ccf: "1.00",
+                    ccf: chosenCcf,
                     notes: "Standard Monitoring Record",
                     status: "Under Review",
                     records: []
@@ -573,7 +575,7 @@
         }
 
         function restoreFullDatabase() {
-            if (confirm("Restore all 747 players back into Firebase?")) {
+            if (confirm("Restore all 747 players into Firebase with varied CCFs?")) {
                 playersData = generate747Players();
                 saveToDatabase();
             }
