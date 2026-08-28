@@ -75,10 +75,10 @@
         .rota-table th, .rota-table td { border: 1px solid var(--table-border); padding: 6px 4px; text-align: center; }
         .rota-table th { background: var(--card-bg); color: var(--header-text); font-weight: 700; }
 
-        /* SHIFT SELECTOR STYLING & HOVER COLOR ANIMATION */
+        /* SHIFT SELECTOR & DROPDOWN MENU COLOR STYLING */
         .shift-select {
             width: 100%;
-            padding: 5px 2px;
+            padding: 4px 1px;
             font-size: 11px;
             font-weight: 700;
             border: 1px solid var(--border-color);
@@ -86,38 +86,29 @@
             outline: none;
             cursor: pointer;
             text-align: center;
-            transition: all 0.2s ease-in-out;
         }
 
-        /* Hover and Focus Glow Effects per Shift */
-        .shift-select:hover, .shift-select:focus {
-            transform: scale(1.08);
-            box-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
-            z-index: 100;
-            position: relative;
-        }
+        /* Color styling for each menu item when the dropdown opens */
+        .opt-7-16 { background-color: #1d4ed8 !important; color: #ffffff !important; }
+        .opt-9-18 { background-color: #422006 !important; color: #fde047 !important; }
+        .opt-10-19 { background-color: #713f12 !important; color: #fde047 !important; }
+        .opt-12-21 { background-color: #854d0e !important; color: #fde047 !important; }
+        .opt-16-1 { background-color: #7c2d12 !important; color: #f97316 !important; }
+        .opt-wfh { background-color: #075985 !important; color: #38bdf8 !important; }
+        .opt-rd { background-color: #374151 !important; color: #9ca3af !important; }
+        .opt-vl { background-color: #14532d !important; color: #4ade80 !important; }
+        .opt-sl { background-color: #7f1d1d !important; color: #f87171 !important; }
 
-        /* Shift Colors Applied via CSS Classes */
-        .color-shift-7-16 { background-color: var(--shift-7-16) !important; color: #000; }
-        .color-shift-9-18 { background-color: var(--shift-9-18) !important; color: #854d0e; }
-        .color-shift-10-19 { background-color: var(--shift-10-19) !important; color: #854d0e; }
-        .color-shift-12-21 { background-color: var(--shift-12-21) !important; color: #713f12; }
-        .color-shift-16-1 { background-color: var(--shift-16-1) !important; color: #7c2d12; }
-        .color-shift-wfh { background-color: var(--shift-wfh) !important; color: #0369a1; font-weight: bold; }
-        .color-shift-rd { background-color: var(--shift-rd) !important; color: #374151; }
+        /* Shift Cell Background Colors */
+        .color-shift-7-16 { background-color: var(--shift-7-16) !important; color: var(--text-color); }
+        .color-shift-9-18 { background-color: var(--shift-9-18) !important; color: var(--text-color); }
+        .color-shift-10-19 { background-color: var(--shift-10-19) !important; color: var(--text-color); }
+        .color-shift-12-21 { background-color: var(--shift-12-21) !important; color: var(--text-color); }
+        .color-shift-16-1 { background-color: var(--shift-16-1) !important; color: var(--text-color); }
+        .color-shift-wfh { background-color: var(--shift-wfh) !important; color: var(--text-color); }
+        .color-shift-rd { background-color: var(--shift-rd) !important; color: var(--text-color); }
         .color-shift-vl { background-color: var(--shift-vl) !important; color: #14532d; font-weight: bold; }
         .color-shift-sl { background-color: var(--shift-sl) !important; color: #7f1d1d; font-weight: bold; }
-
-        /* Hover Colors for Dropdown Elements */
-        .hover-color-7-16 { background-color: #ffffff !important; color: #000 !important; }
-        .hover-color-9-18 { background-color: #fefce8 !important; color: #854d0e !important; }
-        .hover-color-10-19 { background-color: #fef9c3 !important; color: #854d0e !important; }
-        .hover-color-12-21 { background-color: #fef08a !important; color: #713f12 !important; }
-        .hover-color-16-1 { background-color: #ffedd5 !important; color: #7c2d12 !important; }
-        .hover-color-wfh { background-color: #e0f2fe !important; color: #0369a1 !important; }
-        .hover-color-rd { background-color: #e5e7eb !important; color: #374151 !important; }
-        .hover-color-vl { background-color: #dcfce7 !important; color: #14532d !important; }
-        .hover-color-sl { background-color: #fee2e2 !important; color: #7f1d1d !important; }
 
         .leave-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 10px; text-transform: uppercase; margin: 1px; }
         .badge-vl { background-color: #dcfce7; color: #15803d; }
@@ -149,7 +140,7 @@
     <!-- CALENDAR SHIFT ROTA SECTION -->
     <div class="section-card">
         <div class="section-title">
-            <span>📅 Monthly Schedule Rota (Automated Shift Colors & Hover Glow)</span>
+            <span>📅 Monthly Schedule Rota</span>
             <div>
                 <input type="month" id="monthPicker" style="padding:4px 8px; font-weight:bold; border-radius:4px; border:1px solid var(--border-color);" onchange="changeMonthYear(this.value)">
             </div>
@@ -243,18 +234,18 @@
         ];
 
         const shiftOptionsList = [
-            { id: 'shift-7-16', label: '7:00 - 16:00', class: 'color-shift-7-16', hoverClass: 'hover-color-7-16' },
-            { id: 'shift-9-18', label: '9:00 - 18:00', class: 'color-shift-9-18', hoverClass: 'hover-color-9-18' },
-            { id: 'shift-10-19', label: '10:00 - 19:00', class: 'color-shift-10-19', hoverClass: 'hover-color-10-19' },
-            { id: 'shift-12-21', label: '12:00 - 21:00', class: 'color-shift-12-21', hoverClass: 'hover-color-12-21' },
-            { id: 'shift-16-1', label: '16:00 - 1:00', class: 'color-shift-16-1', hoverClass: 'hover-color-16-1' },
-            { id: 'shift-9-18-wfh', label: '9:00 - 18:00 (WFH)', class: 'color-shift-wfh', hoverClass: 'hover-color-wfh' },
-            { id: 'shift-7-16-wfh', label: '7:00 - 16:00 (WFH)', class: 'color-shift-wfh', hoverClass: 'hover-color-wfh' },
-            { id: 'shift-12-21-wfh', label: '12:00 - 21:00 (WFH)', class: 'color-shift-wfh', hoverClass: 'hover-color-wfh' },
-            { id: 'shift-16-1-wfh', label: '16:00 - 1:00 (WFH)', class: 'color-shift-wfh', hoverClass: 'hover-color-wfh' },
-            { id: 'shift-rd', label: 'RD', class: 'color-shift-rd', hoverClass: 'hover-color-rd' },
-            { id: 'shift-vl', label: 'VL', class: 'color-shift-vl', hoverClass: 'hover-color-vl' },
-            { id: 'shift-sl', label: 'SL', class: 'color-shift-sl', hoverClass: 'hover-color-sl' }
+            { id: 'shift-7-16', label: '7:00 - 16:00', class: 'color-shift-7-16', optClass: 'opt-7-16' },
+            { id: 'shift-9-18', label: '9:00 - 18:00', class: 'color-shift-9-18', optClass: 'opt-9-18' },
+            { id: 'shift-10-19', label: '10:00 - 19:00', class: 'color-shift-10-19', optClass: 'opt-10-19' },
+            { id: 'shift-12-21', label: '12:00 - 21:00', class: 'color-shift-12-21', optClass: 'opt-12-21' },
+            { id: 'shift-16-1', label: '16:00 - 1:00', class: 'color-shift-16-1', optClass: 'opt-16-1' },
+            { id: 'shift-9-18-wfh', label: '9:00 - 18:00 (WFH)', class: 'color-shift-wfh', optClass: 'opt-wfh' },
+            { id: 'shift-7-16-wfh', label: '7:00 - 16:00 (WFH)', class: 'color-shift-wfh', optClass: 'opt-wfh' },
+            { id: 'shift-12-21-wfh', label: '12:00 - 21:00 (WFH)', class: 'color-shift-wfh', optClass: 'opt-wfh' },
+            { id: 'shift-16-1-wfh', label: '16:00 - 1:00 (WFH)', class: 'color-shift-wfh', optClass: 'opt-wfh' },
+            { id: 'shift-rd', label: 'RD', class: 'color-shift-rd', optClass: 'opt-rd' },
+            { id: 'shift-vl', label: 'VL', class: 'color-shift-vl', optClass: 'opt-vl' },
+            { id: 'shift-sl', label: 'SL', class: 'color-shift-sl', optClass: 'opt-sl' }
         ];
 
         let currentYear = 2026;
@@ -326,7 +317,6 @@
             if (!rotaData[memberId]) rotaData[memberId] = {};
             rotaData[memberId][day] = newShift;
 
-            // Apply color class immediately
             const shiftObj = getShiftObj(newShift);
             selectElem.className = `shift-select ${shiftObj.class}`;
             selectElem.parentElement.className = shiftObj.class;
@@ -338,19 +328,6 @@
             if (!allowanceData[memberId]) allowanceData[memberId] = { vl: 15, sl: 15 };
             allowanceData[memberId][type] = parseInt(val) || 0;
             saveAllowancesToDatabase();
-        }
-
-        function handleShiftHover(selectElem, isHover) {
-            const currentShift = selectElem.value;
-            const shiftObj = getShiftObj(currentShift);
-
-            if (isHover) {
-                selectElem.classList.add(shiftObj.hoverClass);
-                selectElem.parentElement.classList.add(shiftObj.hoverClass);
-            } else {
-                selectElem.classList.remove(shiftObj.hoverClass);
-                selectElem.parentElement.classList.remove(shiftObj.hoverClass);
-            }
         }
 
         function renderAll() {
@@ -384,15 +361,12 @@
                     const shiftObj = getShiftObj(currentShift);
 
                     let optionsHTML = shiftOptionsList.map(s => 
-                        `<option value="${s.id}" class="${s.class}" ${currentShift === s.id ? 'selected' : ''}>${s.label}</option>`
+                        `<option value="${s.id}" class="${s.optClass}" ${currentShift === s.id ? 'selected' : ''}>${s.label}</option>`
                     ).join('');
 
                     rowHTML += `
                         <td class="${shiftObj.class}">
-                            <select class="shift-select ${shiftObj.class}" 
-                                    onchange="updateShift('${m.id}', ${d}, this.value, this)"
-                                    onmouseenter="handleShiftHover(this, true)"
-                                    onmouseleave="handleShiftHover(this, false)">
+                            <select class="shift-select ${shiftObj.class}" onchange="updateShift('${m.id}', ${d}, this.value, this)">
                                 ${optionsHTML}
                             </select>
                         </td>
@@ -474,7 +448,6 @@
                     if (shiftVal.includes('wfh')) {
                         wfhDates.push(`${currentMonthName} ${d}`);
 
-                        // Calculate Week Number
                         const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
                         const weekNum = Math.ceil((d + firstDayOfMonth.getDay()) / 7);
 
