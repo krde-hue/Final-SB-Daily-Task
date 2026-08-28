@@ -371,10 +371,21 @@
         <div>
             <label for="timezone-select">🌐 Global Timezone: </label>
             <select id="timezone-select" onchange="changeTimezoneGlobal(this.value)">
-                <option value="8" selected>SGT / PHT / HKT (+8)</option>
+                <option value="-10">HST - Hawaii (-10)</option>
+                <option value="-8">PST / PDT (-8)</option>
+                <option value="-7">MST / MDT (-7)</option>
+                <option value="-6">CST / CDT (-6)</option>
+                <option value="-5">EST / EDT (-5)</option>
                 <option value="0">UTC / GMT (+0)</option>
                 <option value="1">CET / CEST (+1)</option>
-                <option value="-5">EST / EDT (-5)</option>
+                <option value="2">EET / EEST (+2)</option>
+                <option value="4">GST - Gulf (+4)</option>
+                <option value="5.5">IST - India (+5.5)</option>
+                <option value="7">WIB - Jakarta (+7)</option>
+                <option value="8" selected>SGT / PHT / HKT (+8)</option>
+                <option value="9">JST / KST (+9)</option>
+                <option value="10">AEST - Sydney (+10)</option>
+                <option value="12">NZST - New Zealand (+12)</option>
             </select>
         </div>
         <button class="btn btn-secondary" onclick="changeMonth(1)">Next Month ▶</button>
@@ -459,6 +470,20 @@
                         </th>
                         <th style="color: #ffffff;">
                             Miguel
+                            <div class="bulk-set-container">
+                                <select class="bulk-select" onchange="bulkSetShift(4, this.value)">
+                                    <option value="">-- Set All Month --</option>
+                                    <option value="CLEAR">-- Clear Month --</option>
+                                    <option value="7:00 - 16:00">7:00 - 16:00</option>
+                                    <option value="10:00 - 19:00">10:00 - 19:00</option>
+                                    <option value="12:00 - 21:00">12:00 - 21:00</option>
+                                    <option value="14:00 - 23:00">14:00 - 23:00</option>
+                                    <option value="16:00 - 1:00">16:00 - 1:00</option>
+                                    <option value="7:00 - 10:00 (WFH)">7:00 - 10:00 (WFH)</option>
+                                    <option value="7:00 - 16:00 (WFH)">7:00 - 16:00 (WFH)</option>
+                                    <option value="RD">RD</option>
+                                </select>
+                            </div>
                         </th>
                     </tr>
                 </thead>
@@ -602,7 +627,7 @@
             // Listen to real-time global timezone
             db.ref('rota_global_timezone').on('value', (snapshot) => {
                 if (snapshot.val() !== null) {
-                    globalTzOffset = parseInt(snapshot.val());
+                    globalTzOffset = parseFloat(snapshot.val());
                     timezoneSelect.value = globalTzOffset.toString();
                     renderCalendar();
                 }
@@ -619,7 +644,7 @@
         }
 
         function changeTimezoneGlobal(val) {
-            globalTzOffset = parseInt(val);
+            globalTzOffset = parseFloat(val);
             db.ref('rota_global_timezone').set(globalTzOffset);
         }
 
