@@ -88,6 +88,12 @@
             border-bottom: 1px solid var(--border-color);
         }
 
+        .header-title-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
         .header-title {
             display: flex;
             align-items: center;
@@ -97,6 +103,15 @@
         .header-title h1 {
             font-size: 1.35rem;
             font-weight: 700;
+        }
+
+        .title-credit {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.2px;
+            margin-left: 2.1rem;
+            opacity: 0.85;
         }
 
         .header-controls {
@@ -308,11 +323,19 @@
 <body>
 
     <header>
-        <div class="header-title">
-            <i data-lucide="layout-grid" style="color: var(--accent-color)"></i>
-            <h1>Sportsbook Operational Workspace</h1>
+        <div class="header-title-group">
+            <div class="header-title">
+                <i data-lucide="layout-grid" style="color: var(--accent-color)"></i>
+                <h1>Sportsbook Operational Workspace</h1>
+            </div>
+            <span class="title-credit">kdv_2026 model</span>
         </div>
         <div class="header-controls">
+            <!-- ACTIVE VIEWER COUNT BADGE -->
+            <span class="btn" style="cursor: default; pointer-events: none;" title="Active Viewers">
+                👁️ <span id="activeViewersCount">1</span>
+            </span>
+
             <a href="index.html" class="btn">
                 <i data-lucide="arrow-left" style="width: 15px; height: 15px;"></i>
                 📅 Back to Daily Duties
@@ -454,6 +477,31 @@
         const db = firebase.database();
 
         let hubData = {};
+
+        function setupPresenceSystem() {
+            const presenceRef = db.ref('active_workspace_sessions');
+            const connectedRef = db.ref('.info/connected');
+
+            connectedRef.on('value', (snap) => {
+                if (snap.val() === true) {
+                    const userSessionRef = presenceRef.push();
+                    userSessionRef.onDisconnect().remove();
+
+                    userSessionRef.set({
+                        online: true,
+                        joinedAt: firebase.database.ServerValue.TIMESTAMP
+                    });
+                }
+            });
+
+            presenceRef.on('value', (snap) => {
+                const count = snap.numChildren();
+                const countElem = document.getElementById('activeViewersCount');
+                if (countElem) {
+                    countElem.innerText = count > 0 ? count : 1;
+                }
+            });
+        }
 
         function getDefaultHubData() {
             return {
@@ -670,6 +718,7 @@
             const savedTheme = localStorage.getItem('workspace_hub_theme') || 'dark';
             setTheme(savedTheme);
             listenToDatabase();
+            setupPresenceSystem();
         });
     </script>
 </body>
