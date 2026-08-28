@@ -238,7 +238,7 @@
 
         /* Shift Cell Background Colors */
         .shift-bg-7-16 { background-color: #86efac !important; color: #064e3b !important; }
-        .shift-bg-9-18 { background-color: #38bdf8 !important; color: #0b2240 !important; }
+        .shift-bg-9-18 { background-color: #a7f3d0 !important; color: #065f46 !important; } /* Lighter Green */
         .shift-bg-10-19 { background-color: #fed7aa !important; color: #7c2d12 !important; }
         .shift-bg-12-21 { background-color: #bae6fd !important; color: #0c4a6e !important; }
         .shift-bg-14-23 { background-color: #e9d5ff !important; color: #581c87 !important; }
@@ -252,7 +252,7 @@
 
         /* Item Hover Classes */
         .item-7-16:hover { background-color: #86efac !important; color: #064e3b !important; }
-        .item-9-18:hover { background-color: #38bdf8 !important; color: #0b2240 !important; }
+        .item-9-18:hover { background-color: #a7f3d0 !important; color: #065f46 !important; } /* Lighter Green Hover */
         .item-10-19:hover { background-color: #fed7aa !important; color: #7c2d12 !important; }
         .item-12-21:hover { background-color: #bae6fd !important; color: #0c4a6e !important; }
         .item-14-23:hover { background-color: #e9d5ff !important; color: #581c87 !important; }
@@ -264,8 +264,7 @@
         .item-sl:hover { background-color: #c084fc !important; color: #3b0764 !important; }
         .item-adjusted:hover { background-color: #facc15 !important; color: #000000 !important; }
 
-        /* Editable Input Cell Style for Custom Shift/Adjusted */
-        .custom-editable-input {
+        .custom-editable-input, .miguel-editable-cell {
             width: 100%;
             padding: 5px;
             font-size: 11px;
@@ -279,20 +278,8 @@
         }
 
         .miguel-editable-cell {
-            width: 100%;
-            padding: 5px;
-            font-size: 11px;
-            font-weight: bold;
-            text-align: center;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
             background: var(--bg-color);
             color: var(--text-color);
-            outline: none;
-        }
-        .miguel-editable-cell:focus, .custom-editable-input:focus {
-            border-color: #38bdf8;
-            box-shadow: 0 0 5px rgba(56, 189, 248, 0.8);
         }
 
         .leave-section {
@@ -377,17 +364,13 @@
             outline: none;
             border-radius: 3px;
         }
-        .date-input-cell:focus {
-            border-color: #38bdf8;
-            box-shadow: 0 0 4px rgba(56, 189, 248, 0.5);
-        }
     </style>
 </head>
 <body>
 
     <!-- VIEW ONLY WARNING BANNER -->
     <div id="viewOnlyBanner" class="view-only-banner">
-        🔒 View-Only Mode Active: Editing and navigation actions are disabled.
+        🔒 View-Only Mode Active: Editing and navigation actions are disabled for non-admin viewers.
     </div>
 
     <div class="header-top">
@@ -396,7 +379,6 @@
             <span class="title-credit">kr!ztel_2026 model</span>
         </div>
         <div class="header-top-controls">
-            <!-- Active Viewers Eye Badge -->
             <span class="viewer-badge" title="Active Viewers">
                 👁️ <span id="activeViewersCount">1</span>
             </span>
@@ -578,7 +560,6 @@
                 </table>
             </div>
 
-            <!-- STREAMLINED WFH MONITORING TABLE -->
             <div>
                 <div class="leave-section-title" style="color: #38bdf8;">🏠 WFH Allowance Tracker</div>
                 <table class="leave-table">
@@ -612,7 +593,6 @@
         const team = ["Ann", "Dave", "Kenneth", "Kriztel", "Miguel"];
         const leaveTrackedTeam = ["Ann", "Dave", "Kenneth", "Kriztel"];
 
-        // ADDED 9:00 - 18:00 TO SHIFT LIST
         const shiftList = [
             { text: "", bgClass: "", itemClass: "", start: null, end: null },
             { text: "7:00 - 16:00", bgClass: "shift-bg-7-16", itemClass: "item-7-16", start: 7, end: 16 },
@@ -646,12 +626,14 @@
         let globalTzOffset = 8;
         let rotaData = {};
         let leaveMatrixData = {};
-        let isViewOnlyMode = true; // Default to View-Only
+        
+        let isViewOnlyMode = sessionStorage.getItem("admin_authenticated") !== "true";
         const ADMIN_PASSWORD = "sportsbook2026";
 
         function checkViewOnlyMode() {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('viewonly') === 'true') {
+            if (sessionStorage.getItem("admin_authenticated") === "true") {
+                isViewOnlyMode = false;
+            } else {
                 isViewOnlyMode = true;
             }
             updateAdminUI();
@@ -662,7 +644,8 @@
                 const password = prompt("Enter Admin Password to Unlock Editing:");
                 if (password === ADMIN_PASSWORD) {
                     isViewOnlyMode = false;
-                    alert("Admin Mode Unlocked! You can now edit the schedule.");
+                    sessionStorage.setItem("admin_authenticated", "true");
+                    alert("Admin Mode Unlocked! Editing permissions granted.");
                     updateAdminUI();
                     renderCalendar();
                     buildLeaveTables();
@@ -671,6 +654,7 @@
                 }
             } else {
                 isViewOnlyMode = true;
+                sessionStorage.removeItem("admin_authenticated");
                 alert("Locked to View-Only Mode.");
                 updateAdminUI();
                 renderCalendar();
@@ -681,15 +665,18 @@
         function updateAdminUI() {
             const banner = document.getElementById('viewOnlyBanner');
             const authBtn = document.getElementById('adminAuthBtn');
+            const btnBackToDuties = document.getElementById('btnBackToDuties');
             const bulkSelects = document.querySelectorAll('.bulk-select');
 
             if (isViewOnlyMode) {
                 banner.style.display = 'block';
+                if (btnBackToDuties) btnBackToDuties.style.display = 'none'; // HIDE RETURN TO DAILY DUTIES WHEN IN VIEW-ONLY MODE
                 authBtn.innerText = '🔑 Admin Login';
                 authBtn.className = 'btn btn-admin';
                 bulkSelects.forEach(el => el.disabled = true);
             } else {
                 banner.style.display = 'none';
+                if (btnBackToDuties) btnBackToDuties.style.display = 'inline-flex'; // SHOW RETURN BUTTON ONLY WHEN ADMIN LOGGED IN
                 authBtn.innerText = '🔒 Lock Schedule';
                 authBtn.className = 'btn btn-warning';
                 bulkSelects.forEach(el => el.disabled = false);
