@@ -216,7 +216,7 @@
 
         table.sheet-table td, table.sheet-table th {
             border: 1px solid var(--grid-border);
-            padding: 0.4rem 0.6rem;
+            padding: 0.45rem 0.65rem;
             font-size: 0.82rem;
             vertical-align: middle;
             position: relative;
@@ -247,12 +247,22 @@
             text-decoration: underline;
         }
 
+        .cell-container-flex {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            gap: 12px;
+            padding-right: 48px; /* Safe padding distance to prevent icon overlap */
+        }
+
         .edit-form-container {
             display: flex;
             flex-direction: column;
             gap: 4px;
             width: 100%;
             padding: 2px 0;
+            padding-right: 48px;
         }
 
         .cell-textarea-label {
@@ -317,13 +327,15 @@
             border-radius: 2px;
         }
 
+        /* ISOLATED ACTION BUTTON GROUP */
         .row-actions-group {
             display: none;
             position: absolute;
-            right: 4px;
-            top: 4px;
-            gap: 2px;
-            z-index: 5;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            gap: 4px;
+            z-index: 10;
         }
 
         tr:hover .row-actions-group {
@@ -331,17 +343,31 @@
         }
 
         .action-icon-btn {
-            background: rgba(255, 255, 255, 0.9);
+            background: var(--bg-surface);
             border: 1px solid var(--border-color);
-            border-radius: 3px;
-            padding: 1px 4px;
-            font-size: 10px;
+            border-radius: 4px;
+            padding: 2px 5px;
+            font-size: 11px;
             cursor: pointer;
-            color: #000000;
+            color: var(--text-main);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .action-icon-btn:hover {
-            background: #ffffff;
+            border-color: var(--link-blue);
+            color: var(--link-blue);
+        }
+
+        .btn-delete-row {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #ef4444;
+        }
+
+        .btn-delete-row:hover {
+            background: rgba(239, 68, 68, 0.3);
+            border-color: #ef4444;
+            color: #ffffff;
         }
 
         /* SLACK CHANNEL TABLE STYLES */
@@ -365,6 +391,7 @@
         .desc-text-display {
             font-style: italic;
             color: var(--text-main);
+            padding-right: 48px;
         }
 
         @media (max-width: 1280px) {
@@ -520,7 +547,7 @@
         const db = firebase.database();
 
         let hubData = {};
-        let editingRowState = {}; // Tracks which rows are currently being edited
+        let editingRowState = {};
 
         function getDefaultHubData() {
             return {
@@ -653,7 +680,7 @@
                             </div>
                             <div class="row-actions-group">
                                 <button class="action-icon-btn" onclick="toggleEditRow('${sectionKey}', ${idx})" title="Done Editing">✓</button>
-                                <button class="action-icon-btn" onclick="deleteItem('${sectionKey}', ${idx})" title="Delete Row">🗑️</button>
+                                <button class="action-icon-btn btn-delete-row" onclick="deleteItem('${sectionKey}', ${idx})" title="Delete Row">🗑️</button>
                             </div>
                         </td>
                     `;
@@ -666,10 +693,10 @@
                     tr.innerHTML = `
                         <td style="width: 40%;" class="label-text-display">${item.label || ''}</td>
                         <td>
-                            <div>${linkMarkup}</div>
+                            <div class="cell-container-flex">${linkMarkup}</div>
                             <div class="row-actions-group">
                                 <button class="action-icon-btn" onclick="toggleEditRow('${sectionKey}', ${idx})" title="Edit Row">✏️</button>
-                                <button class="action-icon-btn" onclick="deleteItem('${sectionKey}', ${idx})" title="Delete Row">🗑️</button>
+                                <button class="action-icon-btn btn-delete-row" onclick="deleteItem('${sectionKey}', ${idx})" title="Delete Row">🗑️</button>
                             </div>
                         </td>
                     `;
@@ -694,7 +721,7 @@
                             <textarea class="cell-textarea-desc" rows="1" oninput="autoResizeTextarea(this)" onchange="updateItem('tasks', ${idx}, 'task', this.value)">${item.task || ''}</textarea>
                             <div class="row-actions-group">
                                 <button class="action-icon-btn" onclick="toggleEditRow('tasks', ${idx})" title="Done Editing">✓</button>
-                                <button class="action-icon-btn" onclick="deleteItem('tasks', ${idx})" title="Delete Row">🗑️</button>
+                                <button class="action-icon-btn btn-delete-row" onclick="deleteItem('tasks', ${idx})" title="Delete Task">🗑️</button>
                             </div>
                         </td>
                     `;
@@ -704,7 +731,7 @@
                             ${item.task || ''}
                             <div class="row-actions-group">
                                 <button class="action-icon-btn" onclick="toggleEditRow('tasks', ${idx})" title="Edit Task">✏️</button>
-                                <button class="action-icon-btn" onclick="deleteItem('tasks', ${idx})" title="Delete Task">🗑️</button>
+                                <button class="action-icon-btn btn-delete-row" onclick="deleteItem('tasks', ${idx})" title="Delete Task">🗑️</button>
                             </div>
                         </td>
                     `;
@@ -732,7 +759,7 @@
                             <textarea class="cell-textarea-desc" rows="1" oninput="autoResizeTextarea(this)" onchange="updateItem('${sectionKey}', ${idx}, 'desc', this.value)">${item.desc || ''}</textarea>
                             <div class="row-actions-group">
                                 <button class="action-icon-btn" onclick="toggleEditRow('${sectionKey}', ${idx})" title="Done Editing">✓</button>
-                                <button class="action-icon-btn" onclick="deleteItem('${sectionKey}', ${idx})" title="Delete Channel">🗑️</button>
+                                <button class="action-icon-btn btn-delete-row" onclick="deleteItem('${sectionKey}', ${idx})" title="Delete Channel">🗑️</button>
                             </div>
                         </td>
                     `;
@@ -743,7 +770,7 @@
                             ${(item.desc || '').replace(/\n/g, '<br>')}
                             <div class="row-actions-group">
                                 <button class="action-icon-btn" onclick="toggleEditRow('${sectionKey}', ${idx})" title="Edit Channel">✏️</button>
-                                <button class="action-icon-btn" onclick="deleteItem('${sectionKey}', ${idx})" title="Delete Channel">🗑️</button>
+                                <button class="action-icon-btn btn-delete-row" onclick="deleteItem('${sectionKey}', ${idx})" title="Delete Channel">🗑️</button>
                             </div>
                         </td>
                     `;
@@ -794,7 +821,6 @@
                 hubData[sectionKey].push({ label: "New Reference", url: "https://" });
             }
 
-            // Automatically open edit mode for the newly added row
             editingRowState[`${sectionKey}-${newIdx}`] = true;
 
             saveToDatabase();
