@@ -101,7 +101,7 @@
         .header-controls {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.6rem;
         }
 
         .status-badge {
@@ -124,7 +124,6 @@
             background-color: #22c55e;
         }
 
-        /* Historical Date Dropdown Selector */
         .history-selector-wrapper {
             display: flex;
             align-items: center;
@@ -159,12 +158,12 @@
             background: var(--bg-surface);
             color: var(--text-main);
             border: 1px solid var(--border-color);
-            padding: 0.45rem 0.9rem;
+            padding: 0.45rem 0.8rem;
             border-radius: 0.375rem;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.4rem;
             font-size: 0.85rem;
             font-weight: 600;
             text-decoration: none;
@@ -173,6 +172,13 @@
         .btn:hover {
             border-color: var(--accent-color);
             color: var(--accent-color);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-color: var(--border-color) !important;
+            color: var(--text-muted) !important;
         }
 
         .btn-primary {
@@ -503,7 +509,15 @@
                 <span id="save-status">✓ Live Synced</span>
             </div>
 
-            <!-- HISTORICAL DATE ARCHIVE SELECTOR (REPLACES RESET BUTTON) -->
+            <!-- UNDO / REDO BUTTONS -->
+            <button class="btn" id="btn-undo" onclick="undo()" disabled title="Undo last action (Ctrl+Z)">
+                <i data-lucide="undo-2" style="width: 15px; height: 15px;"></i> Undo
+            </button>
+            <button class="btn" id="btn-redo" onclick="redo()" disabled title="Redo action (Ctrl+Y)">
+                <i data-lucide="redo-2" style="width: 15px; height: 15px;"></i> Redo
+            </button>
+
+            <!-- HISTORICAL DATE ARCHIVE SELECTOR -->
             <div class="history-selector-wrapper">
                 <label for="history-date-picker">
                     <i data-lucide="history" style="width: 15px; height: 15px;"></i> History:
@@ -594,6 +608,66 @@
         let selectedBrandFilter = 'ALL';
         let selectedHistoricalDate = 'ALL';
         const availableBrands = ["qbet", "ibet", "30bet", "55bet", "7abet", "bvbet", "pubs"];
+
+        // UNDO / REDO SYSTEM (10 STATES LIMIT)
+        let undoStack = [];
+        let redoStack = [];
+        const MAX_HISTORY = 10;
+        let isUndoRedoAction = false;
+
+        function saveStateToUndo() {
+            if (isUndoRedoAction) return;
+            const currentState = JSON.stringify(playersData);
+            if (undoStack.length > 0 && undoStack[undoStack.length - 1] === currentState) return;
+
+            undoStack.push(currentState);
+            if (undoStack.length > MAX_HISTORY) {
+                undoStack.shift();
+            }
+            redoStack = []; // Clear redo stack on new action
+            updateUndoRedoUI();
+        }
+
+        function undo() {
+            if (undoStack.length === 0) return;
+            isUndoRedoAction = true;
+
+            const currentState = JSON.stringify(playersData);
+            redoStack.push(currentState);
+            if (redoStack.length > MAX_HISTORY) redoStack.shift();
+
+            const previousState = undoStack.pop();
+            playersData = JSON.parse(previousState);
+
+            saveToDatabase();
+            renderTable();
+            updateUndoRedoUI();
+            isUndoRedoAction = false;
+        }
+
+        function redo() {
+            if (redoStack.length === 0) return;
+            isUndoRedoAction = true;
+
+            const currentState = JSON.stringify(playersData);
+            undoStack.push(currentState);
+            if (undoStack.length > MAX_HISTORY) undoStack.shift();
+
+            const nextState = redoStack.pop();
+            playersData = JSON.parse(nextState);
+
+            saveToDatabase();
+            renderTable();
+            updateUndoRedoUI();
+            isUndoRedoAction = false;
+        }
+
+        function updateUndoRedoUI() {
+            const btnUndo = document.getElementById('btn-undo');
+            const btnRedo = document.getElementById('btn-redo');
+            if (btnUndo) btnUndo.disabled = undoStack.length === 0;
+            if (btnRedo) btnRedo.disabled = redoStack.length === 0;
+        }
 
         function generate747Players() {
             let defaults = [
@@ -715,8 +789,6 @@
             playersData.forEach((player, pIndex) => {
                 const totals = calculatePlayerTotals(player);
                 
-                // Negative (-) = Player Win / SB Loss -> Highlight RED (pnl-negative)
-                // Positive (+) = Player Loss / SB Profit -> Highlight GREEN (pnl-positive)
                 const totalFormatted = (totals.total > 0 ? '+' : '') + totals.total.toFixed(2);
                 const totalClass = totals.total < 0 ? 'pnl-negative' : 'pnl-positive';
 
@@ -854,37 +926,46 @@
         }
 
         function updatePlayerField(pIndex, field, value) {
+            saveStateToUndo();
             playersData[pIndex][field] = value;
             saveToDatabase();
         }
 
         function deletePlayer(pIndex) {
             if (confirm(`Delete player ID ${playersData[pIndex].id}?`)) {
+                saveStateToUndo();
                 playersData.splice(pIndex, 1);
                 openRowIndex = null;
                 document.getElementById('user-count').textContent = playersData.length;
                 saveToDatabase();
+                renderTable();
             }
         }
 
         function updateRecord(pIndex, rIndex, field, value) {
+            saveStateToUndo();
             playersData[pIndex].records[rIndex][field] = value;
             saveToDatabase();
         }
 
         function addRecord(pIndex) {
+            saveStateToUndo();
             const today = new Date().toISOString().split('T')[0];
             if (!playersData[pIndex].records) playersData[pIndex].records = [];
             playersData[pIndex].records.push({ date: today, amount: 0.00, notes: "" });
             saveToDatabase();
+            renderTable();
         }
 
         function deleteRecord(pIndex, rIndex) {
+            saveStateToUndo();
             playersData[pIndex].records.splice(rIndex, 1);
             saveToDatabase();
+            renderTable();
         }
 
         function addNewPlayer() {
+            saveStateToUndo();
             playersData.unshift({
                 id: "NEW_" + Math.floor(100000 + Math.random() * 900000),
                 email: "new.player@domain.com",
@@ -898,6 +979,7 @@
             openRowIndex = 0;
             document.getElementById('user-count').textContent = playersData.length;
             saveToDatabase();
+            renderTable();
         }
 
         function filterPlayers() {
@@ -952,6 +1034,19 @@
             dlAnchor.click();
             dlAnchor.remove();
         }
+
+        // KEYBOARD SHORTCUTS FOR UNDO / REDO (Ctrl+Z / Ctrl+Y)
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+                if (e.shiftKey) {
+                    redo();
+                } else {
+                    undo();
+                }
+            } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+                redo();
+            }
+        });
 
         document.addEventListener('DOMContentLoaded', () => {
             const savedTheme = localStorage.getItem('sportsbook_theme_747') || 'dark';
