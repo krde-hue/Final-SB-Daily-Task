@@ -298,19 +298,6 @@
             'shift-rd': ['slot_7_10', 'slot_10_12', 'slot_12_16', 'slot_16_19', 'slot_19_21', 'slot_22_1']
         };
 
-        const shiftTextToIdMap = {
-            "7:00 - 16:00": "shift-7-16",
-            "7:00 - 10:00 (WFH)": "shift-7-16",
-            "7:00 - 16:00 (WFH)": "shift-7-16",
-            "10:00 - 19:00": "shift-10-19",
-            "12:00 - 21:00": "shift-12-21",
-            "14:00 - 23:00": "shift-14-23",
-            "16:00 - 1:00": "shift-16-1",
-            "RD": "shift-rd",
-            "VL": "shift-rd",
-            "SL": "shift-rd"
-        };
-
         let database = createDefaultDatabase();
         let masterRotaCalendar = {};
         let activeOpenDropdownId = null;
@@ -354,12 +341,13 @@
         }
 
         function listenToLiveDatabase() {
-            // Listen to Rota Master database to auto-assign shift times
+            // Listen to live ROTA Master
             db.ref('rota_data').on('value', (snapshot) => {
                 masterRotaCalendar = snapshot.val() || {};
                 syncShiftsFromRotaMaster();
             });
 
+            // Listen to Daily Roster data
             db.ref('roster_data').on('value', (snapshot) => {
                 const liveData = snapshot.val();
                 if (liveData && typeof liveData === 'object' && Object.keys(liveData).length > 0) {
@@ -380,7 +368,37 @@
             });
         }
 
-        // AUTOMATED SHIFT SYNC FROM ROTA CALENDAR
+        // Parse Shift Text from ROTA to match Daily Roster Shift ID
+        function parseRotaShiftToShiftId(rawShiftText) {
+            if (!rawShiftText) return null;
+
+            let text = rawShiftText.trim();
+
+            if (text.startsWith("Adjusted:")) {
+                text = text.replace("Adjusted:", "").trim();
+            }
+
+            if (text === "RD" || text === "VL" || text === "SL") {
+                return "shift-rd";
+            }
+
+            if (text.includes("7:00") && text.includes("16:00")) return "shift-7-16";
+            if (text.includes("10:00") && text.includes("19:00")) return "shift-10-19";
+            if (text.includes("12:00") && text.includes("21:00")) return "shift-12-21";
+            if (text.includes("14:00") && text.includes("23:00")) return "shift-14-23";
+            if (text.includes("16:00") && text.includes("1:00")) return "shift-16-1";
+
+            // Fallback for custom time entries e.g. "06:00 - 15:00"
+            if (text.includes("7:00")) return "shift-7-16";
+            if (text.includes("10:00")) return "shift-10-19";
+            if (text.includes("12:00")) return "shift-12-21";
+            if (text.includes("14:00")) return "shift-14-23";
+            if (text.includes("16:00")) return "shift-16-1";
+
+            return null;
+        }
+
+        // AUTOMATED SHIFT SYNC FROM ROTA CALENDAR BASED ON EXACT DATE
         function syncShiftsFromRotaMaster() {
             if (!masterRotaCalendar || Object.keys(masterRotaCalendar).length === 0) return;
 
@@ -388,27 +406,30 @@
             Object.keys(database || {}).forEach(dayKey => {
                 let dayData = database[dayKey];
                 if (dayData && dayData.isoDate) {
-                    let parts = dayData.isoDate.split('-');
-                    let year = parts[0];
-                    let month = parseInt(parts[1], 10);
-                    let dayNum = parseInt(parts[2], 10);
+                    let dateParts = dayData.isoDate.split('-'); // ISO: YYYY-MM-DD
+                    if (dateParts.length === 3) {
+                        let year = dateParts[0];
+                        let month = parseInt(dateParts[1], 10);
+                        let dayNum = parseInt(dateParts[2], 10);
 
-                    let rotaMonthKey = `${year}_${month}`;
-                    let rotaDayData = masterRotaCalendar[rotaMonthKey] ? masterRotaCalendar[rotaMonthKey][dayNum] : null;
+                        let rotaMonthKey = `${year}_${month}`;
+                        let rotaDayRow = masterRotaCalendar[rotaMonthKey] ? masterRotaCalendar[rotaMonthKey][dayNum] : null;
 
-                    if (rotaDayData) {
-                        members.forEach(m => {
-                            let rotaShiftText = rotaDayData[m.index];
-                            if (rotaShiftText) {
-                                let matchedShiftId = shiftTextToIdMap[rotaShiftText] || m.defaultShift;
-                                if (!dayData.grid[m.id]) dayData.grid[m.id] = { slots: {} };
-                                
-                                if (dayData.grid[m.id].shift !== matchedShiftId) {
-                                    dayData.grid[m.id].shift = matchedShiftId;
-                                    updated = true;
+                        if (rotaDayRow) {
+                            members.forEach(m => {
+                                let rawRotaShift = rotaDayRow[m.index];
+                                let matchedShiftId = parseRotaShiftToShiftId(rawRotaShift);
+
+                                if (matchedShiftId) {
+                                    if (!dayData.grid[m.id]) dayData.grid[m.id] = { slots: {} };
+                                    
+                                    if (dayData.grid[m.id].shift !== matchedShiftId) {
+                                        dayData.grid[m.id].shift = matchedShiftId;
+                                        updated = true;
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
                 }
             });
