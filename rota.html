@@ -3,206 +3,419 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sportsbook Operational Rota Master</title>
+    <title>Team Monthly Rota Schedule Manager</title>
 
+    <!-- Chart.js CDN for Pie Chart Visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <!-- Firebase Realtime Database SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <style>
         :root {
+            --bg-color: #0b2240;
+            --card-bg: #133054;
+            --text-color: #ffffff;
+            --header-text: #ffffff;
+            --border-color: #ffffff;
+            --table-header-bg: #0b2240;
+            --accent-btn: #38bdf8;
+            --accent-btn-text: #0b2240;
+        }
+
+        [data-theme="light"] {
             --bg-color: #f4f7f6;
             --card-bg: #ffffff;
             --text-color: #333333;
             --header-text: #0d233a;
             --border-color: #cbd5e0;
-            --table-border: #cbd5e0;
-            --accent-btn: #edf2f7;
-            --accent-btn-text: #4a5568;
-
-            /* Shift Colors */
-            --shift-7-16: #ffffff;
-            --shift-9-18: #fefce8;
-            --shift-10-19: #fef9c3;
-            --shift-12-21: #fef08a;
-            --shift-16-1: #ffedd5;
-            --shift-wfh: #e0f2fe;
-            --shift-rd: #e5e7eb;
-            --shift-vl: #dcfce7;
-            --shift-sl: #fee2e2;
-        }
-
-        [data-theme="dark"] {
-            --bg-color: #111827;
-            --card-bg: #1f2937;
-            --text-color: #f3f4f6;
-            --header-text: #60a5fa;
-            --border-color: #374151;
-            --table-border: #4b5563;
-            --accent-btn: #374151;
-            --accent-btn-text: #f3f4f6;
-
-            /* Shift Colors (Dark Mode) */
-            --shift-7-16: #1f2937;
-            --shift-9-18: #422006;
-            --shift-10-19: #713f12;
-            --shift-12-21: #854d0e;
-            --shift-16-1: #7c2d12;
-            --shift-wfh: #075985;
-            --shift-rd: #374151;
-            --shift-vl: #14532d;
-            --shift-sl: #7f1d1d;
+            --table-header-bg: #0d233a;
+            --accent-btn: #0d233a;
+            --accent-btn-text: #ffffff;
         }
 
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
-        body { background-color: var(--bg-color); padding: 20px; color: var(--text-color); transition: background-color 0.3s; }
 
-        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: var(--card-bg); padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        h1 { font-size: 20px; color: var(--header-text); }
-        .btn-controls { display: flex; gap: 8px; align-items: center; }
-
-        .btn { padding: 8px 14px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 13px; transition: background-color 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
-        .btn-primary { background-color: #0d233a; color: white; }
-        .btn-primary:hover { background-color: #173b61; }
-        .btn-secondary { background-color: var(--accent-btn); color: var(--accent-btn-text); border: 1px solid var(--border-color); }
-        .btn-secondary:hover { opacity: 0.85; }
-
-        .section-card { background: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin-bottom: 25px; }
-        .section-title { font-size: 16px; font-weight: bold; color: var(--header-text); margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-
-        .table-responsive { width: 100%; overflow-x: auto; }
-        .rota-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        .rota-table th, .rota-table td { border: 1px solid var(--table-border); padding: 6px 4px; text-align: center; }
-        .rota-table th { background: var(--card-bg); color: var(--header-text); font-weight: 700; }
-
-        /* SHIFT SELECTOR & DROPDOWN MENU COLOR STYLING */
-        .shift-select {
-            width: 100%;
-            padding: 4px 1px;
-            font-size: 11px;
-            font-weight: 700;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            outline: none;
-            cursor: pointer;
-            text-align: center;
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
         }
 
-        /* Color styling for each menu item when the dropdown opens */
-        .opt-7-16 { background-color: #1d4ed8 !important; color: #ffffff !important; }
-        .opt-9-18 { background-color: #422006 !important; color: #fde047 !important; }
-        .opt-10-19 { background-color: #713f12 !important; color: #fde047 !important; }
-        .opt-12-21 { background-color: #854d0e !important; color: #fde047 !important; }
-        .opt-16-1 { background-color: #7c2d12 !important; color: #f97316 !important; }
-        .opt-wfh { background-color: #075985 !important; color: #38bdf8 !important; }
-        .opt-rd { background-color: #374151 !important; color: #9ca3af !important; }
-        .opt-vl { background-color: #14532d !important; color: #4ade80 !important; }
-        .opt-sl { background-color: #7f1d1d !important; color: #f87171 !important; }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
 
-        /* Shift Cell Background Colors */
-        .color-shift-7-16 { background-color: var(--shift-7-16) !important; color: var(--text-color); }
-        .color-shift-9-18 { background-color: var(--shift-9-18) !important; color: var(--text-color); }
-        .color-shift-10-19 { background-color: var(--shift-10-19) !important; color: var(--text-color); }
-        .color-shift-12-21 { background-color: var(--shift-12-21) !important; color: var(--text-color); }
-        .color-shift-16-1 { background-color: var(--shift-16-1) !important; color: var(--text-color); }
-        .color-shift-wfh { background-color: var(--shift-wfh) !important; color: var(--text-color); }
-        .color-shift-rd { background-color: var(--shift-rd) !important; color: var(--text-color); }
-        .color-shift-vl { background-color: var(--shift-vl) !important; color: #14532d; font-weight: bold; }
-        .color-shift-sl { background-color: var(--shift-sl) !important; color: #7f1d1d; font-weight: bold; }
+        .header-top-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-        .leave-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 10px; text-transform: uppercase; margin: 1px; }
-        .badge-vl { background-color: #dcfce7; color: #15803d; }
-        .badge-sl { background-color: #fee2e2; color: #b91c1c; }
-        .badge-wfh { background-color: #e0f2fe; color: #0369a1; }
+        .btn {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn-back { background-color: var(--accent-btn); color: var(--accent-btn-text); }
+        .btn-secondary { background-color: rgba(255, 255, 255, 0.2); color: var(--text-color); border: 1px solid var(--border-color); }
 
-        .allowance-input { width: 50px; text-align: center; padding: 4px; border: 1px solid var(--border-color); border-radius: 4px; font-weight: bold; background: var(--card-bg); color: var(--text-color); }
-        .warning-text { color: #dc2626; font-weight: bold; }
-        .safe-text { color: #16a34a; font-weight: bold; }
+        .viewer-badge {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
 
-        .autosave-badge { font-size: 11px; color: #2f855a; font-weight: bold; opacity: 0; transition: opacity 0.3s; background: #c6f6d5; padding: 3px 8px; border-radius: 12px; display: inline-block; }
+        .controls {
+            margin-bottom: 20px;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 6px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        label { font-weight: bold; font-size: 14px; }
+        select, input {
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-weight: bold;
+        }
+
+        .main-layout {
+            display: flex;
+            gap: 25px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .table-container { overflow-x: auto; }
+
+        table {
+            border-collapse: collapse;
+            width: auto;
+            min-width: 650px;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 5px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        th {
+            background-color: var(--table-header-bg);
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        .day-col, .date-col { width: 75px; }
+
+        .bulk-set-container {
+            margin-top: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .bulk-select {
+            font-size: 10px !important;
+            padding: 2px !important;
+            width: 100%;
+        }
+
+        .shift-select {
+            width: 100%;
+            padding: 5px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            background-color: #ffffff;
+            color: #000000;
+        }
+        .shift-select:focus { outline: 2px solid #00bcff; }
+
+        /* Cell colors */
+        .shift-select[data-shift="7:00 - 16:00"] { background-color: #86efac !important; color: #064e3b !important; }
+        .shift-select[data-shift="10:00 - 19:00"] { background-color: #fed7aa !important; color: #7c2d12 !important; }
+        .shift-select[data-shift="12:00 - 21:00"] { background-color: #bae6fd !important; color: #0c4a6e !important; }
+        .shift-select[data-shift="16:00 - 1:00"] { background-color: #fca5a5 !important; color: #7f1d1d !important; }
+        .shift-select[data-shift="7:00 - 10:00 (WFH)"] { background-color: #fbcfe8 !important; color: #831843 !important; }
+        .shift-select[data-shift="7:00 - 16:00 (WFH)"] { background-color: #f472b6 !important; color: #831843 !important; }
+        .shift-select[data-shift="RD"] { background-color: #9ca3af !important; color: #111827 !important; }
+        .shift-select[data-shift="VL"] { background-color: #fde047 !important; color: #713f12 !important; }
+        .shift-select[data-shift="SL"] { background-color: #c084fc !important; color: #3b0764 !important; }
+
+        /* Dropdown options color coding */
+        option.opt-7-16 { background-color: #86efac !important; color: #064e3b !important; }
+        option.opt-10-19 { background-color: #fed7aa !important; color: #7c2d12 !important; }
+        option.opt-12-21 { background-color: #bae6fd !important; color: #0c4a6e !important; }
+        option.opt-16-1 { background-color: #fca5a5 !important; color: #7f1d1d !important; }
+        option.opt-7-10-wfh { background-color: #fbcfe8 !important; color: #831843 !important; }
+        option.opt-7-16-wfh { background-color: #f472b6 !important; color: #831843 !important; }
+        option.opt-rd { background-color: #9ca3af !important; color: #111827 !important; }
+        option.opt-vl { background-color: #fde047 !important; color: #713f12 !important; }
+        option.opt-sl { background-color: #c084fc !important; color: #3b0764 !important; }
+
+        .leave-section {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            min-width: 480px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .leave-section-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #ef4444;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chart-box {
+            background: var(--bg-color);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+        }
+
+        .chart-container-inner {
+            position: relative;
+            width: 100%;
+            max-width: 320px;
+            height: 320px;
+        }
+
+        .leave-table {
+            width: 100%;
+            min-width: 100%;
+        }
+
+        .badge-vl {
+            background-color: #86efac;
+            color: #064e3b;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .badge-sl {
+            background-color: #ef4444;
+            color: #ffffff;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .date-input-cell {
+            width: 100%;
+            padding: 4px;
+            font-size: 12px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            background: var(--bg-color);
+            color: var(--text-color);
+            outline: none;
+            border-radius: 3px;
+        }
+        .date-input-cell:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 4px rgba(56, 189, 248, 0.5);
+        }
     </style>
 </head>
 <body>
 
-    <div class="header-container">
-        <div>
-            <h1>SPORTSBOOK OPERATIONAL ROTA MASTER</h1>
-            <span style="font-size:11px; color:var(--accent-btn-text);">kdv_2026 model</span>
-        </div>
-        <div class="btn-controls">
-            <!-- EYE BADGE ACTIVE VIEWERS COUNT -->
-            <span id="activeViewersBadge" class="btn btn-secondary" style="cursor: default; pointer-events: none;" title="Active Viewers">
+    <div class="header-top">
+        <h2>Team Monthly Rota Schedule Manager</h2>
+        <div class="header-top-controls">
+            <!-- Active Viewers Eye Badge -->
+            <span class="viewer-badge" title="Active Viewers">
                 👁️ <span id="activeViewersCount">1</span>
             </span>
-            <span id="saveStatus" class="autosave-badge">✓ Live Synced</span>
             <button class="btn btn-secondary" onclick="toggleDarkMode()">🌓 Mode</button>
-            <a href="index.html" class="btn btn-secondary">📋 Per Day Roster</a>
-            <button class="btn btn-primary" onclick="window.print()">🖨️ Print / PDF</button>
+            <a href="index.html" class="btn btn-back">🔙 Back to Daily Duties</a>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <button class="btn btn-secondary" onclick="changeMonth(-1)">◀ Prev Month</button>
+        <div>
+            <label for="month-select">Month: </label>
+            <select id="month-select">
+                <option value="0">January</option><option value="1">February</option>
+                <option value="2">March</option><option value="3">April</option>
+                <option value="4">May</option><option value="5">June</option>
+                <option value="6">July</option><option value="7">August</option>
+                <option value="8" selected>September</option><option value="9">October</option>
+                <option value="10">November</option><option value="11">December</option>
+            </select>
+        </div>
+        <div>
+            <label for="year-input">Year: </label>
+            <input type="number" id="year-input" value="2026" min="2020" max="2035" style="width: 80px;">
+        </div>
+        <button class="btn btn-secondary" onclick="changeMonth(1)">Next Month ▶</button>
+        <div style="margin-left: auto; font-size: 12px; opacity: 0.9;">
+            💾 Schedule & Leaves auto-save instantly!
         </div>
     </div>
 
-    <!-- CALENDAR SHIFT ROTA SECTION -->
-    <div class="section-card">
-        <div class="section-title">
-            <span>📅 Monthly Schedule Rota</span>
+    <div class="main-layout">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan="2">Date</th>
+                        <th style="color: #ffc0cb;">
+                            Ann
+                            <div class="bulk-set-container">
+                                <select class="bulk-select" onchange="bulkSetShift(0, this.value)">
+                                    <option value="">-- Set All Month --</option>
+                                    <option value="CLEAR">-- Clear Month --</option>
+                                    <option value="7:00 - 16:00" class="opt-7-16">7:00 - 16:00</option>
+                                    <option value="10:00 - 19:00" class="opt-10-19">10:00 - 19:00</option>
+                                    <option value="12:00 - 21:00" class="opt-12-21">12:00 - 21:00</option>
+                                    <option value="16:00 - 1:00" class="opt-16-1">16:00 - 1:00</option>
+                                    <option value="7:00 - 10:00 (WFH)" class="opt-7-10-wfh">7:00 - 10:00 (WFH)</option>
+                                    <option value="7:00 - 16:00 (WFH)" class="opt-7-16-wfh">7:00 - 16:00 (WFH)</option>
+                                    <option value="RD" class="opt-rd">RD</option>
+                                </select>
+                            </div>
+                        </th>
+                        <th style="color: #9cc2e5;">
+                            Dave
+                            <div class="bulk-set-container">
+                                <select class="bulk-select" onchange="bulkSetShift(1, this.value)">
+                                    <option value="">-- Set All Month --</option>
+                                    <option value="CLEAR">-- Clear Month --</option>
+                                    <option value="7:00 - 16:00" class="opt-7-16">7:00 - 16:00</option>
+                                    <option value="10:00 - 19:00" class="opt-10-19">10:00 - 19:00</option>
+                                    <option value="12:00 - 21:00" class="opt-12-21">12:00 - 21:00</option>
+                                    <option value="16:00 - 1:00" class="opt-16-1">16:00 - 1:00</option>
+                                    <option value="7:00 - 10:00 (WFH)" class="opt-7-10-wfh">7:00 - 10:00 (WFH)</option>
+                                    <option value="7:00 - 16:00 (WFH)" class="opt-7-16-wfh">7:00 - 16:00 (WFH)</option>
+                                    <option value="RD" class="opt-rd">RD</option>
+                                </select>
+                            </div>
+                        </th>
+                        <th style="color: #b4c6e7;">
+                            Kenneth
+                            <div class="bulk-set-container">
+                                <select class="bulk-select" onchange="bulkSetShift(2, this.value)">
+                                    <option value="">-- Set All Month --</option>
+                                    <option value="CLEAR">-- Clear Month --</option>
+                                    <option value="7:00 - 16:00" class="opt-7-16">7:00 - 16:00</option>
+                                    <option value="10:00 - 19:00" class="opt-10-19">10:00 - 19:00</option>
+                                    <option value="12:00 - 21:00" class="opt-12-21">12:00 - 21:00</option>
+                                    <option value="16:00 - 1:00" class="opt-16-1">16:00 - 1:00</option>
+                                    <option value="7:00 - 10:00 (WFH)" class="opt-7-10-wfh">7:00 - 10:00 (WFH)</option>
+                                    <option value="7:00 - 16:00 (WFH)" class="opt-7-16-wfh">7:00 - 16:00 (WFH)</option>
+                                    <option value="RD" class="opt-rd">RD</option>
+                                </select>
+                            </div>
+                        </th>
+                        <th style="color: #c6e0b4;">
+                            Kriztel
+                            <div class="bulk-set-container">
+                                <select class="bulk-select" onchange="bulkSetShift(3, this.value)">
+                                    <option value="">-- Set All Month --</option>
+                                    <option value="CLEAR">-- Clear Month --</option>
+                                    <option value="7:00 - 16:00" class="opt-7-16">7:00 - 16:00</option>
+                                    <option value="10:00 - 19:00" class="opt-10-19">10:00 - 19:00</option>
+                                    <option value="12:00 - 21:00" class="opt-12-21">12:00 - 21:00</option>
+                                    <option value="16:00 - 1:00" class="opt-16-1">16:00 - 1:00</option>
+                                    <option value="7:00 - 10:00 (WFH)" class="opt-7-10-wfh">7:00 - 10:00 (WFH)</option>
+                                    <option value="7:00 - 16:00 (WFH)" class="opt-7-16-wfh">7:00 - 16:00 (WFH)</option>
+                                    <option value="RD" class="opt-rd">RD</option>
+                                </select>
+                            </div>
+                        </th>
+                        <th style="color: #ffffff;">
+                            Miguel
+                            <div class="bulk-set-container">
+                                <select class="bulk-select" onchange="bulkSetShift(4, this.value)">
+                                    <option value="">-- Set All Month --</option>
+                                    <option value="CLEAR">-- Clear Month --</option>
+                                    <option value="7:00 - 16:00" class="opt-7-16">7:00 - 16:00</option>
+                                    <option value="10:00 - 19:00" class="opt-10-19">10:00 - 19:00</option>
+                                    <option value="12:00 - 21:00" class="opt-12-21">12:00 - 21:00</option>
+                                    <option value="16:00 - 1:00" class="opt-16-1">16:00 - 1:00</option>
+                                    <option value="7:00 - 10:00 (WFH)" class="opt-7-10-wfh">7:00 - 10:00 (WFH)</option>
+                                    <option value="7:00 - 16:00 (WFH)" class="opt-7-16-wfh">7:00 - 16:00 (WFH)</option>
+                                    <option value="RD" class="opt-rd">RD</option>
+                                </select>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="schedule-body"></tbody>
+            </table>
+        </div>
+
+        <div class="leave-section">
             <div>
-                <input type="month" id="monthPicker" style="padding:4px 8px; font-weight:bold; border-radius:4px; border:1px solid var(--border-color);" onchange="changeMonthYear(this.value)">
+                <div class="leave-section-title">📊 Team VL Usage by Month</div>
+                <div class="chart-box">
+                    <div class="chart-container-inner">
+                        <canvas id="vlPieChart"></canvas>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="table-responsive">
-            <table class="rota-table" id="calendarRotaTable">
-                <thead id="rotaThead"></thead>
-                <tbody id="rotaTbody"></tbody>
-            </table>
-        </div>
-    </div>
 
-    <!-- SL / VL LEAVE MONITORING TABLE -->
-    <div class="section-card">
-        <div class="section-title">
-            <span>🎋 Vacation & Sick Leave (VL / SL) Tracker</span>
-            <span style="font-size:11px; font-weight:normal; color:var(--accent-btn-text);">*Automated from Calendar Shift Inputs (Miguel Excluded)</span>
-        </div>
-        <div class="table-responsive">
-            <table class="rota-table">
-                <thead>
-                    <tr>
-                        <th style="width: 120px;">Team Member</th>
-                        <th>VL Allowance</th>
-                        <th>VL Taken (Dates)</th>
-                        <th>Total VL Used</th>
-                        <th>VL Remaining</th>
-                        <th>SL Allowance</th>
-                        <th>SL Taken (Dates)</th>
-                        <th>Total SL Used</th>
-                        <th>SL Remaining</th>
-                    </tr>
-                </thead>
-                <tbody id="leaveTbody"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- AUTOMATED WFH MONITORING TABLE -->
-    <div class="section-card">
-        <div class="section-title">
-            <span>🏠 WFH Allowance Tracker (Automated 1 WFH/Week Check)</span>
-            <span style="font-size:11px; font-weight:normal; color:var(--accent-btn-text);">*Rule: Max 1 WFH day per calendar week (Miguel Excluded)</span>
-        </div>
-        <div class="table-responsive">
-            <table class="rota-table">
-                <thead>
-                    <tr>
-                        <th style="width: 120px;">Team Member</th>
-                        <th>Monthly WFH Limit</th>
-                        <th>WFH Dates Taken</th>
-                        <th>Total WFH Used</th>
-                        <th>WFH Remaining</th>
-                        <th>Weekly Compliance Check</th>
-                    </tr>
-                </thead>
-                <tbody id="wfhTbody"></tbody>
-            </table>
+            <div>
+                <div class="leave-section-title">🎋 Vacation & Sick Leave Dates</div>
+                <table class="leave-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">Type</th>
+                            <th>Ann</th>
+                            <th>Dave</th>
+                            <th>Kenneth</th>
+                            <th>Kriztel</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leave-dates-body"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -220,49 +433,48 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // ALL Calendar Members (Miguel included ONLY here)
-        const calendarMembers = [
-            { id: 'ann', name: 'ANN' },
-            { id: 'dave', name: 'DAVE' },
-            { id: 'ken', name: 'KEN' },
-            { id: 'kriztel', name: 'KRIZTEL' },
-            { id: 'miguel', name: 'MIGUEL' }
+        const team = ["Ann", "Dave", "Kenneth", "Kriztel", "Miguel"];
+        // Leave tracker team without Miguel
+        const leaveTrackedTeam = ["Ann", "Dave", "Kenneth", "Kriztel"];
+
+        const shifts = [
+            "", 
+            "7:00 - 16:00", 
+            "10:00 - 19:00", 
+            "12:00 - 21:00", 
+            "16:00 - 1:00", 
+            "7:00 - 10:00 (WFH)", 
+            "7:00 - 16:00 (WFH)", 
+            "RD", 
+            "VL",
+            "SL"
         ];
 
-        // Leave & WFH Tracked Members (Miguel strictly EXCLUDED)
-        const trackedMembers = [
-            { id: 'ann', name: 'ANN' },
-            { id: 'dave', name: 'DAVE' },
-            { id: 'ken', name: 'KEN' },
-            { id: 'kriztel', name: 'KRIZTEL' }
-        ];
-
-        const shiftOptionsList = [
-            { id: 'shift-7-16', label: '7:00 - 16:00', class: 'color-shift-7-16', optClass: 'opt-7-16' },
-            { id: 'shift-9-18', label: '9:00 - 18:00', class: 'color-shift-9-18', optClass: 'opt-9-18' },
-            { id: 'shift-10-19', label: '10:00 - 19:00', class: 'color-shift-10-19', optClass: 'opt-10-19' },
-            { id: 'shift-12-21', label: '12:00 - 21:00', class: 'color-shift-12-21', optClass: 'opt-12-21' },
-            { id: 'shift-16-1', label: '16:00 - 1:00', class: 'color-shift-16-1', optClass: 'opt-16-1' },
-            { id: 'shift-9-18-wfh', label: '9:00 - 18:00 (WFH)', class: 'color-shift-wfh', optClass: 'opt-wfh' },
-            { id: 'shift-7-16-wfh', label: '7:00 - 16:00 (WFH)', class: 'color-shift-wfh', optClass: 'opt-wfh' },
-            { id: 'shift-12-21-wfh', label: '12:00 - 21:00 (WFH)', class: 'color-shift-wfh', optClass: 'opt-wfh' },
-            { id: 'shift-16-1-wfh', label: '16:00 - 1:00 (WFH)', class: 'color-shift-wfh', optClass: 'opt-wfh' },
-            { id: 'shift-rd', label: 'RD', class: 'color-shift-rd', optClass: 'opt-rd' },
-            { id: 'shift-vl', label: 'VL', class: 'color-shift-vl', optClass: 'opt-vl' },
-            { id: 'shift-sl', label: 'SL', class: 'color-shift-sl', optClass: 'opt-sl' }
-        ];
-
-        let currentYear = 2026;
-        let currentMonth = 8; // September 2026
-        let rotaData = {};
-        let allowanceData = {
-            ann: { vl: 15, sl: 15 },
-            dave: { vl: 15, sl: 15 },
-            ken: { vl: 15, sl: 15 },
-            kriztel: { vl: 15, sl: 15 }
+        const shiftOptClasses = {
+            "7:00 - 16:00": "opt-7-16",
+            "10:00 - 19:00": "opt-10-19",
+            "12:00 - 21:00": "opt-12-21",
+            "16:00 - 1:00": "opt-16-1",
+            "7:00 - 10:00 (WFH)": "opt-7-10-wfh",
+            "7:00 - 16:00 (WFH)": "opt-7-16-wfh",
+            "RD": "opt-rd",
+            "VL": "opt-vl",
+            "SL": "opt-sl"
         };
 
-        // Firebase Presence System for Live Viewers Count
+        const monthNames = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+
+        const monthSelect = document.getElementById('month-select');
+        const yearInput = document.getElementById('year-input');
+        const tbody = document.getElementById('schedule-body');
+        const leaveDatesBody = document.getElementById('leave-dates-body');
+        const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thurs", "Fri", "Sat"];
+
+        let vlChartInstance = null;
+
         function setupPresenceSystem() {
             const presenceRef = db.ref('rota_active_sessions');
             const connectedRef = db.ref('.info/connected');
@@ -288,249 +500,319 @@
             });
         }
 
-        function getDaysInMonth(year, month) {
-            return new Date(year, month + 1, 0).getDate();
+        function getStorageKey() {
+            return `schedule_${yearInput.value}_${monthSelect.value}`;
         }
 
-        function getShiftObj(shiftId) {
-            return shiftOptionsList.find(s => s.id === shiftId) || shiftOptionsList[0];
+        function getLeaveDatesStorageKey() {
+            return `leave_dates_matrix_db`;
+        }
+
+        function updateCellColor(selectElement) {
+            selectElement.setAttribute('data-shift', selectElement.value);
         }
 
         function toggleDarkMode() {
-            const currentTheme = document.body.getAttribute('data-theme');
+            const currentTheme = document.body.getAttribute('data-theme') || 'dark';
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             document.body.setAttribute('data-theme', newTheme);
-            localStorage.setItem('sb_theme', newTheme);
+            localStorage.setItem('rota_theme', newTheme);
+            renderVLPieChart();
         }
 
-        function changeMonthYear(yearMonthStr) {
-            if (!yearMonthStr) return;
-            const parts = yearMonthStr.split('-');
-            currentYear = parseInt(parts[0]);
-            currentMonth = parseInt(parts[1]) - 1;
-            listenToDatabase();
-        }
+        function changeMonth(offset) {
+            let currentMonth = parseInt(monthSelect.value);
+            let currentYear = parseInt(yearInput.value);
 
-        function listenToDatabase() {
-            const monthKey = `${currentYear}_${currentMonth + 1}`;
-            db.ref(`rota_data/${monthKey}`).on('value', (snapshot) => {
-                rotaData = snapshot.val() || {};
-                renderAll();
-            });
-
-            db.ref('leave_allowances').on('value', (snapshot) => {
-                if (snapshot.val()) allowanceData = snapshot.val();
-                renderAll();
-            });
-        }
-
-        function saveRotaToDatabase() {
-            const monthKey = `${currentYear}_${currentMonth + 1}`;
-            db.ref(`rota_data/${monthKey}`).set(rotaData);
-            triggerSaveBadge();
-        }
-
-        function saveAllowancesToDatabase() {
-            db.ref('leave_allowances').set(allowanceData);
-            triggerSaveBadge();
-        }
-
-        function triggerSaveBadge() {
-            const statusBadge = document.getElementById('saveStatus');
-            if (statusBadge) {
-                statusBadge.style.opacity = '1';
-                setTimeout(() => { statusBadge.style.opacity = '0'; }, 1000);
+            currentMonth += offset;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            } else if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
             }
+
+            monthSelect.value = currentMonth;
+            yearInput.value = currentYear;
+            renderCalendar();
         }
 
-        function updateShift(memberId, day, newShift, selectElem) {
-            if (!rotaData[memberId]) rotaData[memberId] = {};
-            rotaData[memberId][day] = newShift;
+        function renderCalendar() {
+            tbody.innerHTML = '';
+            const selectedMonth = parseInt(monthSelect.value);
+            const selectedYear = parseInt(yearInput.value);
 
-            const shiftObj = getShiftObj(newShift);
-            selectElem.className = `shift-select ${shiftObj.class}`;
-            selectElem.parentElement.className = shiftObj.class;
+            const totalDays = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+            const monthLabel = monthSelect.options[selectedMonth].text.substring(0, 3);
 
-            saveRotaToDatabase();
-        }
+            let savedMonthData = {};
+            try {
+                savedMonthData = JSON.parse(localStorage.getItem(getStorageKey())) || {};
+            } catch(e) { savedMonthData = {}; }
 
-        function updateAllowance(memberId, type, val) {
-            if (!allowanceData[memberId]) allowanceData[memberId] = { vl: 15, sl: 15 };
-            allowanceData[memberId][type] = parseInt(val) || 0;
-            saveAllowancesToDatabase();
-        }
-
-        function renderAll() {
-            renderCalendarRota();
-            renderLeaveTracker();
-            renderWFHTracker();
-        }
-
-        function renderCalendarRota() {
-            const totalDays = getDaysInMonth(currentYear, currentMonth);
-            const thead = document.getElementById('rotaThead');
-            const tbody = document.getElementById('rotaTbody');
-
-            let headerHTML = '<tr><th style="width:110px;">TEAM</th>';
             for (let d = 1; d <= totalDays; d++) {
-                const dateObj = new Date(currentYear, currentMonth, d);
-                const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'narrow' });
-                const isWeekend = (dateObj.getDay() === 0 || dateObj.getDay() === 6);
-                headerHTML += `<th style="${isWeekend ? 'background:rgba(239,68,68,0.15);' : ''}">${d}<br><span style="font-size:9px;">${dayName}</span></th>`;
+                const dateObj = new Date(selectedYear, selectedMonth, d);
+                const dayName = weekdays[dateObj.getDay()];
+
+                const tr = document.createElement('tr');
+
+                const tdDay = document.createElement('td');
+                tdDay.className = 'day-col';
+                tdDay.textContent = dayName;
+                tr.appendChild(tdDay);
+
+                const tdDate = document.createElement('td');
+                tdDate.className = 'date-col';
+                tdDate.textContent = `${d}-${monthLabel}`;
+                tr.appendChild(tdDate);
+
+                team.forEach((member, memberIdx) => {
+                    const tdShift = document.createElement('td');
+                    const select = document.createElement('select');
+                    select.className = 'shift-select';
+                    
+                    shifts.forEach(shiftText => {
+                        const opt = document.createElement('option');
+                        opt.value = shiftText;
+                        opt.textContent = shiftText === "" ? "-- Select --" : shiftText;
+                        if (shiftOptClasses[shiftText]) {
+                            opt.className = shiftOptClasses[shiftText];
+                        }
+                        select.appendChild(opt);
+                    });
+
+                    let activeShift = "";
+                    if (savedMonthData[d] && savedMonthData[d][memberIdx] !== undefined) {
+                        activeShift = savedMonthData[d][memberIdx];
+                    }
+
+                    select.value = activeShift;
+                    updateCellColor(select);
+
+                    select.addEventListener('change', () => {
+                        updateCellColor(select);
+                        let currentMonthData = {};
+                        try {
+                            currentMonthData = JSON.parse(localStorage.getItem(getStorageKey())) || {};
+                        } catch(e) { currentMonthData = {}; }
+
+                        if (!currentMonthData[d]) currentMonthData[d] = Array(team.length).fill("");
+                        currentMonthData[d][memberIdx] = select.value;
+
+                        localStorage.setItem(getStorageKey(), JSON.stringify(currentMonthData));
+                        
+                        syncLeavesFromSchedule();
+                    });
+
+                    tdShift.appendChild(select);
+                    tr.appendChild(tdShift);
+                });
+
+                tbody.appendChild(tr);
             }
-            headerHTML += '</tr>';
-            thead.innerHTML = headerHTML;
 
-            tbody.innerHTML = '';
-            calendarMembers.forEach(m => {
-                let tr = document.createElement('tr');
-                let rowHTML = `<td style="font-weight:bold;">${m.name}</td>`;
-
-                for (let d = 1; d <= totalDays; d++) {
-                    const currentShift = (rotaData[m.id] && rotaData[m.id][d]) ? rotaData[m.id][d] : 'shift-7-16';
-                    const shiftObj = getShiftObj(currentShift);
-
-                    let optionsHTML = shiftOptionsList.map(s => 
-                        `<option value="${s.id}" class="${s.optClass}" ${currentShift === s.id ? 'selected' : ''}>${s.label}</option>`
-                    ).join('');
-
-                    rowHTML += `
-                        <td class="${shiftObj.class}">
-                            <select class="shift-select ${shiftObj.class}" onchange="updateShift('${m.id}', ${d}, this.value, this)">
-                                ${optionsHTML}
-                            </select>
-                        </td>
-                    `;
-                }
-                tr.innerHTML = rowHTML;
-                tbody.appendChild(tr);
-            });
+            syncLeavesFromSchedule();
         }
 
-        function renderLeaveTracker() {
-            const totalDays = getDaysInMonth(currentYear, currentMonth);
-            const tbody = document.getElementById('leaveTbody');
-            tbody.innerHTML = '';
+        function bulkSetShift(memberIdx, shiftValue) {
+            if (!shiftValue) return;
+            const selectedMonth = parseInt(monthSelect.value);
+            const selectedYear = parseInt(yearInput.value);
+            const totalDays = new Date(selectedYear, selectedMonth + 1, 0).getDate();
 
-            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            const currentMonthName = monthNames[currentMonth];
+            let currentMonthData = {};
+            try {
+                currentMonthData = JSON.parse(localStorage.getItem(getStorageKey())) || {};
+            } catch(e) { currentMonthData = {}; }
 
-            trackedMembers.forEach(m => {
-                let vlDates = [];
-                let slDates = [];
+            let applyValue = (shiftValue === 'CLEAR') ? '' : shiftValue;
 
-                const memberShifts = rotaData[m.id] || {};
-                for (let d = 1; d <= totalDays; d++) {
-                    if (memberShifts[d] === 'shift-vl') vlDates.push(`${currentMonthName} ${d}`);
-                    if (memberShifts[d] === 'shift-sl') slDates.push(`${currentMonthName} ${d}`);
-                }
+            for (let d = 1; d <= totalDays; d++) {
+                if (!currentMonthData[d]) currentMonthData[d] = Array(team.length).fill("");
+                currentMonthData[d][memberIdx] = applyValue;
+            }
 
-                const totalVL = (allowanceData[m.id] && allowanceData[m.id].vl !== undefined) ? allowanceData[m.id].vl : 15;
-                const totalSL = (allowanceData[m.id] && allowanceData[m.id].sl !== undefined) ? allowanceData[m.id].sl : 15;
-
-                const usedVL = vlDates.length;
-                const usedSL = slDates.length;
-
-                const remVL = totalVL - usedVL;
-                const remSL = totalSL - usedSL;
-
-                let vlBadges = vlDates.length > 0 
-                    ? vlDates.map(dateStr => `<span class="leave-badge badge-vl">${dateStr}</span>`).join(' ')
-                    : '<span style="color:var(--accent-btn-text);">None</span>';
-
-                let slBadges = slDates.length > 0 
-                    ? slDates.map(dateStr => `<span class="leave-badge badge-sl">${dateStr}</span>`).join(' ')
-                    : '<span style="color:var(--accent-btn-text);">None</span>';
-
-                let tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="font-weight:bold;">${m.name}</td>
-                    <td><input type="number" class="allowance-input" value="${totalVL}" onchange="updateAllowance('${m.id}', 'vl', this.value)"></td>
-                    <td>${vlBadges}</td>
-                    <td><strong>${usedVL} Days</strong></td>
-                    <td class="${remVL < 0 ? 'warning-text' : 'safe-text'}">${remVL} Days</td>
-                    <td><input type="number" class="allowance-input" value="${totalSL}" onchange="updateAllowance('${m.id}', 'sl', this.value)"></td>
-                    <td>${slBadges}</td>
-                    <td><strong>${usedSL} Days</strong></td>
-                    <td class="${remSL < 0 ? 'warning-text' : 'safe-text'}">${remSL} Days</td>
-                `;
-                tbody.appendChild(tr);
-            });
+            localStorage.setItem(getStorageKey(), JSON.stringify(currentMonthData));
+            renderCalendar();
         }
 
-        function renderWFHTracker() {
-            const totalDays = getDaysInMonth(currentYear, currentMonth);
-            const tbody = document.getElementById('wfhTbody');
-            tbody.innerHTML = '';
+        function syncLeavesFromSchedule() {
+            let leaveMatrix = {};
+            leaveTrackedTeam.forEach(m => leaveMatrix[m] = { vl: [], sl: [] });
 
-            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            const currentMonthName = monthNames[currentMonth];
-            const maxMonthlyWFH = Math.ceil(totalDays / 7);
+            for (let i = 0; i < localStorage.length; i++) {
+                let key = localStorage.key(i);
+                if (key.startsWith("schedule_")) {
+                    let parts = key.split('_');
+                    let monthIdx = parseInt(parts[2]);
+                    let monthLabel = monthSelect.options[monthIdx] ? monthSelect.options[monthIdx].text.substring(0, 3) : '';
 
-            trackedMembers.forEach(m => {
-                let wfhDates = [];
-                let weeklyCounts = {}; 
+                    try {
+                        let monthData = JSON.parse(localStorage.getItem(key)) || {};
+                        Object.keys(monthData).forEach(day => {
+                            let row = monthData[day];
+                            team.forEach((member, memberIdx) => {
+                                // Skip Miguel
+                                if (member === "Miguel") return;
 
-                const memberShifts = rotaData[m.id] || {};
+                                let shiftVal = row[memberIdx];
+                                if (shiftVal === 'VL') {
+                                    leaveMatrix[member].vl.push(`${day}-${monthLabel}`);
+                                } else if (shiftVal === 'SL') {
+                                    leaveMatrix[member].sl.push(`${day}-${monthLabel}`);
+                                }
+                            });
+                        });
+                    } catch(e){}
+                }
+            }
 
-                for (let d = 1; d <= totalDays; d++) {
-                    const shiftVal = memberShifts[d] || '';
-                    if (shiftVal.includes('wfh')) {
-                        wfhDates.push(`${currentMonthName} ${d}`);
+            leaveTrackedTeam.forEach(m => {
+                while (leaveMatrix[m].vl.length < 10) leaveMatrix[m].vl.push('');
+                while (leaveMatrix[m].sl.length < 5) leaveMatrix[m].sl.push('');
+                leaveMatrix[m].vl = leaveMatrix[m].vl.slice(0, 10);
+                leaveMatrix[m].sl = leaveMatrix[m].sl.slice(0, 5);
+            });
 
-                        const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
-                        const weekNum = Math.ceil((d + firstDayOfMonth.getDay()) / 7);
+            localStorage.setItem(getLeaveDatesStorageKey(), JSON.stringify(leaveMatrix));
+            buildLeaveTables();
+            renderVLPieChart();
+        }
 
-                        weeklyCounts[weekNum] = (weeklyCounts[weekNum] || 0) + 1;
+        function buildLeaveTables() {
+            leaveDatesBody.innerHTML = '';
+            
+            let leaveMatrix = {};
+            try {
+                leaveMatrix = JSON.parse(localStorage.getItem(getLeaveDatesStorageKey())) || {};
+            } catch(e) { leaveMatrix = {}; }
+
+            for (let rowIdx = 0; rowIdx < 15; rowIdx++) {
+                let tr = document.createElement('tr');
+                let isVL = rowIdx < 10;
+                let leaveType = isVL ? 'vl' : 'sl';
+                let arrayIdx = isVL ? rowIdx : rowIdx - 10;
+
+                let tdType = document.createElement('td');
+                tdType.innerHTML = isVL ? '<span class="badge-vl">VL</span>' : '<span class="badge-sl">SL</span>';
+                tr.appendChild(tdType);
+
+                leaveTrackedTeam.forEach((member) => {
+                    let tdDate = document.createElement('td');
+                    let input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'date-input-cell';
+
+                    let val = (leaveMatrix[member] && leaveMatrix[member][leaveType] && leaveMatrix[member][leaveType][arrayIdx]) ? leaveMatrix[member][leaveType][arrayIdx] : '';
+                    input.value = val;
+
+                    input.addEventListener('input', () => {
+                        let currentMatrix = {};
+                        try {
+                            currentMatrix = JSON.parse(localStorage.getItem(getLeaveDatesStorageKey())) || {};
+                        } catch(e) { currentMatrix = {}; }
+
+                        if (!currentMatrix[member]) currentMatrix[member] = { vl: Array(10).fill(''), sl: Array(5).fill('') };
+                        if (!currentMatrix[member][leaveType]) currentMatrix[member][leaveType] = isVL ? Array(10).fill('') : Array(5).fill('');
+
+                        currentMatrix[member][leaveType][arrayIdx] = input.value;
+                        localStorage.setItem(getLeaveDatesStorageKey(), JSON.stringify(currentMatrix));
+
+                        renderVLPieChart();
+                    });
+
+                    tdDate.appendChild(input);
+                    tr.appendChild(tdDate);
+                });
+
+                leaveDatesBody.appendChild(tr);
+            }
+        }
+
+        function renderVLPieChart() {
+            let monthVLCounts = Array(12).fill(0);
+
+            for (let i = 0; i < localStorage.length; i++) {
+                let key = localStorage.key(i);
+                if (key.startsWith("schedule_")) {
+                    let parts = key.split('_');
+                    let monthIdx = parseInt(parts[2]);
+
+                    try {
+                        let monthData = JSON.parse(localStorage.getItem(key)) || {};
+                        Object.keys(monthData).forEach(day => {
+                            let row = monthData[day];
+                            team.forEach((member, memberIdx) => {
+                                if (row[memberIdx] === 'VL') {
+                                    monthVLCounts[monthIdx]++;
+                                }
+                            });
+                        });
+                    } catch(e){}
+                }
+            }
+
+            const ctx = document.getElementById('vlPieChart').getContext('2d');
+            const activeTheme = document.body.getAttribute('data-theme') || 'dark';
+            const fontColor = activeTheme === 'light' ? '#333333' : '#ffffff';
+
+            if (vlChartInstance) {
+                vlChartInstance.destroy();
+            }
+
+            vlChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: monthNames,
+                    datasets: [{
+                        label: 'Total Team VL Days',
+                        data: monthVLCounts,
+                        backgroundColor: [
+                            '#f87171', '#fb923c', '#fbbf24', '#facc15',
+                            '#a3e635', '#4ade80', '#34d399', '#2dd4bf',
+                            '#38bdf8', '#60a5fa', '#818cf8', '#c084fc'
+                        ],
+                        borderWidth: 1,
+                        borderColor: '#0b2240'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: fontColor,
+                                font: { size: 10, weight: 'bold' },
+                                boxWidth: 12
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    let value = context.parsed || 0;
+                                    return `${label}: ${value} VL Day(s)`;
+                                }
+                            }
+                        }
                     }
                 }
-
-                const usedWFH = wfhDates.length;
-                const remWFH = maxMonthlyWFH - usedWFH;
-
-                let hasWeeklyViolation = Object.values(weeklyCounts).some(count => count > 1);
-
-                let wfhBadges = wfhDates.length > 0 
-                    ? wfhDates.map(dateStr => `<span class="leave-badge badge-wfh">${dateStr}</span>`).join(' ')
-                    : '<span style="color:var(--accent-btn-text);">None</span>';
-
-                let complianceHTML = '';
-                if (hasWeeklyViolation) {
-                    complianceHTML = `<span class="warning-text">⚠️ Exceeded (>1 WFH in a Week)</span>`;
-                } else if (usedWFH > maxMonthlyWFH) {
-                    complianceHTML = `<span class="warning-text">⚠️ Monthly Limit Exceeded</span>`;
-                } else {
-                    complianceHTML = `<span class="safe-text">✓ Compliant (Max 1 WFH/Week)</span>`;
-                }
-
-                let tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="font-weight:bold;">${m.name}</td>
-                    <td><strong>${maxMonthlyWFH} Days / Month</strong></td>
-                    <td>${wfhBadges}</td>
-                    <td><strong>${usedWFH} WFH Used</strong></td>
-                    <td class="${remWFH < 0 ? 'warning-text' : 'safe-text'}">${remWFH} Remaining</td>
-                    <td>${complianceHTML}</td>
-                `;
-                tbody.appendChild(tr);
             });
         }
 
+        monthSelect.addEventListener('change', renderCalendar);
+        yearInput.addEventListener('input', renderCalendar);
+
         window.onload = function() {
-            if (localStorage.getItem('sb_theme') === 'dark') {
-                document.body.setAttribute('data-theme', 'dark');
+            if (localStorage.getItem('rota_theme') === 'light') {
+                document.body.setAttribute('data-theme', 'light');
             }
-
-            const now = new Date();
-            currentYear = now.getFullYear();
-            currentMonth = now.getMonth();
-
-            const monthPicker = document.getElementById('monthPicker');
-            const monthStr = (currentMonth + 1).toString().padStart(2, '0');
-            monthPicker.value = `${currentYear}-${monthStr}`;
-
             setupPresenceSystem();
-            listenToDatabase();
+            renderCalendar();
+            renderVLPieChart();
         };
     </script>
 </body>
