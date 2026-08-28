@@ -246,7 +246,7 @@
         .item-sl:hover { background-color: #c084fc !important; color: #3b0764 !important; }
         .item-adjusted:hover { background-color: #facc15 !important; color: #000000 !important; }
 
-        /* Adjusted Hybrid Input Container */
+        /* Adjusted Hybrid Input Wrapper with Arrow Trigger */
         .adjusted-input-wrapper {
             display: flex;
             align-items: center;
@@ -258,7 +258,7 @@
         }
 
         .custom-editable-input {
-            width: calc(100% - 20px);
+            width: calc(100% - 18px);
             padding: 4px;
             font-size: 11px;
             font-weight: bold;
@@ -270,19 +270,19 @@
         }
 
         .adjusted-dropdown-trigger {
-            width: 20px;
-            height: 100%;
+            width: 18px;
+            height: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 9px;
+            font-size: 8px;
             color: #000000;
-            background: rgba(0,0,0,0.08);
-            border-left: 1px solid rgba(0,0,0,0.15);
+            background: rgba(0,0,0,0.1);
+            border-left: 1px solid rgba(0,0,0,0.2);
         }
         .adjusted-dropdown-trigger:hover {
-            background: rgba(0,0,0,0.18);
+            background: rgba(0,0,0,0.25);
         }
 
         .miguel-editable-cell {
@@ -842,7 +842,7 @@
                     
                     let activeShift = (rotaData[d] && rotaData[d][memberIdx] !== undefined) ? rotaData[d][memberIdx] : "";
 
-                    // Miguel Editable Input
+                    // Miguel Editable Cell
                     if (member === "Miguel") {
                         const input = document.createElement('input');
                         input.type = 'text';
@@ -859,17 +859,17 @@
 
                         tdShift.appendChild(input);
                     } 
-                    // Adjusted Shift: Hybrid Editable Text Input with Revert Dropdown Trigger
+                    // Adjusted Shift: Hybrid Editable Container with Arrow Menu Trigger
                     else if (activeShift.startsWith("Adjusted:") || activeShift === "Adjusted") {
                         const customVal = activeShift.replace("Adjusted:", "").trim();
 
                         const wrapper = document.createElement('div');
-                        wrapper.className = 'adjusted-input-wrapper';
+                        wrapper.className = 'adjusted-input-wrapper custom-dropdown';
 
                         const input = document.createElement('input');
                         input.type = 'text';
                         input.className = 'custom-editable-input';
-                        input.value = customVal || "e.g. 13:30 - 22:30";
+                        input.value = customVal || "e.g. 06:00 - 15:00";
                         if (isViewOnlyMode) input.disabled = true;
 
                         input.addEventListener('change', () => {
@@ -878,26 +878,56 @@
                             saveRotaToDatabase();
                         });
 
-                        // Revert Arrow to Switch Back to Standard Shift Menu
+                        // Dropdown Arrow Trigger to Open Menu
                         const dropdownTrigger = document.createElement('div');
                         dropdownTrigger.className = 'adjusted-dropdown-trigger';
-                        dropdownTrigger.title = 'Switch back to standard shift menu';
+                        dropdownTrigger.title = 'Click to switch back to standard shift options';
                         dropdownTrigger.innerHTML = '▼';
+
+                        const menu = document.createElement('div');
+                        menu.className = 'custom-dropdown-menu';
+
+                        shiftList.forEach(s => {
+                            const item = document.createElement('div');
+                            item.className = `custom-dropdown-item ${s.itemClass}`;
+                            const displayShift = formatShiftForTimezone(s.text);
+                            item.textContent = displayShift === "" ? "-- Select --" : displayShift;
+
+                            item.addEventListener('click', (e) => {
+                                if (isViewOnlyMode) return;
+                                e.stopPropagation();
+                                
+                                if (s.text === "Adjusted") {
+                                    menu.classList.remove('show');
+                                    return;
+                                }
+
+                                menu.classList.remove('show');
+                                if (!rotaData[d]) rotaData[d] = Array(team.length).fill("");
+                                rotaData[d][memberIdx] = s.text;
+
+                                saveRotaToDatabase();
+                                renderCalendar();
+                            });
+
+                            menu.appendChild(item);
+                        });
 
                         dropdownTrigger.addEventListener('click', (e) => {
                             if (isViewOnlyMode) return;
                             e.stopPropagation();
-                            if (!rotaData[d]) rotaData[d] = Array(team.length).fill("");
-                            rotaData[d][memberIdx] = "7:00 - 16:00"; // Reset to default standard shift
-                            saveRotaToDatabase();
-                            renderCalendar();
+                            document.querySelectorAll('.custom-dropdown-menu').forEach(m => {
+                                if (m !== menu) m.classList.remove('show');
+                            });
+                            menu.classList.toggle('show');
                         });
 
                         wrapper.appendChild(input);
                         wrapper.appendChild(dropdownTrigger);
+                        wrapper.appendChild(menu);
                         tdShift.appendChild(wrapper);
                     }
-                    // Standard Shift Dropdown
+                    // Standard Custom Shift Dropdown
                     else {
                         const activeInfo = getShiftInfo(activeShift);
                         const convertedText = formatShiftForTimezone(activeShift);
