@@ -20,7 +20,7 @@
             --table-border: #2d3748;
             --accent-btn: #edf2f7;
             --accent-btn-text: #4a5568;
-            --reminder-color: #0d233a;
+            --reminder-text: #0d233a;
             --reminder-bg: #e2e8f0;
         }
 
@@ -34,7 +34,7 @@
             --table-border: #4b5563;
             --accent-btn: #374151;
             --accent-btn-text: #f3f4f6;
-            --reminder-color: #facc15;
+            --reminder-text: #facc15;
             --reminder-bg: #374151;
         }
 
@@ -132,33 +132,29 @@
         .date-picker-wrapper { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; }
         .date-picker-input { border: none; font-size: 18px; font-weight: bold; color: var(--header-text); width: 160px; outline: none; border-bottom: 1px dashed var(--border-color); background: transparent; cursor: pointer; }
 
-        /* Meeting Reminders Box Container & Input Styling */
-        .meeting-reminder-wrapper {
-            display: flex;
+        /* Meeting Reminders Box */
+        .reminder-box-wrapper {
+            display: inline-flex;
             align-items: center;
             gap: 6px;
             background-color: var(--reminder-bg);
-            padding: 4px 10px;
+            padding: 5px 12px;
             border-radius: 6px;
-            border: 1px solid var(--border-color);
-            min-width: 320px;
+            border: 1px dashed var(--border-color);
+            min-width: 300px;
             flex: 1;
-            max-width: 500px;
+            max-width: 550px;
         }
 
-        .meeting-reminder-input {
-            border: none;
-            background: transparent;
-            font-size: 13px;
-            font-weight: 800;
-            color: var(--reminder-color);
-            outline: none;
-            width: 100%;
-        }
-        .meeting-reminder-input::placeholder {
-            color: var(--credit-text);
-            font-weight: 600;
-            opacity: 0.7;
+        .reminder-box-input {
+            border: none !important;
+            background: transparent !important;
+            font-size: 14px !important;
+            font-weight: 800 !important;
+            color: var(--reminder-text) !important;
+            outline: none !important;
+            width: 100% !important;
+            padding: 0 !important;
         }
 
         .schedule-table { width: 100%; border-collapse: separate; border-spacing: 4px; table-layout: fixed; border: 2px solid var(--table-border); }
@@ -229,8 +225,8 @@
             td, th { border: 1px solid #000 !important; }
             .day-section { box-shadow: none; padding: 0; margin-bottom: 20px; page-break-after: always; border: none !important; }
             .task-card.off-duty-active { background-color: #9ca3af !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .meeting-reminder-wrapper { border: none !important; background: transparent !important; }
-            .meeting-reminder-input { color: black !important; }
+            .reminder-box-wrapper { border: none !important; background: transparent !important; }
+            .reminder-box-input { color: black !important; }
         }
     </style>
 </head>
@@ -603,9 +599,9 @@
                                 <input type="date" class="date-picker-input" value="${dayData.isoDate || ''}" onchange="updateDayDate('${dayKey}', this.value)">
                                 SHIFT
                             </span>
-                            <div class="meeting-reminder-wrapper">
+                            <div class="reminder-box-wrapper">
                                 <span>📌</span>
-                                <input type="text" class="meeting-reminder-input" placeholder="Meeting Reminders / Notes..." value="${dayData.reminder || ''}" onchange="updateReminderText('${dayKey}', this.value)">
+                                <input type="text" class="reminder-box-input" placeholder="Meeting Reminders / Notes..." value="${dayData.reminder || ''}" onchange="updateReminderText('${dayKey}', this.value)">
                             </div>
                         </div>
                         <div class="no-print" style="display:flex; gap:10px; align-items:center;">
