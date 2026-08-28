@@ -270,6 +270,7 @@
 
     <div class="legend-footer">
         <div class="legend-item"><div class="legend-color" style="background-color: #ffffff;"></div><span>7:00 - 16:00</span></div>
+        <div class="legend-item"><div class="legend-color" style="background-color: #a7f3d0;"></div><span>9:00 - 18:00</span></div>
         <div class="legend-item"><div class="legend-color" style="background-color: #fefce8;"></div><span>10:00 - 19:00</span></div>
         <div class="legend-item"><div class="legend-color" style="background-color: #fef9c3;"></div><span>12:00 - 21:00</span></div>
         <div class="legend-item"><div class="legend-color" style="background-color: #e9d5ff;"></div><span>14:00 - 23:00</span></div>
@@ -334,8 +335,10 @@
             "Others (As instructed)"
         ];
 
+        // ADDED 9:00 - 18:00 SHIFT
         const shifts = [
             { id: 'shift-7-16', label: '7:00 - 16:00', endHour: 16, endMinute: 0 },
+            { id: 'shift-9-18', label: '9:00 - 18:00', endHour: 18, endMinute: 0 },
             { id: 'shift-10-19', label: '10:00 - 19:00', endHour: 19, endMinute: 0 },
             { id: 'shift-12-21', label: '12:00 - 21:00', endHour: 21, endMinute: 0 },
             { id: 'shift-14-23', label: '14:00 - 23:00', endHour: 23, endMinute: 0 },
@@ -348,8 +351,10 @@
             { id: 'shift-sl', label: 'SL', endHour: null, endMinute: null }
         ];
 
+        // ADDED MAPPING FOR shift-9-18
         const shiftOffDutyMap = {
             'shift-7-16': ['slot_16_19', 'slot_19_21', 'slot_22_1'],
+            'shift-9-18': ['slot_7_10', 'slot_19_21', 'slot_22_1'],
             'shift-10-19': ['slot_7_10', 'slot_19_21', 'slot_22_1'],
             'shift-12-21': ['slot_7_10', 'slot_10_12', 'slot_22_1'],
             'shift-14-23': ['slot_7_10', 'slot_10_12', 'slot_22_1'],
@@ -448,6 +453,7 @@
             if (text === "7:00 - 16:00 (WFH)") return "shift-7-16-wfh";
 
             if (text.includes("7:00") && text.includes("16:00")) return "shift-7-16";
+            if (text.includes("9:00") && text.includes("18:00")) return "shift-9-18";
             if (text.includes("10:00") && text.includes("19:00")) return "shift-10-19";
             if (text.includes("12:00") && text.includes("21:00")) return "shift-12-21";
             if (text.includes("14:00") && text.includes("23:00")) return "shift-14-23";
