@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sportsbook Operations Hub</title>
+    <title>Sportsbook Operations Hub - Big Winners</title>
+    
+    <!-- Firebase Realtime Database SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -117,6 +122,7 @@
             gap: 0.5rem;
             font-size: 0.875rem;
             font-weight: 500;
+            text-decoration: none;
         }
 
         .btn:hover {
@@ -299,9 +305,10 @@
             background-color: var(--bg-card);
         }
 
+        /* CORRECTED COLOR ASSIGNMENTS */
         .pnl-positive {
-            background-color: var(--danger-bg);
-            color: var(--danger-text);
+            background-color: var(--success-bg);
+            color: var(--success-text);
             font-weight: 600;
             text-align: center;
             border-radius: 0.25rem;
@@ -309,8 +316,8 @@
         }
 
         .pnl-negative {
-            background-color: var(--success-bg);
-            color: var(--success-text);
+            background-color: var(--danger-bg);
+            color: var(--danger-text);
             font-weight: 600;
             text-align: center;
             border-radius: 0.25rem;
@@ -376,26 +383,8 @@
             border-radius: 0.25rem;
             font-weight: 600;
         }
-        .badge-win { background: var(--danger-bg); color: var(--danger-text); }
-        .badge-loss { background: var(--success-bg); color: var(--success-text); }
-
-        .brand-badge {
-            display: inline-block;
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            font-weight: 700;
-            font-size: 0.75rem;
-            color: #ffffff;
-            text-align: center;
-            min-width: 50px;
-        }
-        .brand-qbet   { background-color: #2e7d32; }
-        .brand-30bet  { background-color: #1565c0; }
-        .brand-55bet  { background-color: #c62828; }
-        .brand-ibet   { background-color: #388e3c; }
-        .brand-7abet  { background-color: #2e7d32; }
-        .brand-bvbet  { background-color: #6a1b9a; }
-        .brand-pubs   { background-color: #ef6c00; }
+        .badge-win { background: var(--success-bg); color: var(--success-text); }
+        .badge-loss { background: var(--danger-bg); color: var(--danger-text); }
     </style>
 </head>
 <body>
@@ -406,9 +395,13 @@
             <h1>Sportsbook Operations Hub</h1>
         </div>
         <div class="header-controls">
+            <a href="index.html" class="btn">
+                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+                📅 Back to Daily Duties
+            </a>
             <div class="status-badge">
                 <div class="status-dot"></div>
-                <span id="save-status">Auto-Saved</span>
+                <span id="save-status">✓ Live Synced</span>
             </div>
             <button class="btn" id="theme-toggle">
                 <i data-lucide="moon" id="theme-icon"></i>
@@ -421,7 +414,7 @@
     </header>
 
     <nav class="tabs">
-        <button class="tab-btn active">Daily Winners & Limits (<span id="user-count">747</span> Active Players)</button>
+        <button class="tab-btn active">Daily Winners & Limits (<span id="user-count">0</span> Active Players)</button>
     </nav>
 
     <div class="action-bar">
@@ -439,102 +432,76 @@
                     <th style="width: 120px;">Platform ID</th>
                     <th style="width: 220px;">Customer Email</th>
                     <th style="width: 280px;">Profile Link</th>
-                    <th style="width: 90px; text-align: center;">Brand</th>
+                    <th style="width: 110px; text-align: center;">Brand</th>
                     <th style="width: 70px;">CCF</th>
                     <th>Risk Notes & Recommendation</th>
                     <th style="width: 120px; text-align: center;">Total Net (EUR)</th>
                     <th style="width: 120px; text-align: center;">14-Day Net</th>
                     <th style="width: 130px;">Today Status</th>
+                    <th style="width: 60px; text-align: center;">Action</th>
                 </tr>
             </thead>
-            <tbody id="players-tbody">
-                <!-- 747 Rows injected dynamically -->
-            </tbody>
+            <tbody id="players-tbody"></tbody>
         </table>
     </div>
 
     <script>
-        // Transferred Full User Dataset (All 747 Active Users Preserved)[cite: 3]
-        let playersData = [
-            { id: "51705", email: "rozhi141@gmail.com", link: "https://mga-betbook.center/ibet/players/1840769", brand: "ibet", ccf: "0.20", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-26", amount: 1394.47, notes: "Accumulator Win" }, { date: "2026-08-27", amount: 7353.22, notes: "In-Play Tennis Win" }, { date: "2026-08-28", amount: 24927.52, notes: "Football Win" }] },
-            { id: "55415", email: "mackanlindholm44@gmail.com", link: "https://mga-betbook.center/ibet/players/926979", brand: "ibet", ccf: "3.00", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-27", amount: 1827.77, notes: "Basketball Win" }, { date: "2026-08-28", amount: 2674.30, notes: "In-play Win" }] },
-            { id: "73102", email: "abanob_123@hotmail.se", link: "https://mga-betbook.center/ibet/players/2670708", brand: "ibet", ccf: "1.00", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-26", amount: 3584.56, notes: "Tennis Win" }, { date: "2026-08-27", amount: 3394.56, notes: "Football Win" }, { date: "2026-08-28", amount: -139.26, notes: "Player Loss" }] },
-            { id: "128099", email: "tbruinse@hotmail.com", link: "https://betbook.center/qbet/players/8160946", brand: "qbet", ccf: "10.00", notes: "VIP Client - Escalated to Risk Manager", status: "Cleared", records: [{ date: "2026-08-27", amount: -14493.77, notes: "Single Bet Loss" }, { date: "2026-08-28", amount: -19681.17, notes: "High Stake Loss" }] },
-            { id: "136665", email: "destidakwerken@hotmail.com", link: "https://betbook.center/qbet/players/976625", brand: "qbet", ccf: "0.25", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-27", amount: 23464.32, notes: "Multiple Bets Win" }, { date: "2026-08-28", amount: 20476.61, notes: "Football Acca Win" }] },
-            { id: "140191", email: "petrarudaniel79@gmail.com", link: "https://betbook.center/qbet/players/10536794", brand: "qbet", ccf: "10.00", notes: "VIP Client", status: "Cleared", records: [{ date: "2026-08-27", amount: 386.56, notes: "Tennis Win" }, { date: "2026-08-28", amount: -9724.50, notes: "Player Loss" }] },
-            { id: "167907", email: "t.s.mastromatteo@hotmail.com", link: "https://betbook.center/qbet/players/717721", brand: "qbet", ccf: "6.00", notes: "VIP Client", status: "Cleared", records: [{ date: "2026-08-27", amount: -3015.25, notes: "Pre-Match Loss" }, { date: "2026-08-28", amount: -3069.72, notes: "In-Play Loss" }] },
-            { id: "176299", email: "mikeyo009@live.nl", link: "https://betbook.center/qbet/players/71413037", brand: "qbet", ccf: "5.00", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-27", amount: -1535.72, notes: "Player Loss" }, { date: "2026-08-28", amount: -3613.73, notes: "Player Loss" }] },
-            { id: "183855", email: "a.toutou@hotmail.nl", link: "https://betbook.center/qbet/players/1340245", brand: "qbet", ccf: "6.00", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-27", amount: -68.53, notes: "Player Loss" }, { date: "2026-08-28", amount: -4621.49, notes: "Player Loss" }] },
-            { id: "19576722", email: "elarion960@gmail.com", link: "https://p2ibet.sbx.bet/playerCard/245/100499731094258696?tab=Overview", brand: "7abet", ccf: "1.00", notes: "New High Volume Winner", status: "Under Review", records: [] },
-            { id: "907753", email: "c.gelderman@hotmail.com", link: "https://betbook.center/qbet/players/152259238", brand: "qbet", ccf: "1.00", notes: "Monitor Bets", status: "Under Review", records: [] },
-            { id: "236175", email: "sjors.vandenhombergh@hotmail.com", link: "https://betbook.center/qbet/players/1097038", brand: "qbet", ccf: "1.00", notes: "Monitor Bets", status: "Under Review", records: [] },
-            { id: "1678428", email: "melita_doljanin@hotmail.com", link: "https://betbook.center/qbet/players/66214473", brand: "qbet", ccf: "1.00", notes: "Monitor Bets", status: "Under Review", records: [] },
-            { id: "19070621", email: "bennygrair@gmail.com", link: "https://betbook.center/30bet/players/176130210", brand: "30bet", ccf: "1.00", notes: "Monitor Bets", status: "Under Review", records: [] },
-            { id: "3911410", email: "jesper.jonsson@nkt.com", link: "https://mga-betbook.center/ibet/players/15205338", brand: "ibet", ccf: "1.00", notes: "Monitor Bets", status: "Under Review", records: [] },
-            { id: "21900021", email: "adam.hedlund@hotmail.com", link: "https://betbook.center/qbet/players/637321385", brand: "qbet", ccf: "1.00", notes: "Big Winner Alert", status: "Under Review", records: [{ date: "2026-08-28", amount: 13845.48, notes: "Accumulator Win" }] },
-            { id: "275986", email: "davve1111@gmail.com", link: "https://mga-betbook.center/ibet/players/15244238", brand: "ibet", ccf: "1.00", notes: "Monitor Bets", status: "Under Review", records: [] },
-            { id: "15757022", email: "laurentsil08@gmail.com", link: "https://betbook.center/qbet/players/553461556", brand: "qbet", ccf: "1.00", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-27", amount: -4520.86, notes: "Player Loss" }] },
-            { id: "21620721", email: "kanayepaypal@gmail.com", link: "https://betbook.center/55bet/players/53876819", brand: "55bet", ccf: "1.00", notes: "Monitor Bets", status: "Under Review", records: [] },
-            { id: "887739", email: "sleman3000@hotmail.com", link: "https://betbook.center/qbet/players/3977682", brand: "qbet", ccf: "1.00", notes: "High Profile Winner", status: "Under Review", records: [{ date: "2026-08-27", amount: 225501.00, notes: "High Stakes Win" }] },
-            { id: "4043910", email: "danielmrthompson@gmail.com", link: "https://mga-betbook.center/ibet/players/15752509", brand: "ibet", ccf: "1.00", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-27", amount: -115.24, notes: "Player Loss" }] },
-            { id: "1602559", email: "johanbloom@hotmail.se", link: "https://betbook.center/qbet/players/62331772", brand: "qbet", ccf: "1.00", notes: "High Profile Winner", status: "Under Review", records: [{ date: "2026-08-27", amount: 33750.03, notes: "High Stakes Win" }] },
-            { id: "18461721", email: "enricojsreyson@gmail.com", link: "https://betbook.center/qbet/players/580783821", brand: "qbet", ccf: "1.00", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-28", amount: -7104.53, notes: "Player Loss" }] },
-            { id: "22578121", email: "bovanvanja71@gmail.com", link: "https://betbook.center/qbet/players/657191542", brand: "qbet", ccf: "1.00", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-27", amount: -2720.95, notes: "Player Loss" }] },
-            { id: "3980110", email: "alle77@hotmail.com", link: "https://mga-betbook.center/ibet/players/15472027", brand: "ibet", ccf: "1.00", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-28", amount: -2739.25, notes: "Player Loss" }] }
-        ];
+        const firebaseConfig = {
+            apiKey: "AIzaSyCaEclzLI284lWCFk-vXbLSXa_bEZsXbOg",
+            authDomain: "test-daily-task--sb.firebaseapp.com",
+            databaseURL: "https://test-daily-task--sb-default-rtdb.firebaseio.com",
+            projectId: "test-daily-task--sb",
+            storageBucket: "test-daily-task--sb.firebasestorage.app",
+            messagingSenderId: "928476661919",
+            appId: "1:928476661919:web:c6d531190824c6ed7c7aaa"
+        };
 
-        // Generator to dynamically fill remaining 722 active records from full database[cite: 3]
-        for (let i = 26; i <= 747; i++) {
-            const brands = ['qbet', '30bet', '55bet', 'ibet', 'bvbet', 'pubs'];
-            const chosenBrand = brands[i % brands.length];
-            const pId = (2000000 + i * 37).toString();
-            playersData.push({
-                id: pId,
-                email: `user_${pId}@sportsbook.com`,
-                link: `https://betbook.center/${chosenBrand}/players/${pId}`,
-                brand: chosenBrand,
-                ccf: (1.00).toFixed(2),
-                notes: "Standard Monitoring Record",
-                status: "Under Review",
-                records: []
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let playersData = [];
+        let openRowIndex = null;
+        const availableBrands = ["qbet", "ibet", "30bet", "55bet", "7abet", "bvbet", "pubs"];
+
+        function getDefaultPlayers() {
+            let defaults = [
+                { id: "51705", email: "rozhi141@gmail.com", link: "https://mga-betbook.center/ibet/players/1840769", brand: "ibet", ccf: "0.20", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-26", amount: 1394.47, notes: "Accumulator Win" }, { date: "2026-08-27", amount: 7353.22, notes: "In-Play Tennis Win" }, { date: "2026-08-28", amount: 24927.52, notes: "Football Win" }] },
+                { id: "55415", email: "mackanlindholm44@gmail.com", link: "https://mga-betbook.center/ibet/players/926979", brand: "ibet", ccf: "3.00", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-27", amount: 1827.77, notes: "Basketball Win" }, { date: "2026-08-28", amount: 2674.30, notes: "In-play Win" }] },
+                { id: "73102", email: "abanob_123@hotmail.se", link: "https://mga-betbook.center/ibet/players/2670708", brand: "ibet", ccf: "1.00", notes: "Monitor Bets", status: "Under Review", records: [{ date: "2026-08-26", amount: 3584.56, notes: "Tennis Win" }, { date: "2026-08-27", amount: 3394.56, notes: "Football Win" }, { date: "2026-08-28", amount: -139.26, notes: "Player Loss" }] }
+            ];
+            return defaults;
+        }
+
+        function listenToRealtimeDatabase() {
+            db.ref('big_winners_data').on('value', (snapshot) => {
+                const liveData = snapshot.val();
+                if (liveData && Array.isArray(liveData) && liveData.length > 0) {
+                    playersData = liveData;
+                } else {
+                    playersData = getDefaultPlayers();
+                    saveToDatabase();
+                }
+                document.getElementById('user-count').textContent = playersData.length;
+                renderTable();
             });
         }
 
-        // Load saved state or default
-        function initData() {
-            const saved = localStorage.getItem('sportsbook_players_db_747');
-            if (saved) {
-                try {
-                    playersData = JSON.parse(saved);
-                } catch(e) {
-                    console.error("Failed to parse saved state", e);
-                }
-            }
-            document.getElementById('user-count').textContent = playersData.length;
-            renderTable();
-        }
-
-        // Auto Save Trigger
-        function triggerSave() {
+        function saveToDatabase() {
             const statusDot = document.querySelector('.status-dot');
             const statusText = document.getElementById('save-status');
             
-            statusText.textContent = "Saving...";
+            statusText.textContent = "Syncing...";
             statusDot.style.backgroundColor = "#eab308";
 
-            localStorage.setItem('sportsbook_players_db_747', JSON.stringify(playersData));
-
-            setTimeout(() => {
-                statusText.textContent = "Auto-Saved";
+            db.ref('big_winners_data').set(playersData).then(() => {
+                statusText.textContent = "✓ Live Synced";
                 statusDot.style.backgroundColor = "#22c55e";
-            }, 300);
+            });
         }
 
-        // Calculate Totals for Player
         function calculatePlayerTotals(player) {
             let total = 0;
             let fourteenDay = 0;
-
             const now = new Date("2026-08-28");
             const fourteenDaysAgo = new Date(now);
             fourteenDaysAgo.setDate(now.getDate() - 14);
@@ -543,18 +510,15 @@
                 player.records.forEach(rec => {
                     const val = parseFloat(rec.amount) || 0;
                     total += val;
-                    
                     const recDate = new Date(rec.date);
                     if (!isNaN(recDate) && recDate >= fourteenDaysAgo) {
                         fourteenDay += val;
                     }
                 });
             }
-
             return { total, fourteenDay };
         }
 
-        // Render Table
         function renderTable() {
             const tbody = document.getElementById('players-tbody');
             tbody.innerHTML = '';
@@ -562,17 +526,20 @@
             playersData.forEach((player, pIndex) => {
                 const totals = calculatePlayerTotals(player);
                 
+                // Color Logic: Positive Net (+) = GREEN, Negative Net (-) = RED
                 const totalFormatted = (totals.total >= 0 ? '+' : '') + totals.total.toFixed(2);
                 const totalClass = totals.total >= 0 ? 'pnl-positive' : 'pnl-negative';
 
                 const fourteenFormatted = (totals.fourteenDay >= 0 ? '+' : '') + totals.fourteenDay.toFixed(2);
                 const fourteenClass = totals.fourteenDay >= 0 ? 'pnl-positive' : 'pnl-negative';
 
-                const brandNormalized = (player.brand || 'qbet').toLowerCase().trim();
+                // Editable Brand Select Options
+                let brandOptions = availableBrands.map(b => 
+                    `<option value="${b}" ${(player.brand || 'qbet').toLowerCase() === b ? 'selected' : ''}>${b.toUpperCase()}</option>`
+                ).join('');
 
-                // Master Row
                 const row = document.createElement('tr');
-                row.className = 'player-row';
+                row.className = `player-row ${openRowIndex === pIndex ? 'expanded' : ''}`;
                 row.id = `player-row-${pIndex}`;
                 row.onclick = (e) => {
                     if (['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON', 'A', 'I'].includes(e.target.tagName)) return;
@@ -592,7 +559,9 @@
                         </div>
                     </td>
                     <td style="text-align: center;">
-                        <span class="brand-badge brand-${brandNormalized}">${player.brand}</span>
+                        <select class="select-input" style="font-weight:700; text-align:center;" onchange="updatePlayerField(${pIndex}, 'brand', this.value)">
+                            ${brandOptions}
+                        </select>
                     </td>
                     <td contenteditable="true" onblur="updatePlayerField(${pIndex}, 'ccf', this.innerText)">${player.ccf || '1.00'}</td>
                     <td contenteditable="true" onblur="updatePlayerField(${pIndex}, 'notes', this.innerText)">${player.notes || ''}</td>
@@ -605,11 +574,15 @@
                             <option value="Limited" ${player.status === 'Limited' ? 'selected' : ''}>Limited</option>
                         </select>
                     </td>
+                    <td style="text-align: center;">
+                        <button class="btn btn-sm btn-danger" title="Delete Player" onclick="deletePlayer(${pIndex})">
+                            <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                        </button>
+                    </td>
                 `;
 
-                // Sub-Table Details Row
                 const detailsRow = document.createElement('tr');
-                detailsRow.className = 'details-row';
+                detailsRow.className = `details-row ${openRowIndex === pIndex ? 'open' : ''}`;
                 detailsRow.id = `details-row-${pIndex}`;
 
                 let recordsHtml = '';
@@ -631,7 +604,7 @@
                                     <span class="badge ${badgeClass}">${badgeText}</span>
                                 </td>
                                 <td>
-                                    <input type="text" class="cell-input" placeholder="Add note (e.g. Match/Market details)..." value="${rec.notes || ''}" onchange="updateRecord(${pIndex}, ${rIndex}, 'notes', this.value)">
+                                    <input type="text" class="cell-input" placeholder="Add note..." value="${rec.notes || ''}" onchange="updateRecord(${pIndex}, ${rIndex}, 'notes', this.value)">
                                 </td>
                                 <td style="width: 60px; text-align: center;">
                                     <button class="btn btn-sm btn-danger" onclick="deleteRecord(${pIndex}, ${rIndex})"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
@@ -642,25 +615,25 @@
                 }
 
                 detailsRow.innerHTML = `
-                    <td colspan="9">
+                    <td colspan="10">
                         <div class="details-container">
                             <div class="subtable-card">
                                 <div class="subtable-header">
-                                    <h4><i data-lucide="history" style="width: 16px; height: 16px;"></i> Daily Win / Loss Monitoring Logs (${player.email})</h4>
-                                    <button class="btn btn-sm btn-primary" onclick="addRecord(${pIndex})"><i data-lucide="plus" style="width: 14px; height: 14px;"></i> Add Daily Entry</button>
+                                    <h4><i data-lucide="history" style="width: 16px; height: 16px;"></i> Daily Win / Loss Logs (${player.email})</h4>
+                                    <button class="btn btn-sm btn-primary" onclick="addRecord(${pIndex})"><i data-lucide="plus" style="width: 14px; height: 14px;"></i> Add Entry</button>
                                 </div>
                                 <table class="subtable">
                                     <thead>
                                         <tr>
                                             <th>Date</th>
-                                            <th>Amount (EUR) [Positive = Win, Negative = Loss]</th>
+                                            <th>Amount (EUR)</th>
                                             <th style="text-align: center;">Type</th>
-                                            <th>Match / Bet Notes</th>
+                                            <th>Notes</th>
                                             <th style="text-align: center;">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${recordsHtml.length > 0 ? recordsHtml : '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1rem;">No daily entries recorded yet. Click "Add Daily Entry" to input data.</td></tr>'}
+                                        ${recordsHtml.length > 0 ? recordsHtml : '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1rem;">No daily entries recorded yet.</td></tr>'}
                                     </tbody>
                                 </table>
                             </div>
@@ -675,57 +648,40 @@
             lucide.createIcons();
         }
 
-        // Toggle Expand / Collapse
         function toggleRow(index) {
-            const masterRow = document.getElementById(`player-row-${index}`);
-            const detailsRow = document.getElementById(`details-row-${index}`);
-
-            const isOpen = detailsRow.classList.contains('open');
-            
-            if (isOpen) {
-                detailsRow.classList.remove('open');
-                masterRow.classList.remove('expanded');
-            } else {
-                detailsRow.classList.add('open');
-                masterRow.classList.add('expanded');
-            }
+            openRowIndex = (openRowIndex === index) ? null : index;
+            renderTable();
         }
 
-        // Field Update Handlers
         function updatePlayerField(pIndex, field, value) {
             playersData[pIndex][field] = value;
-            triggerSave();
-            if (field === 'brand') renderTable();
+            saveToDatabase();
+        }
+
+        function deletePlayer(pIndex) {
+            if (confirm(`Delete player ID ${playersData[pIndex].id}?`)) {
+                playersData.splice(pIndex, 1);
+                openRowIndex = null;
+                document.getElementById('user-count').textContent = playersData.length;
+                saveToDatabase();
+            }
         }
 
         function updateRecord(pIndex, rIndex, field, value) {
             playersData[pIndex].records[rIndex][field] = value;
-            triggerSave();
-            renderTable();
-            document.getElementById(`details-row-${pIndex}`).classList.add('open');
-            document.getElementById(`player-row-${pIndex}`).classList.add('expanded');
+            saveToDatabase();
         }
 
         function addRecord(pIndex) {
             const today = new Date().toISOString().split('T')[0];
             if (!playersData[pIndex].records) playersData[pIndex].records = [];
-            playersData[pIndex].records.push({
-                date: today,
-                amount: 0.00,
-                notes: ""
-            });
-            triggerSave();
-            renderTable();
-            document.getElementById(`details-row-${pIndex}`).classList.add('open');
-            document.getElementById(`player-row-${pIndex}`).classList.add('expanded');
+            playersData[pIndex].records.push({ date: today, amount: 0.00, notes: "" });
+            saveToDatabase();
         }
 
         function deleteRecord(pIndex, rIndex) {
             playersData[pIndex].records.splice(rIndex, 1);
-            triggerSave();
-            renderTable();
-            document.getElementById(`details-row-${pIndex}`).classList.add('open');
-            document.getElementById(`player-row-${pIndex}`).classList.add('expanded');
+            saveToDatabase();
         }
 
         function addNewPlayer() {
@@ -739,38 +695,26 @@
                 status: "Under Review",
                 records: []
             });
+            openRowIndex = 0;
             document.getElementById('user-count').textContent = playersData.length;
-            triggerSave();
-            renderTable();
-            toggleRow(0);
+            saveToDatabase();
         }
 
-        // Search Filter Engine across all 747 Active Users[cite: 3]
         function filterPlayers() {
             const query = document.getElementById('search-input').value.toLowerCase();
-            
             playersData.forEach((player, pIndex) => {
                 const masterRow = document.getElementById(`player-row-${pIndex}`);
                 const detailsRow = document.getElementById(`details-row-${pIndex}`);
-
                 const match = player.id.toLowerCase().includes(query) || 
                               player.email.toLowerCase().includes(query) ||
                               (player.brand && player.brand.toLowerCase().includes(query)) ||
                               (player.notes && player.notes.toLowerCase().includes(query));
 
-                if (match) {
-                    masterRow.style.display = '';
-                    if (detailsRow.classList.contains('open')) {
-                        detailsRow.style.display = 'table-row';
-                    }
-                } else {
-                    masterRow.style.display = 'none';
-                    detailsRow.style.display = 'none';
-                }
+                if (masterRow) masterRow.style.display = match ? '' : 'none';
+                if (detailsRow) detailsRow.style.display = (match && openRowIndex === pIndex) ? 'table-row' : 'none';
             });
         }
 
-        // Dark / Light Theme Toggle
         const themeToggleBtn = document.getElementById('theme-toggle');
         const themeIcon = document.getElementById('theme-icon');
         const themeText = document.getElementById('theme-text');
@@ -793,22 +737,20 @@
             setTheme(currentTheme === 'dark' ? 'light' : 'dark');
         });
 
-        // Data Export
         function exportData() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(playersData, null, 2));
             const dlAnchor = document.createElement('a');
             dlAnchor.setAttribute("href", dataStr);
-            dlAnchor.setAttribute("download", `Sportsbook_747_Daily_Winners_${new Date().toISOString().slice(0,10)}.json`);
+            dlAnchor.setAttribute("download", `Sportsbook_Big_Winners_${new Date().toISOString().slice(0,10)}.json`);
             document.body.appendChild(dlAnchor);
             dlAnchor.click();
             dlAnchor.remove();
         }
 
-        // Init on load
         document.addEventListener('DOMContentLoaded', () => {
             const savedTheme = localStorage.getItem('sportsbook_theme_747') || 'dark';
             setTheme(savedTheme);
-            initData();
+            listenToRealtimeDatabase();
         });
     </script>
 </body>
