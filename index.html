@@ -125,9 +125,82 @@
             text-align: center;
         }
 
+        /* Workspace Modal Styles */
+        .workspace-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .workspace-modal.active {
+            display: flex;
+        }
+        .workspace-container {
+            background: var(--card-bg);
+            border-radius: 8px;
+            width: 100%;
+            max-width: 900px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+        .workspace-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--card-bg);
+        }
+        .workspace-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--header-text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .workspace-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .workspace-editor {
+            width: 100%;
+            min-height: 350px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 13px;
+            color: var(--text-color);
+            background: var(--bg-color);
+            outline: none;
+            line-height: 1.5;
+            word-break: break-word;
+            white-space: pre-wrap;
+            overflow-y: auto;
+        }
+        .workspace-editor:focus {
+            border-color: var(--header-text);
+            box-shadow: 0 0 0 2px rgba(13, 35, 58, 0.15);
+        }
+
         @media print {
             body { background: white; padding: 0; color: black; }
-            .header-container, .legend-footer, .btn-controls, .no-print, .task-dropdown-container, .shift-end-banner { display: none !important; }
+            .header-container, .legend-footer, .btn-controls, .no-print, .task-dropdown-container, .shift-end-banner, .workspace-modal { display: none !important; }
             .task-card { min-height: 100px; }
             .schedule-table { border: 2px solid #000 !important; }
             td, th { border: 1px solid #000 !important; }
@@ -149,6 +222,7 @@
             </span>
             <span id="saveStatus" class="autosave-badge">✓ Live Synced</span>
             <button class="btn btn-secondary" onclick="toggleDarkMode()">🌓 Mode</button>
+            <button class="btn btn-secondary" onclick="openWorkspaceModal()" aria-label="Open Workspace">💼 Workspace</button>
             <a href="rota.html" class="btn btn-secondary">📅 ROTA</a>
             <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All</button>
             <button class="btn btn-secondary" onclick="addNewDay()">➕ Add Next Day</button>
@@ -172,6 +246,36 @@
         <div class="legend-item"><div class="legend-color" style="background-color: #ffedd5;"></div><span>16:00 - 1:00</span></div>
         <div class="legend-item"><div class="legend-color" style="background-color: #e5e7eb;"></div><span>RD (Rest Day)</span></div>
         <div class="legend-item"><div class="legend-color" style="background-color: #9ca3af;"></div><span>Off-Duty</span></div>
+    </div>
+
+    <!-- Interactive Systematically Designed Workspace Modal -->
+    <div id="workspaceModal" class="workspace-modal" role="dialog" aria-labelledby="workspaceModalTitle" aria-modal="true" onclick="closeWorkspaceModalOnBackdrop(event)">
+        <div class="workspace-container">
+            <div class="workspace-header">
+                <div class="workspace-title" id="workspaceModalTitle">
+                    <span>💼</span>
+                    <span>Operational Workspace & Reference Data</span>
+                </div>
+                <button class="btn btn-secondary" onclick="closeWorkspaceModal()" aria-label="Close Modal">✕ Close</button>
+            </div>
+            <div class="workspace-body">
+                <p style="font-size: 12px; color: var(--credit-text);">
+                    This box is editable and accessible. Keep your notes, references, and active links below. All links remain clickable.
+                </p>
+                <div id="workspaceContentArea" class="workspace-editor" contenteditable="true" aria-label="Editable Workspace Area" oninput="saveWorkspaceContent()">
+                    <!-- Default Embedded Content -->
+                    <p><strong>SB Operational Quick Links &amp; References:</strong></p>
+                    <ul style="margin-left: 20px; margin-top: 5px; margin-bottom: 10px;">
+                        <li><a href="https://test-daily-task--sb.firebaseapp.com" target="_blank" style="color: #2563eb; text-decoration: underline;">Firebase Realtime Dashboard</a></li>
+                        <li><a href="https://sportsbookrisk.com" target="_blank" style="color: #2563eb; text-decoration: underline;">Sportsbook Risk Portal</a></li>
+                        <li><a href="https://predictionmarket.com" target="_blank" style="color: #2563eb; text-decoration: underline;">Prediction Market Ticker Monitor</a></li>
+                    </ul>
+                    <p><strong>Operational Notes:</strong></p>
+                    <p>- Verify all Big Winner Checks before handovers.</p>
+                    <p>- Maintain live synchronization across shifts.</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -258,6 +362,35 @@
                 defaultDb["day_1"].grid[m.id] = { shift: m.defaultShift, slots: {} };
             });
             return defaultDb;
+        }
+
+        function openWorkspaceModal() {
+            const modal = document.getElementById('workspaceModal');
+            if (modal) {
+                modal.classList.add('active');
+                const savedWorkspace = localStorage.getItem('sb_workspace_data');
+                if (savedWorkspace) {
+                    document.getElementById('workspaceContentArea').innerHTML = savedWorkspace;
+                }
+            }
+        }
+
+        function closeWorkspaceModal() {
+            const modal = document.getElementById('workspaceModal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        function closeWorkspaceModalOnBackdrop(event) {
+            if (event.target.id === 'workspaceModal') {
+                closeWorkspaceModal();
+            }
+        }
+
+        function saveWorkspaceContent() {
+            const content = document.getElementById('workspaceContentArea').innerHTML;
+            localStorage.setItem('sb_workspace_data', content);
         }
 
         function setupPresenceSystem() {
