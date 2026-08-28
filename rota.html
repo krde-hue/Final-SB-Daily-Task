@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Team Monthly Rota Schedule Manager</title>
+    <title>Team Monthly Rota Schedule</title>
 
     <!-- Chart.js CDN for Pie Chart Visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -51,10 +51,25 @@
             margin-bottom: 15px;
         }
 
+        .title-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .title-credit {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent-btn);
+            letter-spacing: 0.2px;
+            opacity: 0.85;
+        }
+
         .header-top-controls {
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
         .btn {
@@ -68,11 +83,13 @@
             align-items: center;
             gap: 6px;
             transition: opacity 0.2s;
+            font-size: 13px;
         }
         .btn:hover { opacity: 0.85; }
         .btn-back { background-color: var(--accent-btn); color: var(--accent-btn-text); }
         .btn-secondary { background-color: rgba(255, 255, 255, 0.2); color: var(--text-color); border: 1px solid var(--border-color); }
         .btn-warning { background-color: #eab308; color: #000000; }
+        .btn-admin { background-color: #22c55e; color: #ffffff; }
 
         .viewer-badge {
             background-color: rgba(255, 255, 255, 0.15);
@@ -221,6 +238,7 @@
 
         /* Shift Cell Background Colors */
         .shift-bg-7-16 { background-color: #86efac !important; color: #064e3b !important; }
+        .shift-bg-9-18 { background-color: #38bdf8 !important; color: #0b2240 !important; }
         .shift-bg-10-19 { background-color: #fed7aa !important; color: #7c2d12 !important; }
         .shift-bg-12-21 { background-color: #bae6fd !important; color: #0c4a6e !important; }
         .shift-bg-14-23 { background-color: #e9d5ff !important; color: #581c87 !important; }
@@ -234,6 +252,7 @@
 
         /* Item Hover Classes */
         .item-7-16:hover { background-color: #86efac !important; color: #064e3b !important; }
+        .item-9-18:hover { background-color: #38bdf8 !important; color: #0b2240 !important; }
         .item-10-19:hover { background-color: #fed7aa !important; color: #7c2d12 !important; }
         .item-12-21:hover { background-color: #bae6fd !important; color: #0c4a6e !important; }
         .item-14-23:hover { background-color: #e9d5ff !important; color: #581c87 !important; }
@@ -368,16 +387,20 @@
 
     <!-- VIEW ONLY WARNING BANNER -->
     <div id="viewOnlyBanner" class="view-only-banner">
-        🔒 View-Only Mode Active: Editing and navigation actions are disabled for shared viewers.
+        🔒 View-Only Mode Active: Editing and navigation actions are disabled.
     </div>
 
     <div class="header-top">
-        <h2>Team Monthly Rota Schedule Manager</h2>
+        <div class="title-group">
+            <h2>Team Monthly Rota Schedule</h2>
+            <span class="title-credit">kr!ztel_2026 model</span>
+        </div>
         <div class="header-top-controls">
             <!-- Active Viewers Eye Badge -->
             <span class="viewer-badge" title="Active Viewers">
                 👁️ <span id="activeViewersCount">1</span>
             </span>
+            <button id="adminAuthBtn" class="btn btn-admin" onclick="handleAdminAuth()">🔑 Admin Login</button>
             <button class="btn btn-secondary" onclick="toggleDarkMode()">🌓 Mode</button>
             <button class="btn btn-warning" onclick="copyViewOnlyLink()" title="Generate View-Only Link">🔗 Share View-Only</button>
             <a id="btnBackToDuties" href="index.html" class="btn btn-back">🔙 Back to Daily Duties</a>
@@ -440,6 +463,7 @@
                                     <option value="">-- Set All Month --</option>
                                     <option value="CLEAR">-- Clear Month --</option>
                                     <option value="7:00 - 16:00">7:00 - 16:00</option>
+                                    <option value="9:00 - 18:00">9:00 - 18:00</option>
                                     <option value="10:00 - 19:00">10:00 - 19:00</option>
                                     <option value="12:00 - 21:00">12:00 - 21:00</option>
                                     <option value="14:00 - 23:00">14:00 - 23:00</option>
@@ -457,6 +481,7 @@
                                     <option value="">-- Set All Month --</option>
                                     <option value="CLEAR">-- Clear Month --</option>
                                     <option value="7:00 - 16:00">7:00 - 16:00</option>
+                                    <option value="9:00 - 18:00">9:00 - 18:00</option>
                                     <option value="10:00 - 19:00">10:00 - 19:00</option>
                                     <option value="12:00 - 21:00">12:00 - 21:00</option>
                                     <option value="14:00 - 23:00">14:00 - 23:00</option>
@@ -474,6 +499,7 @@
                                     <option value="">-- Set All Month --</option>
                                     <option value="CLEAR">-- Clear Month --</option>
                                     <option value="7:00 - 16:00">7:00 - 16:00</option>
+                                    <option value="9:00 - 18:00">9:00 - 18:00</option>
                                     <option value="10:00 - 19:00">10:00 - 19:00</option>
                                     <option value="12:00 - 21:00">12:00 - 21:00</option>
                                     <option value="14:00 - 23:00">14:00 - 23:00</option>
@@ -491,6 +517,7 @@
                                     <option value="">-- Set All Month --</option>
                                     <option value="CLEAR">-- Clear Month --</option>
                                     <option value="7:00 - 16:00">7:00 - 16:00</option>
+                                    <option value="9:00 - 18:00">9:00 - 18:00</option>
                                     <option value="10:00 - 19:00">10:00 - 19:00</option>
                                     <option value="12:00 - 21:00">12:00 - 21:00</option>
                                     <option value="14:00 - 23:00">14:00 - 23:00</option>
@@ -508,6 +535,7 @@
                                     <option value="">-- Set All Month --</option>
                                     <option value="CLEAR">-- Clear Month --</option>
                                     <option value="7:00 - 16:00">7:00 - 16:00</option>
+                                    <option value="9:00 - 18:00">9:00 - 18:00</option>
                                     <option value="10:00 - 19:00">10:00 - 19:00</option>
                                     <option value="12:00 - 21:00">12:00 - 21:00</option>
                                     <option value="14:00 - 23:00">14:00 - 23:00</option>
@@ -584,9 +612,11 @@
         const team = ["Ann", "Dave", "Kenneth", "Kriztel", "Miguel"];
         const leaveTrackedTeam = ["Ann", "Dave", "Kenneth", "Kriztel"];
 
+        // ADDED 9:00 - 18:00 TO SHIFT LIST
         const shiftList = [
             { text: "", bgClass: "", itemClass: "", start: null, end: null },
             { text: "7:00 - 16:00", bgClass: "shift-bg-7-16", itemClass: "item-7-16", start: 7, end: 16 },
+            { text: "9:00 - 18:00", bgClass: "shift-bg-9-18", itemClass: "item-9-18", start: 9, end: 18 },
             { text: "10:00 - 19:00", bgClass: "shift-bg-10-19", itemClass: "item-10-19", start: 10, end: 19 },
             { text: "12:00 - 21:00", bgClass: "shift-bg-12-21", itemClass: "item-12-21", start: 12, end: 21 },
             { text: "14:00 - 23:00", bgClass: "shift-bg-14-23", itemClass: "item-14-23", start: 14, end: 23 },
@@ -616,23 +646,60 @@
         let globalTzOffset = 8;
         let rotaData = {};
         let leaveMatrixData = {};
-        let isViewOnlyMode = false;
+        let isViewOnlyMode = true; // Default to View-Only
+        const ADMIN_PASSWORD = "sportsbook2026";
 
-        // View-Only URL parameter check
         function checkViewOnlyMode() {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('viewonly') === 'true') {
                 isViewOnlyMode = true;
-                document.getElementById('viewOnlyBanner').style.display = 'block';
-                document.getElementById('btnBackToDuties').style.display = 'none';
-                document.querySelectorAll('.bulk-select').forEach(el => el.disabled = true);
+            }
+            updateAdminUI();
+        }
+
+        function handleAdminAuth() {
+            if (isViewOnlyMode) {
+                const password = prompt("Enter Admin Password to Unlock Editing:");
+                if (password === ADMIN_PASSWORD) {
+                    isViewOnlyMode = false;
+                    alert("Admin Mode Unlocked! You can now edit the schedule.");
+                    updateAdminUI();
+                    renderCalendar();
+                    buildLeaveTables();
+                } else if (password !== null) {
+                    alert("Incorrect Password!");
+                }
+            } else {
+                isViewOnlyMode = true;
+                alert("Locked to View-Only Mode.");
+                updateAdminUI();
+                renderCalendar();
+                buildLeaveTables();
+            }
+        }
+
+        function updateAdminUI() {
+            const banner = document.getElementById('viewOnlyBanner');
+            const authBtn = document.getElementById('adminAuthBtn');
+            const bulkSelects = document.querySelectorAll('.bulk-select');
+
+            if (isViewOnlyMode) {
+                banner.style.display = 'block';
+                authBtn.innerText = '🔑 Admin Login';
+                authBtn.className = 'btn btn-admin';
+                bulkSelects.forEach(el => el.disabled = true);
+            } else {
+                banner.style.display = 'none';
+                authBtn.innerText = '🔒 Lock Schedule';
+                authBtn.className = 'btn btn-warning';
+                bulkSelects.forEach(el => el.disabled = false);
             }
         }
 
         function copyViewOnlyLink() {
             const viewOnlyUrl = `${window.location.origin}${window.location.pathname}?viewonly=true`;
             navigator.clipboard.writeText(viewOnlyUrl).then(() => {
-                alert("✓ View-Only Rota Link copied to clipboard!\nShare this link to restrict edits and hide navigation buttons.");
+                alert("✓ View-Only Rota Link copied to clipboard!\nShare this link to restrict edits.");
             });
         }
 
@@ -730,7 +797,6 @@
         function formatShiftForTimezone(shiftText) {
             if (!shiftText || ["RD", "VL", "SL", "Adjusted"].includes(shiftText)) return shiftText;
 
-            // Handle Miguel/Custom time format e.g. "8:00 - 17:00"
             if (shiftText.includes("-") && !shiftList.some(s => s.text === shiftText)) {
                 const parts = shiftText.split("-").map(p => p.trim());
                 if (parts.length === 2 && parts[0].includes(":") && parts[1].includes(":")) {
@@ -789,7 +855,6 @@
                     
                     let activeShift = (rotaData[d] && rotaData[d][memberIdx] !== undefined) ? rotaData[d][memberIdx] : "";
 
-                    // Miguel: Free Editable Cell
                     if (member === "Miguel") {
                         const input = document.createElement('input');
                         input.type = 'text';
@@ -806,7 +871,6 @@
 
                         tdShift.appendChild(input);
                     } 
-                    // Adjusted Option Editable Cell
                     else if (activeShift.startsWith("Adjusted:") || activeShift === "Adjusted") {
                         const customVal = activeShift.replace("Adjusted:", "").trim();
                         const input = document.createElement('input');
@@ -823,7 +887,6 @@
 
                         tdShift.appendChild(input);
                     }
-                    // Standard Color Dropdown
                     else {
                         const activeInfo = getShiftInfo(activeShift);
                         const convertedText = formatShiftForTimezone(activeShift);
